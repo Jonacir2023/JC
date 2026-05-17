@@ -2,137 +2,199 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>42 Prompts Claude - Guia Completo de Produtividade</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#FF8C42">
+    <title>48 Claude Prompts - Guia Completo</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
             background: linear-gradient(135deg, #FFF5F0 0%, #FFE5D0 100%);
-            padding: 40px 20px;
+            background-attachment: fixed;
+            padding: 1.5rem;
             color: #2A2A2A;
+            line-height: 1.5;
+            overflow-x: hidden;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            width: 100%;
         }
 
-        /* Header Section */
+        /* ===== HEADER ===== */
         .header {
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 3rem;
             position: relative;
+            padding: 2rem 0;
         }
 
         .header::before {
             content: '✦';
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
+            display: block;
+            font-size: clamp(1.5rem, 5vw, 2rem);
             color: #FF8C42;
+            margin-bottom: 1rem;
         }
 
         .header h1 {
-            font-size: 3.5em;
+            font-size: clamp(2rem, 7vw, 3.5rem);
             font-weight: 700;
             color: #FF8C42;
             text-shadow: 2px 2px 4px rgba(255, 140, 66, 0.2);
-            margin-bottom: 10px;
+            margin-bottom: 0.5rem;
+            word-break: break-word;
         }
 
         .header p {
-            font-size: 1.3em;
+            font-size: clamp(1rem, 4vw, 1.3rem);
             color: #D97D5C;
             font-style: italic;
+            margin: 0.5rem 0;
         }
 
-        .decorative-flower {
-            display: inline-block;
-            width: 80px;
-            height: 80px;
-            margin: 20px;
-            opacity: 0.6;
+        .header .subtitle {
+            font-size: clamp(0.875rem, 3vw, 1.1rem);
+            color: #666;
+            margin-top: 1rem;
         }
 
-        /* Category Sections */
+        /* ===== QUICK STATS ===== */
+        .infographic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .info-box {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem 1rem;
+            border-top: 4px solid #FF8C42;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .info-box h3 {
+            color: #FF8C42;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            margin-bottom: 0.25rem;
+            line-height: 1.2;
+        }
+
+        .info-box p {
+            color: #666;
+            font-size: clamp(0.75rem, 2vw, 0.95rem);
+            line-height: 1.3;
+        }
+
+        /* ===== CATEGORIES GRID ===== */
         .categories {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-bottom: 60px;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 640px) {
+            .categories {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
         }
 
         .category-card {
             background: linear-gradient(135deg, #FFB8A3 0%, #FF9A7B 100%);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(255, 140, 66, 0.2);
+            border-radius: 16px;
+            padding: clamp(1.5rem, 5vw, 2rem);
+            box-shadow: 0 8px 24px rgba(255, 140, 66, 0.15);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             border: 3px solid #FF8C42;
+            overflow: hidden;
         }
 
-        .category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(255, 140, 66, 0.3);
+        .category-card:active {
+            transform: translateY(-3px);
+        }
+
+        @media (hover: hover) {
+            .category-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 12px 36px rgba(255, 140, 66, 0.3);
+            }
         }
 
         .category-title {
-            font-size: 1.8em;
+            font-size: clamp(1.2rem, 5vw, 1.6rem);
             font-weight: 700;
             color: #FFFFFF;
-            margin-bottom: 20px;
+            margin-bottom: 1.25rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            line-height: 1.3;
         }
 
         .category-badge {
-            background: #FF8C42;
+            background: rgba(255, 255, 255, 0.3);
             color: white;
-            padding: 5px 12px;
+            padding: 0.35rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.85em;
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
             font-weight: 600;
+            white-space: nowrap;
         }
 
         .prompts-list {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 0.75rem;
         }
 
         .prompt-item {
             background: rgba(255, 255, 255, 0.95);
-            padding: 15px;
-            border-radius: 12px;
+            padding: 1rem;
+            border-radius: 10px;
             border-left: 4px solid #FF8C42;
-            line-height: 1.6;
-            font-size: 0.95em;
+            line-height: 1.5;
+            font-size: clamp(0.85rem, 2vw, 0.9rem);
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .prompt-label {
             font-weight: 700;
             color: #FF8C42;
-            margin-bottom: 5px;
+            margin-bottom: 0.35rem;
             display: block;
+            font-size: clamp(0.8rem, 2vw, 0.85rem);
         }
 
-        /* Image Support */
+        /* ===== IMAGE SUPPORT ===== */
         .image-section {
-            margin: 20px 0;
-            padding: 15px;
+            margin: 1.25rem 0;
+            padding: 1rem;
             background: rgba(255, 255, 255, 0.5);
-            border-radius: 12px;
+            border-radius: 10px;
             text-align: center;
-            min-height: 150px;
+            min-height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -142,80 +204,27 @@
             width: 100%;
             max-width: 300px;
             height: auto;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(255, 140, 66, 0.15);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(255, 140, 66, 0.15);
         }
 
         .image-placeholder-text {
             color: #999;
-            font-size: 0.85em;
+            font-size: clamp(0.75rem, 2vw, 0.85rem);
             text-align: center;
-            padding: 40px 20px;
+            padding: 2rem 1rem;
             border: 2px dashed #FFB8A3;
-            border-radius: 10px;
+            border-radius: 8px;
         }
 
-        .gallery-section {
-            background: linear-gradient(135deg, #FFF5F0 0%, #FFE5D0 100%);
-            border-radius: 20px;
-            padding: 40px;
-            margin: 60px 0;
-            border: 2px solid #FF8C42;
-        }
-
-        .gallery-section h3 {
-            text-align: center;
-            color: #FF8C42;
-            font-size: 2em;
-            margin-bottom: 30px;
-        }
-
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .gallery-item {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .gallery-item:hover {
-            transform: scale(1.05);
-        }
-
-        .gallery-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background: linear-gradient(135deg, #FFB8A3 0%, #FF9A7B 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-        }
-
-        .gallery-caption {
-            padding: 15px;
-            text-align: center;
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        /* Featured Section */
+        /* ===== FEATURED SECTION ===== */
         .featured-section {
             background: linear-gradient(135deg, #FF8C42 0%, #FF6B35 100%);
-            border-radius: 25px;
-            padding: 50px;
-            margin: 60px 0;
+            border-radius: 16px;
+            padding: clamp(2rem, 8vw, 3.5rem);
+            margin: 3rem 0;
             text-align: center;
-            box-shadow: 0 20px 50px rgba(255, 140, 66, 0.3);
+            box-shadow: 0 12px 40px rgba(255, 140, 66, 0.3);
             color: white;
             position: relative;
             overflow: hidden;
@@ -225,490 +234,620 @@
         .featured-section::after {
             content: '✦';
             position: absolute;
-            font-size: 60px;
-            opacity: 0.2;
+            font-size: clamp(3rem, 12vw, 5rem);
+            opacity: 0.1;
             color: white;
         }
 
         .featured-section::before {
-            top: 10px;
-            left: 20px;
+            top: -1rem;
+            left: 1rem;
         }
 
         .featured-section::after {
-            bottom: 10px;
-            right: 20px;
+            bottom: -1rem;
+            right: 1rem;
         }
 
         .featured-section h2 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
+            font-size: clamp(1.5rem, 6vw, 2.5rem);
+            margin-bottom: 1rem;
             position: relative;
             z-index: 1;
+            word-break: break-word;
         }
 
         .featured-section p {
-            font-size: 1.2em;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
             max-width: 600px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
-        }
-
-        /* Infographic Grid */
-        .infographic-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin: 60px 0;
-        }
-
-        .info-box {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            border-top: 5px solid #FF8C42;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-            text-align: center;
-        }
-
-        .info-box h3 {
-            color: #FF8C42;
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-
-        .info-box p {
-            color: #666;
-            font-size: 0.95em;
             line-height: 1.6;
         }
 
-        /* Summary Section */
+        /* ===== GALLERY ===== */
+        .gallery-section {
+            background: linear-gradient(135deg, #FFF5F0 0%, #FFE5D0 100%);
+            border-radius: 16px;
+            padding: clamp(2rem, 5vw, 2.5rem);
+            margin: 3rem 0;
+            border: 2px solid #FF8C42;
+        }
+
+        .gallery-section h3 {
+            text-align: center;
+            color: #FF8C42;
+            font-size: clamp(1.3rem, 5vw, 2rem);
+            margin-bottom: 1.5rem;
+            word-break: break-word;
+        }
+
+        .gallery-section > p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: clamp(0.85rem, 2vw, 0.95rem);
+            line-height: 1.5;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 480px) {
+            .gallery-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+        }
+
+        .gallery-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:active {
+            transform: scale(0.98);
+        }
+
+        @media (hover: hover) {
+            .gallery-item:hover {
+                transform: scale(1.05);
+            }
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(135deg, #FFB8A3 0%, #FF9A7B 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: clamp(0.8rem, 3vw, 0.95rem);
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .gallery-caption {
+            padding: 0.75rem;
+            text-align: center;
+            color: #666;
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+            line-height: 1.3;
+        }
+
+        /* ===== SUMMARY ===== */
         .summary {
             background: linear-gradient(135deg, #FFF5F0 0%, #FFE5D0 100%);
             border: 2px solid #FF8C42;
-            border-radius: 20px;
-            padding: 40px;
-            margin-top: 60px;
+            border-radius: 16px;
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            margin-top: 3rem;
             text-align: center;
         }
 
         .summary h3 {
-            font-size: 1.8em;
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
             color: #FF8C42;
-            margin-bottom: 20px;
+            margin-bottom: 1rem;
+            word-break: break-word;
+        }
+
+        .summary p {
+            color: #666;
+            font-size: clamp(0.85rem, 2vw, 0.95rem);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            word-break: break-word;
         }
 
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1.5rem;
         }
 
         .summary-item {
             background: #FFB8A3;
-            padding: 20px;
-            border-radius: 12px;
+            padding: clamp(0.75rem, 3vw, 1.25rem);
+            border-radius: 10px;
             color: white;
             font-weight: 600;
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
         }
 
         .summary-item strong {
             display: block;
-            font-size: 1.8em;
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
             color: #FF8C42;
-            margin-bottom: 5px;
+            margin-bottom: 0.25rem;
+            line-height: 1.2;
         }
 
-        /* Footer */
+        /* ===== FOOTER ===== */
         footer {
             text-align: center;
-            margin-top: 60px;
-            padding-top: 30px;
+            margin-top: 3rem;
+            padding-top: 2rem;
             border-top: 2px solid #FF8C42;
             color: #666;
         }
 
-        .credit {
-            font-size: 0.9em;
-            margin-top: 10px;
+        footer p {
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+            word-break: break-word;
         }
 
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2.5em;
+        .credit {
+            font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+            margin-top: 1rem;
+            color: #999;
+        }
+
+        /* ===== RESPONSIVE ADJUSTMENTS ===== */
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+
+            .container {
+                width: 100%;
+                margin: 0;
+            }
+
+            .category-card {
+                padding: 1.25rem;
+            }
+
+            .prompts-list {
+                gap: 0.5rem;
+            }
+
+            .prompt-item {
+                padding: 0.75rem;
             }
 
             .featured-section {
-                padding: 30px;
+                padding: 1.5rem;
+                margin: 2rem 0;
             }
 
-            .featured-section h2 {
-                font-size: 1.8em;
+            .gallery-section {
+                padding: 1.5rem;
+                margin: 2rem 0;
+            }
+
+            .summary {
+                padding: 1.5rem;
+                margin-top: 2rem;
+            }
+
+            .category-title {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.75rem;
+            }
+
+            .header {
+                margin-bottom: 2rem;
+                padding: 1rem 0;
+            }
+
+            .infographic-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+                margin-bottom: 2rem;
+            }
+
+            .info-box {
+                padding: 1rem 0.5rem;
+            }
+
+            .info-box h3 {
+                font-size: 1.75rem;
             }
 
             .categories {
-                grid-template-columns: 1fr;
+                margin-bottom: 2rem;
             }
+
+            .gallery-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .featured-section::before,
+            .featured-section::after {
+                display: none;
+            }
+        }
+
+        /* ===== ACCESSIBILITY ===== */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ===== PRINT ===== */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .category-card:hover {
+                transform: none;
+            }
+        }
+
+        /* ===== UTILITY ===== */
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-2 {
+            margin-top: 2rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 2rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
+        <!-- HEADER -->
         <div class="header">
             <h1>Claude</h1>
-            <p>Steal these 30 Claude Prompts</p>
-            <p style="font-size: 1.1em; margin-top: 10px; color: #666;">(FOR YOUR PRODUCTIVITY)</p>
+            <p>48 Prompts Prontos para Usar</p>
+            <p class="subtitle">Guia Completo de Produtividade</p>
         </div>
 
-        <!-- Quick Stats -->
+        <!-- QUICK STATS -->
         <div class="infographic-grid">
             <div class="info-box">
                 <h3>48</h3>
-                <p>Prompts Prontos para Usar</p>
+                <p>Prompts</p>
             </div>
             <div class="info-box">
                 <h3>11</h3>
-                <p>Categorias Distintas</p>
+                <p>Categorias</p>
             </div>
             <div class="info-box">
                 <h3>∞</h3>
-                <p>Possibilidades Infinitas</p>
+                <p>Resultados</p>
+            </div>
+            <div class="info-box">
+                <h3>3</h3>
+                <p>Versões</p>
             </div>
         </div>
 
-        <!-- Main Categories -->
+        <!-- CATEGORIES -->
         <div class="categories">
-            <!-- Marketing Prompts -->
+            <!-- Marketing -->
             <div class="category-card">
                 <div class="category-title">
                     📱 Marketing
-                    <span class="category-badge">3 Prompts</span>
+                    <span class="category-badge">3</span>
                 </div>
                 <div class="prompts-list">
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 1</span>
-                        Gere 10 ideias de ímã de leads que criadores em [NICHO] poderiam oferecer para atrair clientes em potencial.
+                        <span class="prompt-label">1</span>
+                        Gere 10 ideias de ímã de leads que criadores em [NICHO] poderiam oferecer para atrair clientes.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 2</span>
-                        Transforme o serviço [SERVIÇO] em três pacotes de oferta irrecusáveis com resultados claros.
+                        <span class="prompt-label">2</span>
+                        Transforme o serviço [SERVIÇO] em três pacotes de oferta com resultados claros.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 3</span>
-                        Gere 10 ganchos de marketing que poderiam ser usados para promover [PRODUTO].
+                        <span class="prompt-label">3</span>
+                        Gere 10 ganchos de marketing para promover [PRODUTO].
                     </div>
                 </div>
             </div>
 
-            <!-- Content Prompts -->
+            <!-- Content -->
             <div class="category-card">
                 <div class="category-title">
                     ✍️ Conteúdo
-                    <span class="category-badge">3 Prompts</span>
+                    <span class="category-badge">3</span>
                 </div>
                 <div class="prompts-list">
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 1</span>
-                        Atue como estrategista de conteúdo sênior e crie uma estratégia de conteúdo Instagram de 90 dias para um criador em [NICHO] direcionado a [AUDIÊNCIA]. Inclua temas semanais, formatos de conteúdo e ideias de posts que constroem autoridade.
+                        <span class="prompt-label">1</span>
+                        Crie uma estratégia de conteúdo Instagram de 90 dias para [NICHO] direcionado a [AUDIÊNCIA].
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 2</span>
-                        Gere 30 ideias de conteúdo de alto desempenho para um criador em [NICHO]. Para cada ideia, inclua um gancho e explique por que a ideia atrairia atenção.
+                        <span class="prompt-label">2</span>
+                        Gere 30 ideias de conteúdo alto desempenho para [NICHO]. Inclua gancho para cada ideia.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 3</span>
-                        Transforme o tópico [TÓPICO] em 10 ganchos de reels que maximizam curiosidade e tempo de visualização.
+                        <span class="prompt-label">3</span>
+                        Transforme [TÓPICO] em 10 ganchos de reels que maximizam curiosidade.
                     </div>
                 </div>
             </div>
 
-            <!-- Audience Prompts -->
+            <!-- Audience -->
             <div class="category-card">
                 <div class="category-title">
                     👥 Audiência
-                    <span class="category-badge">3 Prompts</span>
+                    <span class="category-badge">3</span>
                 </div>
                 <div class="prompts-list">
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 1</span>
-                        Identifique 10 frustrações experimentadas por [AUDIÊNCIA ALVO] e explique os gatilhos emocionais por trás de cada problema.
+                        <span class="prompt-label">1</span>
+                        Identifique 10 frustrações de [AUDIÊNCIA] e explique os gatilhos emocionais.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 2</span>
-                        Sugira três estratégias de posicionamento únicas que ajudariam um criador em [NICHO] a se destacar dos concorrentes.
+                        <span class="prompt-label">2</span>
+                        Sugira três estratégias de posicionamento para [NICHO] se destacar.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 3</span>
-                        Crie uma persona de audiência detalhada para [AUDIÊNCIA], incluindo motivações, medos, desejos e comportamento de gastos.
+                        <span class="prompt-label">3</span>
+                        Crie uma persona detalhada de [AUDIÊNCIA] com motivações e desejos.
                     </div>
                 </div>
             </div>
 
-            <!-- Branding Prompts -->
+            <!-- Branding -->
             <div class="category-card">
                 <div class="category-title">
-                    🎨 Marca
-                    <span class="category-badge">3 Prompts</span>
+                    🎨 Branding
+                    <span class="category-badge">3</span>
                 </div>
                 <div class="prompts-list">
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 1</span>
-                        Escreva uma declaração de posicionamento de marca usando este formato: "Eu ajudo [AUDIÊNCIA] a alcançar [RESULTADO] sem [PROBLEMA COMUM]."
+                        <span class="prompt-label">1</span>
+                        Escreva: "Eu ajudo [AUDIÊNCIA] a alcançar [RESULTADO] sem [PROBLEMA]."
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 2</span>
-                        Reescreva esta bio do Instagram para que pareça mais clara, confiante e orientada pela autoridade: [BIO].
+                        <span class="prompt-label">2</span>
+                        Reescreva esta bio para parecer clara e confiante: [BIO].
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 3</span>
-                        Gere 10 ideias de slogan para uma marca operando na indústria [NICHO].
+                        <span class="prompt-label">3</span>
+                        Gere 10 ideias de slogan para [NICHO].
                     </div>
                 </div>
             </div>
 
-            <!-- Monetisation Prompts -->
+            <!-- Monetisation -->
             <div class="category-card">
                 <div class="category-title">
                     💰 Monetização
-                    <span class="category-badge">3 Prompts</span>
+                    <span class="category-badge">3</span>
                 </div>
                 <div class="prompts-list">
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 1</span>
-                        Gere 10 maneiras que um criador em [NICHO] pode monetizar sua audiência.
+                        <span class="prompt-label">1</span>
+                        Gere 10 maneiras que [NICHO] pode monetizar sua audiência.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 2</span>
-                        Sugira cinco ideias de produtos digitais baseadas nesta experiência: [SKILL].
+                        <span class="prompt-label">2</span>
+                        Sugira 5 ideias de produtos digitais baseados em [SKILL].
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 3</span>
-                        Gere 10 serviços que criadores poderiam oferecer a marcas nesta indústria.
+                        <span class="prompt-label">3</span>
+                        Gere 10 serviços que criadores poderiam oferecer em [NICHO].
                     </div>
                 </div>
             </div>
 
-            <!-- Digital Products Prompts -->
+            <!-- Digital Products -->
             <div class="category-card">
                 <div class="category-title">
-                    🛒 Produtos Digitais
-                    <span class="category-badge">3 Prompts</span>
+                    🛒 Produtos
+                    <span class="category-badge">3</span>
                 </div>
                 <div class="prompts-list">
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 1</span>
-                        Gere 10 ideias de produtos digitais que um criador em [NICHO] poderia vender para sua audiência.
+                        <span class="prompt-label">1</span>
+                        Gere 10 ideias de produtos digitais para [NICHO].
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 2</span>
-                        Transforme a habilidade [SKILL] em três ideias de produtos digitais escalonáveis com diferentes níveis de preço.
+                        <span class="prompt-label">2</span>
+                        Transforme [SKILL] em 3 produtos escalonáveis com preços diferentes.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 3</span>
-                        Crie um esboço simples para um curso digital ensinando [TÓPICO].
+                        <span class="prompt-label">3</span>
+                        Crie um esboço de curso digital ensinando [TÓPICO].
                     </div>
                 </div>
             </div>
 
-            <!-- Productive Prompts -->
+            <!-- Productive -->
             <div class="category-card">
                 <div class="category-title">
                     ⚡ Produtividade
-                    <span class="category-badge">3 Prompts</span>
+                    <span class="category-badge">3</span>
                 </div>
                 <div class="prompts-list">
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 1</span>
-                        Projete um sistema semanal de fluxo de trabalho para um criador gerenciando criação de conteúdo, marketing e trabalho com clientes.
+                        <span class="prompt-label">1</span>
+                        Projete um fluxo semanal para gerenciar conteúdo, marketing e clientes.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 2</span>
-                        Transforme esta lista de tarefas em um plano claro de execução semanal: [LISTA DE TAREFAS].
+                        <span class="prompt-label">2</span>
+                        Transforme esta lista em plano de execução semanal: [TAREFAS].
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 3</span>
-                        Crie um sistema de lote de conteúdo que permite a um criador produzir um mês de conteúdo em um único dia.
+                        <span class="prompt-label">3</span>
+                        Crie um sistema que permite produzir 1 mês de conteúdo em 1 dia.
                     </div>
                 </div>
             </div>
 
-            <!-- Clients Prompts -->
+            <!-- Clients -->
             <div class="category-card">
                 <div class="category-title">
                     👔 Clientes
-                    <span class="category-badge">3 Prompts</span>
+                    <span class="category-badge">3</span>
                 </div>
                 <div class="prompts-list">
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 1</span>
-                        Gere 10 ideias de conteúdo que atraem clientes de alto valor na indústria [NICHO].
+                        <span class="prompt-label">1</span>
+                        Gere 10 ideias de conteúdo que atraem clientes premium em [NICHO].
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 2</span>
-                        Sugira cinco estratégias para encontrar clientes em potencial sem usar plataformas de freelance.
+                        <span class="prompt-label">2</span>
+                        Sugira 5 estratégias para encontrar clientes sem plataformas de freelance.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 3</span>
-                        Escreva três modelos de mensagem de divulgação fria para abordar clientes em potencial.
+                        <span class="prompt-label">3</span>
+                        Escreva 3 templates de divulgação fria para clientes.
                     </div>
                 </div>
             </div>
 
-            <!-- Growth Prompts -->
+            <!-- Growth -->
             <div class="category-card">
                 <div class="category-title">
                     📈 Crescimento
-                    <span class="category-badge">3 Prompts</span>
+                    <span class="category-badge">3</span>
                 </div>
                 <div class="prompts-list">
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 1</span>
-                        Analise o nicho [NICHO] e identifique três oportunidades de crescimento que a maioria dos criadores ignora.
+                        <span class="prompt-label">1</span>
+                        Analise [NICHO] e identifique 3 oportunidades que ignoram.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 2</span>
-                        Gere 10 ideias de conteúdo estratégico projetadas para crescer rapidamente seguidores.
+                        <span class="prompt-label">2</span>
+                        Gere 10 ideias de conteúdo para crescer rapidamente.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 3</span>
-                        Crie um plano de experimento de crescimento do Instagram de 30 dias para um criador em [NICHO].
+                        <span class="prompt-label">3</span>
+                        Crie um plano de experimento de 30 dias para Instagram.
                     </div>
                 </div>
             </div>
 
-            <!-- Content Hooks Prompts -->
+            <!-- Content Hooks -->
             <div class="category-card">
                 <div class="category-title">
-                    🎣 Ganchos de Conteúdo
-                    <span class="category-badge">3 Prompts</span>
+                    🎣 Ganchos
+                    <span class="category-badge">3</span>
                 </div>
                 <div class="prompts-list">
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 1</span>
-                        Gere 20 ganchos que parem a rolagem para conteúdo sobre [TÓPICO] que disparem curiosidade e façam as pessoas parar de rolar.
+                        <span class="prompt-label">1</span>
+                        Gere 20 ganchos para [TÓPICO] que param a rolagem.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 2</span>
-                        Reescreva este gancho em 10 variações mais fortes que aumentam a intriga: [GANCHO].
+                        <span class="prompt-label">2</span>
+                        Reescreva em 10 variações mais fortes: [GANCHO].
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 3</span>
-                        Transforme o tópico [TÓPICO] em 10 aberturas de conteúdo impulsionadas por curiosidade projetadas para vídeo curto.
+                        <span class="prompt-label">3</span>
+                        Crie 10 aberturas curiosas para vídeo curto sobre [TÓPICO].
                     </div>
                 </div>
             </div>
 
-            <!-- Digital Products Estratégia -->
+            <!-- Digital Products Strategy -->
             <div class="category-card">
                 <div class="category-title">
-                    💎 Produtos Digitais (Estratégia)
-                    <span class="category-badge">3 Prompts</span>
+                    💎 Produtos (Est.)
+                    <span class="category-badge">3</span>
                 </div>
                 <div class="prompts-list">
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 1</span>
-                        Gere 10 ideias de produtos digitais que um criador em [NICHO] poderia vender para sua audiência.
+                        <span class="prompt-label">1</span>
+                        Gere 10 ideias de produtos que [NICHO] pode vender.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 2</span>
-                        Transforme a habilidade [HABILIDADE] em três ideias de produtos digitais escalonáveis com diferentes níveis de preço.
+                        <span class="prompt-label">2</span>
+                        Transforme [SKILL] em 3 produtos com preços escalonados.
                     </div>
                     <div class="prompt-item">
-                        <span class="prompt-label">Prompt 3</span>
-                        Crie um esboço simples para um curso digital ensinando [TÓPICO].
+                        <span class="prompt-label">3</span>
+                        Estruture um curso digital sobre [TÓPICO].
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Featured Section -->
+        <!-- FEATURED SECTION -->
         <div class="featured-section">
             <h2>Estratégia Integrada</h2>
-            <p>Combine estas 11 categorias para criar uma estratégia de conteúdo, marketing e negócios 360° que posicione sua marca como referência no seu nicho.</p>
+            <p>Combine estas 11 categorias para criar uma estratégia 360° que posicione sua marca como referência.</p>
         </div>
 
-        <!-- Gallery Section for Visual Examples -->
+        <!-- GALLERY -->
         <div class="gallery-section">
-            <h3>📸 Galeria de Exemplos & Referências</h3>
-            <p style="text-align: center; color: #666; margin-bottom: 30px;">
-                Adicione prints, mockups, exemplos e referências visuais de cada categoria abaixo
-            </p>
+            <h3>📸 Galeria de Exemplos</h3>
+            <p>Adicione prints, mockups e referências visuais de cada categoria</p>
 
             <div class="gallery-grid">
                 <div class="gallery-item">
-                    <div class="gallery-image" style="background: linear-gradient(135deg, #FFB8A3 0%, #FF9A7B 100%);">
-                        📱 Marketing
-                    </div>
-                    <div class="gallery-caption">
-                        <strong>Exemplos de Campanhas</strong><br>
-                        <small>(Clique para adicionar imagem)</small>
-                    </div>
+                    <div class="gallery-image">📱 Marketing</div>
+                    <div class="gallery-caption">Exemplos de Campanhas</div>
                 </div>
-
                 <div class="gallery-item">
-                    <div class="gallery-image" style="background: linear-gradient(135deg, #FF9A7B 0%, #FF7B5F 100%);">
-                        ✍️ Conteúdo
-                    </div>
-                    <div class="gallery-caption">
-                        <strong>Exemplos de Posts</strong><br>
-                        <small>(Clique para adicionar imagem)</small>
-                    </div>
+                    <div class="gallery-image">✍️ Conteúdo</div>
+                    <div class="gallery-caption">Exemplos de Posts</div>
                 </div>
-
                 <div class="gallery-item">
-                    <div class="gallery-image" style="background: linear-gradient(135deg, #FF7B5F 0%, #FF5F3F 100%);">
-                        🎣 Ganchos
-                    </div>
-                    <div class="gallery-caption">
-                        <strong>Exemplos de Hooks</strong><br>
-                        <small>(Clique para adicionar imagem)</small>
-                    </div>
+                    <div class="gallery-image">🎣 Ganchos</div>
+                    <div class="gallery-caption">Exemplos de Hooks</div>
                 </div>
-
                 <div class="gallery-item">
-                    <div class="gallery-image" style="background: linear-gradient(135deg, #D97D5C 0%, #C4724A 100%);">
-                        💰 Monetização
-                    </div>
-                    <div class="gallery-caption">
-                        <strong>Exemplos de Produtos</strong><br>
-                        <small>(Clique para adicionar imagem)</small>
-                    </div>
+                    <div class="gallery-image">💰 Monetização</div>
+                    <div class="gallery-caption">Exemplos de Produtos</div>
                 </div>
-
                 <div class="gallery-item">
-                    <div class="gallery-image" style="background: linear-gradient(135deg, #C4724A 0%, #A85D3F 100%);">
-                        📈 Crescimento
-                    </div>
-                    <div class="gallery-caption">
-                        <strong>Casos de Sucesso</strong><br>
-                        <small>(Clique para adicionar imagem)</small>
-                    </div>
+                    <div class="gallery-image">📈 Crescimento</div>
+                    <div class="gallery-caption">Casos de Sucesso</div>
                 </div>
-
                 <div class="gallery-item">
-                    <div class="gallery-image" style="background: linear-gradient(135deg, #A85D3F 0%, #8C4A30 100%);">
-                        🎨 Marca
-                    </div>
-                    <div class="gallery-caption">
-                        <strong>Identidade Visual</strong><br>
-                        <small>(Clique para adicionar imagem)</small>
-                    </div>
+                    <div class="gallery-image">🎨 Marca</div>
+                    <div class="gallery-caption">Identidade Visual</div>
                 </div>
             </div>
-
-            <p style="text-align: center; margin-top: 30px; color: #666; font-size: 0.9em;">
-                <strong>Dica:</strong> Você pode adicionar imagens editando o arquivo HTML ou criando uma pasta de mídia com suas referências visuais
-            </p>
         </div>
 
-        <!-- Summary -->
+        <!-- SUMMARY -->
         <div class="summary">
             <h3>Resumo Executivo</h3>
-            <p>Este guia consolida 48 prompts poderosos de Claude organizados em 11 categorias estratégicas cobrindo criação, marketing, produtos, produtividade, clientes e crescimento</p>
+            <p>Guia com 48 prompts organizados em 11 categorias estratégicas cobrindo criação, marketing, produtos, produtividade e crescimento.</p>
 
             <div class="summary-grid">
                 <div class="summary-item">
@@ -725,50 +864,29 @@
                 </div>
                 <div class="summary-item">
                     <strong>3</strong>
-                    Versões Claude
+                    Versões
                 </div>
             </div>
         </div>
 
-        <!-- Usage Guide -->
-        <div class="summary" style="margin-top: 40px;">
-            <h3>Como Usar Este Guia</h3>
-            <p style="margin: 20px auto; text-align: left; max-width: 600px;">
-                <strong>1. Escolha uma categoria:</strong> Selecione a área em que deseja trabalhar (das 11 categorias disponíveis)<br><br>
-                <strong>2. Copie o prompt:</strong> Pegue o prompt exato e copie para Claude<br><br>
-                <strong>3. Substitua os placeholders:</strong> Troque [NICHO], [AUDIÊNCIA], [PRODUTO], etc. por seus valores reais<br><br>
-                <strong>4. Execute e refine:</strong> Teste o resultado e faça ajustes conforme necessário<br><br>
-                <strong>5. Combine prompts:</strong> Use múltiplos prompts juntos para resultados mais completos<br><br>
-                <strong>6. Adicione exemplos visuais:</strong> Insira prints, mockups e referências na galeria para documentar seus resultados
+        <!-- USAGE GUIDE -->
+        <div class="summary mt-2">
+            <h3>Como Usar</h3>
+            <p style="margin-bottom: 1rem;">
+                <strong>1.</strong> Escolha uma categoria<br>
+                <strong>2.</strong> Copie o prompt exato<br>
+                <strong>3.</strong> Substitua [NICHO], [AUDIÊNCIA], etc.<br>
+                <strong>4.</strong> Cole em Claude<br>
+                <strong>5.</strong> Customize os resultados
             </p>
         </div>
 
-        <!-- Image Integration Guide -->
-        <div class="summary" style="margin-top: 40px; background: linear-gradient(135deg, #FFE5D0 0%, #FFD4B8 100%);">
-            <h3>🖼️ Como Adicionar Fotos & Imagens</h3>
-            <p style="margin: 20px auto; text-align: left; max-width: 700px;">
-                <strong>Opção 1 - Editar o HTML diretamente:</strong><br>
-                Localize a galeria e substitua o atributo <code>src</code> com o caminho da sua imagem:<br>
-                <code>&lt;img src="sua-imagem.jpg" class="gallery-image" alt="Descrição"&gt;</code><br><br>
-
-                <strong>Opção 2 - Organizar pastas de mídia:</strong><br>
-                Crie uma pasta <code>/images</code> no mesmo diretório e organize por categoria:<br>
-                <code>/images/marketing/, /images/conteudo/, /images/produtos/, etc.</code><br><br>
-
-                <strong>Opção 3 - URLs externas:</strong><br>
-                Use links diretos para imagens hospedadas online (Imgur, CloudUp, etc.)<br><br>
-
-                <strong>Formatos suportados:</strong> JPG, PNG, WebP, SVG<br>
-                <strong>Tamanho recomendado:</strong> 600x400px (mantém qualidade e carregamento rápido)
-            </p>
-        </div>
-
-        <!-- Footer -->
+        <!-- FOOTER -->
         <footer>
-            <p><strong>Dica:</strong> Estes prompts funcionam com as 3 versões de Claude. Ajuste o nível de detalhe conforme necessário.</p>
+            <p><strong>Compatível com todas as 3 versões de Claude</strong></p>
+            <p>Otimizado para desktop, tablet e smartphone</p>
             <div class="credit">
-                <p>Infográfico consolidado — 30 Prompts Claude para Produtividade</p>
-                <p style="margin-top: 10px; font-size: 0.85em;">Baseado em materiais de @aisimplified23 e @nivedan.ai</p>
+                <p>48 Claude Prompts - Guia Completo de Produtividade</p>
             </div>
         </footer>
     </div>
