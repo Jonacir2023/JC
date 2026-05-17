@@ -1,39 +1,51 @@
 #!/bin/bash
 
-# Script para executar o infográfico Claude Prompts localmente
+# Script para executar o infográfico Claude Prompts com servidor HTTP
+# Permite acesso em iPhone, iPad e outros dispositivos móveis
 
-echo "=================================="
-echo "🎨 Infográfico Claude Prompts"
-echo "=================================="
-echo ""
-echo "📂 Iniciando servidor local..."
+clear
+
+echo "╔════════════════════════════════════════════════════════════════╗"
+echo "║                                                                ║"
+echo "║  🎨 Infográfico Claude Prompts - Servidor HTTP                ║"
+echo "║                                                                ║"
+echo "╚════════════════════════════════════════════════════════════════╝"
 echo ""
 
 # Verifica se está no diretório correto
 if [ ! -f "infographic-claude-prompts.html" ]; then
     echo "❌ Erro: arquivo 'infographic-claude-prompts.html' não encontrado!"
-    echo "   Certifique-se de estar no diretório correto."
+    echo "   Certifique-se de estar no diretório correto: /home/user/JC"
     exit 1
 fi
 
-# Tenta usar Python 3 para criar um servidor HTTP simples
-if command -v python3 &> /dev/null; then
+# Verifica Python 3
+if ! command -v python3 &> /dev/null; then
+    echo "❌ Erro: Python3 não encontrado"
+    echo "   Instale com: apt-get install python3"
+    exit 1
+fi
+
+# Executa o servidor
+echo "🚀 Iniciando servidor HTTP..."
+echo ""
+
+if [ -f "server.py" ]; then
+    # Usa servidor customizado se disponível
+    python3 server.py
+else
+    # Fallback para servidor padrão do Python
     PORT=8000
-    echo "✅ Servidor iniciado em: http://localhost:$PORT"
-    echo "   Abra seu navegador e acesse o endereço acima"
+    HOSTNAME=$(hostname -I | awk '{print $1}')
+
+    echo "✅ Servidor iniciado!"
     echo ""
-    echo "📊 Seu infográfico está pronto para visualizar!"
-    echo "   - Clique em qualquer prompt para copiar"
-    echo "   - Adicione suas imagens conforme desejado"
-    echo "   - Customize as cores e layout como precisar"
+    echo "📍 Acesse em:"
+    echo "   🖥️  Desktop:  http://localhost:$PORT/infographic-claude-prompts.html"
+    echo "   📱 Mobile:   http://$HOSTNAME:$PORT/infographic-claude-prompts.html"
     echo ""
-    echo "Pressione Ctrl+C para parar o servidor"
+    echo "Pressione Ctrl+C para parar"
     echo ""
 
     python3 -m http.server $PORT
-else
-    echo "❌ Python3 não encontrado"
-    echo "   Abra o arquivo manualmente em um navegador:"
-    echo "   file://$(pwd)/infographic-claude-prompts.html"
-    exit 1
 fi
