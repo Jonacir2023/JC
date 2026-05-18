@@ -1,0 +1,10 @@
+{
+  "skills": {
+    "find-skills": {
+      "description": "Descobre e instala skills do ecossistema Claude Code",
+      "entry": ".claude/skills/find-skills.js",
+      "trigger": "auto",
+      "autoDetect": true
+    }
+  }
+}
