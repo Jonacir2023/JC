@@ -1,90 +1,164 @@
 #!/usr/bin/env node
 /**
- * Varre o projeto e regera .claude/commands/arquivos.md com a estrutura atual.
- * Executado automaticamente pelo GitHub Actions toda sexta às 18:00 (BRT).
+ * Varre o projeto JC e os vaults do Obsidian no iCloud,
+ * e regera .claude/commands/arquivos.md com todos os caminhos.
+ *
+ * Roda automaticamente toda sexta 18:00 BRT via GitHub Actions.
+ * Para rodar manualmente na sua máquina: node scripts/update-arquivos.js
  */
 
-import { readdirSync, statSync, writeFileSync } from "fs";
-import { join, relative } from "path";
+import { readdirSync, statSync, writeFileSync, existsSync } from "fs";
+import { join } from "path";
+import { homedir, platform } from "os";
+
+// ─── Raiz do projeto ──────────────────────────────────────────────────────────
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 
-const IGNORE = new Set([
-  ".git",
-  "node_modules",
-  ".DS_Store",
-  "*.js.map",
+// ─── Localizar vaults do Obsidian no iCloud (Mac) ────────────────────────────
+
+const ICLOUD_OBSIDIAN = join(
+  homedir(),
+  "Library/Mobile Documents/iCloud~md~obsidian/Documents"
+);
+
+const IGNORE_NAMES = new Set([
+  ".git", "node_modules", ".DS_Store", ".trash", ".obsidian",
 ]);
 
-const FILE_DESCRIPTIONS = {
-  ".gitignore":          "Arquivos ignorados pelo git",
-  "README.md":           "Documentação do plugin",
-  "manifest.json":       "Metadados do plugin (Obsidian)",
-  "main.ts":             "**Código-fonte principal** do plugin (TypeScript)",
-  "main.js":             "Build compilado — gerado por `npm run build`",
-  "styles.css":          "Estilos do painel lateral e modal",
-  "package.json":        "Dependências e scripts npm",
-  "package-lock.json":   "Lock de versões das dependências",
-  "tsconfig.json":       "Configuração do compilador TypeScript",
-  "esbuild.config.mjs":  "Configuração do bundler esbuild",
-  "arquivos.md":         "Esta skill — mapa de arquivos do projeto",
-  "update-arquivos.js":  "Script que regera esta skill automaticamente",
-};
+const IGNORE_EXT = new Set([".js.map"]);
 
 function shouldIgnore(name) {
-  return IGNORE.has(name) || name.startsWith(".");
+  return IGNORE_NAMES.has(name) || (name.startsWith(".") && name !== ".claude");
 }
 
-function scanDir(dir, depth = 0) {
+// ─── Varredura de diretório ───────────────────────────────────────────────────
+
+function scanDir(dir, depth = 0, maxDepth = 5) {
   const entries = [];
+  if (depth > maxDepth) return entries;
+
   let items;
-  try {
-    items = readdirSync(dir).sort();
-  } catch {
-    return entries;
-  }
+  try { items = readdirSync(dir).sort(); }
+  catch { return entries; }
 
   for (const name of items) {
     if (shouldIgnore(name)) continue;
 
     const absPath = join(dir, name);
-    const relPath = relative(ROOT, absPath);
     let stat;
     try { stat = statSync(absPath); } catch { continue; }
 
     const isDir = stat.isDirectory();
-    const desc = FILE_DESCRIPTIONS[name] ?? (isDir ? "Pasta" : "Arquivo");
-    entries.push({ name, absPath, relPath, isDir, depth, desc });
+    entries.push({ name, absPath, isDir, depth });
 
-    if (isDir && depth < 4) {
-      entries.push(...scanDir(absPath, depth + 1));
+    if (isDir) {
+      entries.push(...scanDir(absPath, depth + 1, maxDepth));
     }
   }
   return entries;
 }
 
-function buildTable(entries) {
+// ─── Renderizar seção de vault ────────────────────────────────────────────────
+
+function renderVault(label, vaultPath) {
+  if (!existsSync(vaultPath)) {
+    return `### ${label}\n\n> Vault não encontrado em \`${vaultPath}\`\n`;
+  }
+
+  const entries = scanDir(vaultPath, 0, 4);
+
   const rows = [
-    "| Arquivo / Pasta | Caminho completo | Tipo | Descrição |",
-    "|---|---|---|---|",
+    `| Pasta / Arquivo | Caminho completo |`,
+    `|---|---|`,
+    `| 📂 **${label}** (raiz) | \`${vaultPath}\` |`,
   ];
 
   for (const e of entries) {
     const indent = "  ".repeat(e.depth);
     const icon = e.isDir ? "📁" : "📄";
-    const display = `${indent}${icon} \`${e.name}${e.isDir ? "/" : ""}\``;
-    const path = `\`${e.absPath}${e.isDir ? "/\`" : "\`"}`;
-    const type = e.isDir ? "Pasta" : "Arquivo";
-    rows.push(`| ${display} | ${path} | ${type} | ${e.desc} |`);
+    rows.push(`| ${indent}${icon} \`${e.name}${e.isDir ? "/" : ""}\` | \`${e.absPath}\` |`);
+  }
+
+  return `### ${label}\n\n${rows.join("\n")}\n`;
+}
+
+// ─── Detectar vaults automaticamente ─────────────────────────────────────────
+
+function detectVaults() {
+  const vaults = [];
+
+  if (platform() === "darwin" && existsSync(ICLOUD_OBSIDIAN)) {
+    let items;
+    try { items = readdirSync(ICLOUD_OBSIDIAN).sort(); } catch { items = []; }
+
+    for (const name of items) {
+      const absPath = join(ICLOUD_OBSIDIAN, name);
+      try {
+        if (statSync(absPath).isDirectory()) {
+          vaults.push({ name, path: absPath });
+        }
+      } catch { /* skip */ }
+    }
+  }
+
+  // Fallback: nomes convencionais caso não detecte automaticamente
+  if (vaults.length === 0) {
+    vaults.push(
+      { name: "Profissional", path: join(ICLOUD_OBSIDIAN, "Profissional") },
+      { name: "Pessoal",      path: join(ICLOUD_OBSIDIAN, "Pessoal") }
+    );
+  }
+
+  return vaults;
+}
+
+// ─── Projeto JC (repo) ────────────────────────────────────────────────────────
+
+const PROJECT_DESCRIPTIONS = {
+  ".gitignore":         "Arquivos ignorados pelo git",
+  "README.md":          "Documentação do plugin",
+  "manifest.json":      "Metadados do plugin (Obsidian)",
+  "main.ts":            "Código-fonte principal (TypeScript)",
+  "main.js":            "Build compilado — gerado por `npm run build`",
+  "styles.css":         "Estilos do painel e modal",
+  "package.json":       "Dependências e scripts npm",
+  "package-lock.json":  "Lock de versões",
+  "tsconfig.json":      "Configuração do TypeScript",
+  "esbuild.config.mjs": "Configuração do bundler",
+  "arquivos.md":        "Esta skill — mapa de arquivos",
+  "update-arquivos.js": "Script que regera esta skill",
+};
+
+function renderProject() {
+  const entries = scanDir(ROOT, 0, 3);
+  const rows = [
+    "| Arquivo / Pasta | Caminho | Descrição |",
+    "|---|---|---|",
+    `| 📂 **Raiz do projeto** | \`${ROOT}\` | — |`,
+  ];
+
+  for (const e of entries) {
+    const indent = "  ".repeat(e.depth);
+    const icon = e.isDir ? "📁" : "📄";
+    const desc = PROJECT_DESCRIPTIONS[e.name] ?? "";
+    rows.push(`| ${indent}${icon} \`${e.name}${e.isDir ? "/" : ""}\` | \`${e.absPath}\` | ${desc} |`);
   }
 
   return rows.join("\n");
 }
 
-// ─── Gera o conteúdo ──────────────────────────────────────────────────────────
+// ─── Gerar arquivo final ──────────────────────────────────────────────────────
 
-const entries = scanDir(ROOT);
-const now = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+const now  = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+const vaults = detectVaults();
+const vaultSections = vaults
+  .map(v => renderVault(v.name, v.path))
+  .join("\n---\n\n");
+
+const icloudBase = platform() === "darwin"
+  ? `\`${ICLOUD_OBSIDIAN}\``
+  : "_iCloud não disponível neste ambiente_";
 
 const content = `# Mapa de arquivos — JC Claude AI
 
@@ -93,26 +167,34 @@ const content = `# Mapa de arquivos — JC Claude AI
 
 ---
 
-## Estrutura do projeto
+## Vaults do Obsidian (iCloud)
 
-${buildTable(entries)}
+Base iCloud: ${icloudBase}
+
+${vaultSections}
 
 ---
 
-## Arquivos essenciais do plugin Obsidian
+## Instalar plugin no vault
 
-Copie estes 3 arquivos para instalar o plugin:
+Copie estes 3 arquivos para o vault desejado:
 
 \`\`\`
-manifest.json  →  ${ROOT}/manifest.json
-main.js        →  ${ROOT}/main.js
-styles.css     →  ${ROOT}/styles.css
+${ROOT}/manifest.json
+${ROOT}/main.js
+${ROOT}/styles.css
 \`\`\`
 
-Destino no vault:
+Destino:
 \`\`\`
-<seu-vault>/.obsidian/plugins/jc-claude-ai/
+<caminho-do-vault>/.obsidian/plugins/jc-claude-ai/
 \`\`\`
+
+---
+
+## Projeto JC (repositório)
+
+${renderProject()}
 
 ---
 
@@ -122,23 +204,23 @@ Destino no vault:
 # Build de produção
 cd ${ROOT} && npm run build
 
-# Build em modo watch (desenvolvimento)
+# Build watch (desenvolvimento)
 cd ${ROOT} && npm run dev
 
-# Ver status git
-git -C ${ROOT} status
+# Atualizar esta skill manualmente
+cd ${ROOT} && node scripts/update-arquivos.js
 
-# Ver histórico de commits
-git -C ${ROOT} log --oneline -10
+# Status git
+git -C ${ROOT} status
 \`\`\`
 
 ---
 
 ## Skills disponíveis
 
-| Comando | Arquivo | Descrição |
-|---|---|---|
-| \`/arquivos\` | \`.claude/commands/arquivos.md\` | Mapa de arquivos do projeto (esta skill) |
+| Comando | Descrição |
+|---|---|
+| \`/arquivos\` | Este mapa de arquivos e caminhos |
 
 ---
 
@@ -147,4 +229,6 @@ git -C ${ROOT} log --oneline -10
 
 const out = join(ROOT, ".claude/commands/arquivos.md");
 writeFileSync(out, content, "utf8");
-console.log(`✓ ${out} atualizado em ${now}`);
+console.log(`✓ Skill atualizada: ${out}`);
+console.log(`✓ Vaults encontrados: ${vaults.map(v => v.name).join(", ")}`);
+console.log(`✓ Data/hora: ${now}`);

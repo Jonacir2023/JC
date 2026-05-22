@@ -1,42 +1,63 @@
 # Mapa de arquivos — JC Claude AI
 
 > Atualizado automaticamente toda sexta às 18:00 (BRT).
-> Última atualização: **21/05/2026, 23:23:45**
+> Última atualização: **21/05/2026, 23:34:49**
 
 ---
 
-## Estrutura do projeto
+## Vaults do Obsidian (iCloud)
 
-| Arquivo / Pasta | Caminho completo | Tipo | Descrição |
-|---|---|---|---|
-| 📄 `README.md` | `/home/user/JC/README.md` | Arquivo | Documentação do plugin |
-| 📄 `esbuild.config.mjs` | `/home/user/JC/esbuild.config.mjs` | Arquivo | Configuração do bundler esbuild |
-| 📄 `main.js` | `/home/user/JC/main.js` | Arquivo | Build compilado — gerado por `npm run build` |
-| 📄 `main.ts` | `/home/user/JC/main.ts` | Arquivo | **Código-fonte principal** do plugin (TypeScript) |
-| 📄 `manifest.json` | `/home/user/JC/manifest.json` | Arquivo | Metadados do plugin (Obsidian) |
-| 📄 `package-lock.json` | `/home/user/JC/package-lock.json` | Arquivo | Lock de versões das dependências |
-| 📄 `package.json` | `/home/user/JC/package.json` | Arquivo | Dependências e scripts npm |
-| 📁 `scripts/` | `/home/user/JC/scripts/` | Pasta | Pasta |
-|   📄 `update-arquivos.js` | `/home/user/JC/scripts/update-arquivos.js` | Arquivo | Script que regera esta skill automaticamente |
-| 📄 `styles.css` | `/home/user/JC/styles.css` | Arquivo | Estilos do painel lateral e modal |
-| 📄 `tsconfig.json` | `/home/user/JC/tsconfig.json` | Arquivo | Configuração do compilador TypeScript |
+Base iCloud: _iCloud não disponível neste ambiente_
+
+### Profissional
+
+> Vault não encontrado em `/root/Library/Mobile Documents/iCloud~md~obsidian/Documents/Profissional`
 
 ---
 
-## Arquivos essenciais do plugin Obsidian
+### Pessoal
 
-Copie estes 3 arquivos para instalar o plugin:
+> Vault não encontrado em `/root/Library/Mobile Documents/iCloud~md~obsidian/Documents/Pessoal`
+
+
+---
+
+## Instalar plugin no vault
+
+Copie estes 3 arquivos para o vault desejado:
 
 ```
-manifest.json  →  /home/user/JC/manifest.json
-main.js        →  /home/user/JC/main.js
-styles.css     →  /home/user/JC/styles.css
+/home/user/JC/manifest.json
+/home/user/JC/main.js
+/home/user/JC/styles.css
 ```
 
-Destino no vault:
+Destino:
 ```
-<seu-vault>/.obsidian/plugins/jc-claude-ai/
+<caminho-do-vault>/.obsidian/plugins/jc-claude-ai/
 ```
+
+---
+
+## Projeto JC (repositório)
+
+| Arquivo / Pasta | Caminho | Descrição |
+|---|---|---|
+| 📂 **Raiz do projeto** | `/home/user/JC` | — |
+| 📁 `.claude/` | `/home/user/JC/.claude` |  |
+|   📁 `commands/` | `/home/user/JC/.claude/commands` |  |
+|     📄 `arquivos.md` | `/home/user/JC/.claude/commands/arquivos.md` | Esta skill — mapa de arquivos |
+| 📄 `README.md` | `/home/user/JC/README.md` | Documentação do plugin |
+| 📄 `esbuild.config.mjs` | `/home/user/JC/esbuild.config.mjs` | Configuração do bundler |
+| 📄 `main.js` | `/home/user/JC/main.js` | Build compilado — gerado por `npm run build` |
+| 📄 `main.ts` | `/home/user/JC/main.ts` | Código-fonte principal (TypeScript) |
+| 📄 `manifest.json` | `/home/user/JC/manifest.json` | Metadados do plugin (Obsidian) |
+| 📄 `package-lock.json` | `/home/user/JC/package-lock.json` | Lock de versões |
+| 📄 `package.json` | `/home/user/JC/package.json` | Dependências e scripts npm |
+| 📁 `scripts/` | `/home/user/JC/scripts` |  |
+|   📄 `update-arquivos.js` | `/home/user/JC/scripts/update-arquivos.js` | Script que regera esta skill |
+| 📄 `styles.css` | `/home/user/JC/styles.css` | Estilos do painel e modal |
+| 📄 `tsconfig.json` | `/home/user/JC/tsconfig.json` | Configuração do TypeScript |
 
 ---
 
@@ -46,23 +67,23 @@ Destino no vault:
 # Build de produção
 cd /home/user/JC && npm run build
 
-# Build em modo watch (desenvolvimento)
+# Build watch (desenvolvimento)
 cd /home/user/JC && npm run dev
 
-# Ver status git
-git -C /home/user/JC status
+# Atualizar esta skill manualmente
+cd /home/user/JC && node scripts/update-arquivos.js
 
-# Ver histórico de commits
-git -C /home/user/JC log --oneline -10
+# Status git
+git -C /home/user/JC status
 ```
 
 ---
 
 ## Skills disponíveis
 
-| Comando | Arquivo | Descrição |
-|---|---|---|
-| `/arquivos` | `.claude/commands/arquivos.md` | Mapa de arquivos do projeto (esta skill) |
+| Comando | Descrição |
+|---|---|
+| `/arquivos` | Este mapa de arquivos e caminhos |
 
 ---
 
