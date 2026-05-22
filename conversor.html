@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diário de Obra → Obsidian</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #f8fafc;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 24px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 700px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .panel label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+
+  textarea {
+    width: 100%;
+    height: 520px;
+    background: #1e2433;
+    border: 1px solid #2d3748;
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-family: monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    padding: 14px;
+    resize: vertical;
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  textarea:focus { border-color: #4f6ef7; }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 7px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+
+  button:active { transform: scale(.97); }
+
+  .btn-primary { background: #4f6ef7; color: #fff; }
+  .btn-secondary { background: #2d3748; color: #cbd5e1; }
+  .btn-copy { background: #1a4731; color: #6ee7b7; }
+
+  button:hover { opacity: .88; }
+
+  .toast {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1a4731;
+    color: #6ee7b7;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    z-index: 99;
+  }
+</style>
+</head>
+<body>
+
+<h1>Diário de Obra → Obsidian</h1>
+<p class="subtitle">Cole o relatório do WhatsApp à esquerda · Clique em Converter · Copie o resultado</p>
+
+<div class="grid">
+  <div class="panel">
+    <label>Relatório (WhatsApp)</label>
+    <textarea id="entrada" placeholder="Cole aqui o texto do relatório..."></textarea>
+  </div>
+  <div class="panel">
+    <label>Nota Obsidian (.md)</label>
+    <textarea id="saida" readonly placeholder="O resultado aparece aqui..."></textarea>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn-primary" onclick="converter()">⚡ Converter</button>
+  <button class="btn-copy" onclick="copiar()">📋 Copiar resultado</button>
+  <button class="btn-secondary" onclick="limpar()">🗑 Limpar</button>
+</div>
+
+<div class="toast" id="toast">✅ Copiado!</div>
+
+<script>
+const TEAM_EMOJIS = ['👷','⚙️','🔧','🧱','🔍','🚧','⚡','🚛'];
+
+function parseDate(str) {
+  const m = str.match(/(\d{2}\/\d{2}\/\d{4})/);
+  return m ? m[1] : hoje();
+}
+
+function hoje() {
+  const d = new Date();
+  return [d.getDate(), d.getMonth()+1, d.getFullYear()]
+    .map(n => String(n).padStart(2,'0')).join('/');
+}
+
+function isSeparator(line) {
+  return /^[⸻—\-–]+$/.test(line.trim());
+}
+
+function isTeamHeader(line) {
+  return TEAM_EMOJIS.some(e => line.includes(e)) && (line.includes('—') || line.includes('-'));
+}
+
+function parseReport(text) {
+  const data = { date:'', jornada:[], dss:'', atividades:[], equipes:[], total:'' };
+  let mode = null, team = null;
+
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    if (!line || isSeparator(line)) continue;
+
+    if (line.startsWith('Relatório de Obra')) {
+      data.date = parseDate(line); mode = null;
+
+    } else if (line.includes('⏰')) {
+      mode = 'jornada';
+
+    } else if (line.includes('DSS')) {
+      mode = 'dss';
+
+    } else if (line.includes('🛠')) {
+      mode = 'atividades';
+
+    } else if (line.includes('Efetivo') && line.includes('📋')) {
+      mode = 'efetivo'; team = null;
+
+    } else if (line.includes('✅') && line.includes('Total')) {
+      data.total = line.replace('✅','').trim(); mode = null;
+
+    } else if (isTeamHeader(line)) {
+      team = { nome: line, membros: [] };
+      data.equipes.push(team);
+      mode = 'efetivo';
+
+    } else if (line.startsWith('*')) {
+      const item = line.replace(/^\*+\s*/, '');
+      if (mode === 'jornada')           data.jornada.push(item);
+      else if (mode === 'dss')          data.dss = (data.dss + ' ' + item).trim();
+      else if (mode === 'atividades')   data.atividades.push(item);
+      else if (mode === 'efetivo' && team) team.membros.push(item);
+
+    } else if (mode === 'dss' && !line.startsWith('📋')) {
+      data.dss = (data.dss + ' ' + line).trim();
+    }
+  }
+  return data;
+}
+
+function diaSemana(dateStr) {
+  const [d, m, y] = dateStr.split('/').map(Number);
+  const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira',
+                'Quinta-feira','Sexta-feira','Sábado'];
+  return dias[new Date(y, m-1, d).getDay()];
+}
+
+function toISO(dateStr) {
+  const [d, m, y] = dateStr.split('/');
+  return `${y}-${m}-${d}`;
+}
+
+function toObsidian(data) {
+  const d = data.date || hoje();
+  const totalN = (data.total.match(/\d+/) || ['?'])[0];
+  const lines = [];
+
+  lines.push(
+    '---',
+    `data: ${toISO(d)}`,
+    `dia_semana: ${diaSemana(d)}`,
+    `total_colaboradores: ${totalN}`,
+    `dss: "${data.dss}"`,
+    'tags:',
+    '  - diario-obra',
+    '---', '',
+    `# Relatório de Obra — ${d}`, ''
+  );
+
+  lines.push('## ⏰ Jornada de Trabalho', '');
+  data.jornada.forEach(i => lines.push(`- ${i}`));
+  lines.push('');
+
+  lines.push('## 📋 DSS — Diálogo de Segurança', '', `> ${data.dss}`, '');
+
+  lines.push('## 🛠️ Atividades do Dia', '');
+  data.atividades.forEach(i => lines.push(`- ${i}`));
+  lines.push('');
+
+  lines.push(`## 👷 Efetivo — ${d}`, '');
+  data.equipes.forEach(eq => {
+    lines.push(`### ${eq.nome}`, '');
+    eq.membros.forEach(m => lines.push(`- ${m}`));
+    lines.push('');
+  });
+
+  if (data.total) {
+    lines.push('---', `**✅ ${data.total}**`, '');
+  }
+
+  return lines.join('\n');
+}
+
+function converter() {
+  const entrada = document.getElementById('entrada').value.trim();
+  if (!entrada) return;
+  const data = parseReport(entrada);
+  document.getElementById('saida').value = toObsidian(data);
+}
+
+function copiar() {
+  const txt = document.getElementById('saida').value;
+  if (!txt) return;
+  navigator.clipboard.writeText(txt).then(() => {
+    const t = document.getElementById('toast');
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 2000);
+  });
+}
+
+function limpar() {
+  document.getElementById('entrada').value = '';
+  document.getElementById('saida').value = '';
+}
+</script>
+</body>
+</html>
