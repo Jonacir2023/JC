@@ -1,0 +1,11 @@
+{
+  "id": "jc-claude-ai",
+  "name": "JC Claude AI",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "Integra o Claude AI ao Obsidian para gerar, resumir e analisar notas.",
+  "author": "JC",
+  "authorUrl": "https://github.com/jonacir2023/jc",
+  "fundingUrl": "",
+  "isDesktopOnly": false
+}
