@@ -7,7 +7,8 @@ import sys
 from pathlib import Path
 from html import escape
 
-WIKILINK = re.compile(r'\[\[([^\]|#]+?)(?:[|#][^\]]*)?\]\]')
+WIKILINK = re.compile(r'\[\[([^\]|#\\]+?)(?:[\\|#][^\]]*)?\]\]')
+CODE_SPAN = re.compile(r'`[^`]+`')
 TAG = re.compile(r'(?:^|\s)#([\w/-]+)', re.MULTILINE)
 FRONTMATTER = re.compile(r'^---\s*\n(.*?)\n---\s*\n', re.DOTALL)
 
@@ -21,7 +22,20 @@ def note_name(path: Path) -> str:
 
 
 def build_name_map(notes: list[Path]) -> dict[str, Path]:
-    return {note_name(p): p for p in notes}
+    name_map = {}
+    for p in notes:
+        name_map[note_name(p)] = p
+    return name_map
+
+
+def resolve_link(target: str, name_map: dict[str, Path]) -> bool:
+    """Return True if the wikilink target resolves to a known note."""
+    target = target.strip()
+    if target in name_map:
+        return True
+    # Path-based link: [[Pasta/Título]] — match by the final component
+    last = target.split('/')[-1].strip()
+    return last in name_map
 
 
 def check_links(vault: Path) -> int:
@@ -29,10 +43,11 @@ def check_links(vault: Path) -> int:
     name_map = build_name_map(notes)
     broken = []
     for note in notes:
-        text = note.read_text(encoding='utf-8')
+        raw = note.read_text(encoding='utf-8')
+        text = CODE_SPAN.sub('', raw)
         for match in WIKILINK.finditer(text):
             target = match.group(1).strip()
-            if target not in name_map:
+            if target and not resolve_link(target, name_map):
                 broken.append((note.relative_to(vault), target))
     if broken:
         print(f"Found {len(broken)} broken link(s):\n")
