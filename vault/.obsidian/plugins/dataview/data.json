@@ -1,0 +1,16 @@
+{
+  "enableDataviewJs": true,
+  "enableInlineDataview": true,
+  "enableInlineDataviewJs": true,
+  "prettyRenderInlineFields": true,
+  "dataviewJsKeyword": "dataviewjs",
+  "inlineQueryPrefix": "=",
+  "inlineJsQueryPrefix": "$=",
+  "tableIdColumnName": "Arquivo",
+  "tableGroupColumnName": "Grupo",
+  "defaultDateFormat": "DD/MM/YYYY",
+  "defaultDateTimeFormat": "DD/MM/YYYY HH:mm",
+  "maxRecursiveRenderDepth": 4,
+  "taskCompletionTracking": true,
+  "taskCompletionUseEmojiShorthand": false
+}
