@@ -1,4 +1,12 @@
-# {{title}}
+---
+criado: <% tp.date.now("YYYY-MM-DD") %>
+status: ativo
+prazo: 
+área: 
+tags: [projeto]
+---
+
+# <% tp.file.title %>
 
 **Status:** 🟡 Em andamento
 **Prazo:** 
@@ -23,5 +31,3 @@ _(o que precisa estar pronto para este projeto ser concluído?)_
 ## Relacionado
 
 - 
-
-#projeto

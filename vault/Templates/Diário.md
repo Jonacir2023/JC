@@ -1,4 +1,9 @@
-# {{date:DD/MM/YYYY}}
+---
+date: <% tp.date.now("YYYY-MM-DD") %>
+semana: <% tp.date.now("W") %>
+---
+
+# <% tp.date.now("DD/MM/YYYY") %>
 
 ## Como estou
 
@@ -12,8 +17,6 @@
 
 ## Notas e pensamentos
 
-_(escreva livremente aqui)_
-
 ## Revisão do dia
 
 **O que foi bem:**
@@ -21,5 +24,13 @@ _(escreva livremente aqui)_
 **O que pode melhorar:**
 
 **Captura para o inbox:**
+
+---
+
+### Tarefas abertas de ontem
+```dataview
+TASK
+WHERE !completed AND file.day = date("<% tp.date.yesterday("YYYY-MM-DD") %>")
+```
 
 #diário
