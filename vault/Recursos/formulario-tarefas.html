@@ -55,7 +55,7 @@
       letter-spacing: 0.5px;
     }
 
-    input, textarea, select {
+    input, textarea {
       width: 100%;
       background: #1e1e2e;
       border: 1.5px solid #45475a;
@@ -67,18 +67,11 @@
       transition: border-color 0.2s;
     }
 
-    input:focus, textarea:focus, select:focus {
-      border-color: #cba6f7;
-    }
+    input:focus, textarea:focus { border-color: #cba6f7; }
 
     textarea { resize: vertical; min-height: 80px; }
 
-    select option { background: #313244; }
-
-    .prioridade-group {
-      display: flex;
-      gap: 10px;
-    }
+    .prioridade-group { display: flex; gap: 10px; }
 
     .prioridade-btn {
       flex: 1;
@@ -96,9 +89,9 @@
     }
 
     .prioridade-btn:hover { border-color: #cba6f7; color: #cdd6f4; }
-    .prioridade-btn.active-baixa  { background: #a6e3a1; border-color: #a6e3a1; color: #1e1e2e; }
-    .prioridade-btn.active-media  { background: #f9e2af; border-color: #f9e2af; color: #1e1e2e; }
-    .prioridade-btn.active-alta   { background: #f38ba8; border-color: #f38ba8; color: #1e1e2e; }
+    .prioridade-btn.active-baixa { background: #a6e3a1; border-color: #a6e3a1; color: #1e1e2e; }
+    .prioridade-btn.active-media { background: #f9e2af; border-color: #f9e2af; color: #1e1e2e; }
+    .prioridade-btn.active-alta  { background: #f38ba8; border-color: #f38ba8; color: #1e1e2e; }
 
     button[type="submit"] {
       width: 100%;
@@ -125,9 +118,9 @@
       display: none;
     }
 
-    #status.ok    { background: #a6e3a1; color: #1e1e2e; }
-    #status.erro  { background: #f38ba8; color: #1e1e2e; }
-    #status.info  { background: #89b4fa; color: #1e1e2e; }
+    #status.ok   { background: #a6e3a1; color: #1e1e2e; }
+    #status.erro { background: #f38ba8; color: #1e1e2e; }
+    #status.info { background: #89b4fa; color: #1e1e2e; }
   </style>
 </head>
 <body>
@@ -144,14 +137,8 @@
       </div>
       <div class="field">
         <label>Setor</label>
-        <select id="setor" required>
-          <option value="">Selecione...</option>
-          <option>Suprimentos</option>
-          <option>Transporte</option>
-          <option>Planejamento</option>
-          <option>Administração</option>
-          <option>Segurança</option>
-        </select>
+        <input type="text" id="setor" list="lista-setores" placeholder="Selecione ou digite" required autocomplete="off">
+        <datalist id="lista-setores"></datalist>
       </div>
     </div>
 
@@ -168,13 +155,16 @@
     <div class="row">
       <div class="field">
         <label>Criador</label>
-        <input type="text" id="criador" placeholder="Seu nome" required>
+        <input type="text" id="criador" list="lista-pessoas" placeholder="Selecione ou digite" required autocomplete="off">
       </div>
       <div class="field">
         <label>Responsável</label>
-        <input type="text" id="responsavel" placeholder="Nome do responsável" required>
+        <input type="text" id="responsavel" list="lista-pessoas" placeholder="Selecione ou digite" required autocomplete="off">
       </div>
     </div>
+
+    <!-- datalist compartilhado entre Criador e Responsável -->
+    <datalist id="lista-pessoas"></datalist>
 
     <div class="field">
       <label>Prioridade</label>
@@ -204,18 +194,45 @@
 </div>
 
 <script>
+  // ─────────────────────────────────────────────────────────────
+  //  CONFIGURAÇÃO — edite as listas abaixo conforme necessário
+  // ─────────────────────────────────────────────────────────────
+
+  const PESSOAS = [
+    // Adicione ou remova nomes aqui. Exemplo:
+    // 'João Silva',
+    // 'Maria Souza',
+    // 'Carlos Oliveira',
+  ];
+
+  const SETORES = [
+    'Suprimentos',
+    'Transporte',
+    'Planejamento',
+    'Administração',
+    'Segurança',
+  ];
+
+  // ─────────────────────────────────────────────────────────────
+
   const WEBHOOK = 'https://jonacircazelli.app.n8n.cloud/webhook/gestao-tarefas';
 
-  // Preenche data de hoje por padrão
+  function preencherDatalist(id, lista) {
+    const dl = document.getElementById(id);
+    dl.innerHTML = lista.map(v => `<option value="${v}">`).join('');
+  }
+
+  preencherDatalist('lista-pessoas', PESSOAS);
+  preencherDatalist('lista-setores', SETORES);
+
   const hoje = new Date().toISOString().split('T')[0];
   document.getElementById('data_lancamento').value = hoje;
 
   function selecionarPrioridade(el) {
-    document.querySelectorAll('.prioridade-btn').forEach(b => {
-      b.classList.remove('active-baixa', 'active-media', 'active-alta');
-    });
+    document.querySelectorAll('.prioridade-btn').forEach(b =>
+      b.classList.remove('active-baixa', 'active-media', 'active-alta'));
     const val = el.dataset.valor;
-    el.classList.add('active-' + val.toLowerCase().replace('é','e'));
+    el.classList.add('active-' + val.toLowerCase().replace('é', 'e'));
     document.getElementById('prioridade').value = val;
   }
 
@@ -240,15 +257,15 @@
     mostrarStatus('Enviando para o N8N...', 'info');
 
     const payload = {
-      'Id':                    document.getElementById('id').value.trim(),
-      'Assunto':               document.getElementById('assunto').value.trim(),
-      'Descrição do Assunto':  document.getElementById('descricao').value.trim(),
-      'Criador':               document.getElementById('criador').value.trim(),
-      'Responsável':           document.getElementById('responsavel').value.trim(),
-      'Prioridade':            document.getElementById('prioridade').value,
-      'Setor':                 document.getElementById('setor').value,
-      'Data de lançamento':    document.getElementById('data_lancamento').value,
-      'Previsão de Término':   document.getElementById('previsao_termino').value
+      'Id':                   document.getElementById('id').value.trim(),
+      'Assunto':              document.getElementById('assunto').value.trim(),
+      'Descrição do Assunto': document.getElementById('descricao').value.trim(),
+      'Criador':              document.getElementById('criador').value.trim(),
+      'Responsável':          document.getElementById('responsavel').value.trim(),
+      'Prioridade':           document.getElementById('prioridade').value,
+      'Setor':                document.getElementById('setor').value.trim(),
+      'Data de lançamento':   document.getElementById('data_lancamento').value,
+      'Previsão de Término':  document.getElementById('previsao_termino').value
     };
 
     try {
