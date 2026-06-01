@@ -47,7 +47,7 @@ const formTarefas = trigger({
             fieldLabel: 'Setor',
             fieldType: 'dropdown',
             requiredField: true,
-            fieldOptions: { values: [{ option: 'Suprimentos' }, { option: 'Transporte' }, { option: 'Planejamento' }, { option: 'Administração' }, { option: 'Segurança' }] }
+            fieldOptions: { values: [{ option: 'Administração' }, { option: 'Administração Contratual' }, { option: 'Engenharia' }, { option: 'Financeiro' }, { option: 'Gestão' }, { option: 'Jurídico' }, { option: 'Medição' }, { option: 'Meio Ambiente' }, { option: 'Orçamento' }, { option: 'Planejamento' }, { option: 'Produção Civil' }, { option: 'Produção Elétrica' }, { option: 'Produção Mecânica' }, { option: 'Qualidade' }, { option: 'Recursos Humanos' }, { option: 'Segurança' }, { option: 'Suprimentos' }, { option: 'TI' }, { option: 'Transporte' }] }
           },
           { fieldName: 'data_lancamento', fieldLabel: 'Data de Lançamento', fieldType: 'date', requiredField: true },
           { fieldName: 'previsao_termino', fieldLabel: 'Previsão de Término', fieldType: 'date', requiredField: true }
