@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Kanban — Gestão de Tarefas</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --accent: #6366f1;
+    --col-aberta: #1e3a5f;
+    --col-andamento: #3d2a00;
+    --col-concluida: #0f2e1a;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --green: #22c55e;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 { font-size: 16px; font-weight: 600; letter-spacing: 0.3px; }
+  header .subtitle { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .header-actions { display: flex; gap: 8px; }
+  .btn-icon {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn-icon:hover { background: var(--border); }
+  .btn-icon.spin svg { animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── BOARD ── */
+  .board {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+    overflow-x: auto;
+    min-height: calc(100vh - 60px);
+    align-items: flex-start;
+  }
+
+  .column {
+    flex: 0 0 300px;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .col-header {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .col-header .col-title {
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .col-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .dot-aberta    { background: #3b82f6; }
+  .dot-andamento { background: #f59e0b; }
+  .dot-concluida { background: #22c55e; }
+  .col-count {
+    font-size: 12px;
+    background: var(--border);
+    color: var(--muted);
+    border-radius: 20px;
+    padding: 2px 8px;
+  }
+
+  .cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .card-id { font-size: 10px; color: var(--muted); font-weight: 600; }
+  .prio-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .prio-Alta    { background: rgba(239,68,68,0.2); color: #fca5a5; }
+  .prio-Média   { background: rgba(245,158,11,0.2); color: #fcd34d; }
+  .prio-Baixa   { background: rgba(34,197,94,0.2); color: #86efac; }
+
+  .card-title { font-size: 14px; font-weight: 600; line-height: 1.35; margin-bottom: 8px; }
+
+  .card-meta { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .card-meta-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .card-meta-row svg { flex-shrink: 0; }
+
+  .card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn-status {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    background: transparent;
+    color: var(--text);
+    transition: background 0.15s;
+  }
+  .btn-status:hover { background: var(--border); }
+  .btn-status.to-andamento:hover { background: rgba(245,158,11,0.2); border-color: #f59e0b; color: #fcd34d; }
+  .btn-status.to-concluida:hover { background: rgba(34,197,94,0.2); border-color: #22c55e; color: #86efac; }
+  .btn-status.to-aberta:hover    { background: rgba(59,130,246,0.2); border-color: #3b82f6; color: #93c5fd; }
+  .btn-status.loading { opacity: 0.5; pointer-events: none; }
+
+  /* ── EMPTY STATE ── */
+  .empty { padding: 24px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  /* ── MODAL SETTINGS ── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+    padding: 20px;
+  }
+  .overlay.hidden { display: none; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+  }
+  .modal h2 { font-size: 16px; margin-bottom: 4px; }
+  .modal p  { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .field input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e293b;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 300;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.error { border-color: var(--red); color: #fca5a5; }
+  #toast.success { border-color: var(--green); color: #86efac; }
+
+  /* ── LOADING ── */
+  .skeleton {
+    background: linear-gradient(90deg, var(--border) 25%, var(--surface) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+    border-radius: 8px;
+    height: 90px;
+  }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  @media (max-width: 400px) {
+    .board { padding: 12px; gap: 12px; }
+    .column { flex: 0 0 260px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Gestão de Tarefas</h1>
+    <div class="subtitle" id="lastUpdate">Carregando...</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-icon" id="btnRefresh" onclick="loadBoard()">
+      <svg id="refreshIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M21 12a9 9 0 11-3.1-6.8"/><path d="M21 3v5h-5"/>
+      </svg>
+      Atualizar
+    </button>
+    <button class="btn-icon" onclick="openSettings()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="board" id="board">
+  <div class="column">
+    <div class="col-header">
+      <span class="col-title"><span class="col-dot dot-aberta"></span>Aberta</span>
+      <span class="col-count" id="cnt-aberta">0</span>
+    </div>
+    <div class="cards" id="col-aberta">
+      <div class="skeleton"></div><div class="skeleton"></div>
+    </div>
+  </div>
+  <div class="column">
+    <div class="col-header">
+      <span class="col-title"><span class="col-dot dot-andamento"></span>Em Andamento</span>
+      <span class="col-count" id="cnt-andamento">0</span>
+    </div>
+    <div class="cards" id="col-andamento">
+      <div class="skeleton"></div>
+    </div>
+  </div>
+  <div class="column">
+    <div class="col-header">
+      <span class="col-title"><span class="col-dot dot-concluida"></span>Concluída</span>
+      <span class="col-count" id="cnt-concluida">0</span>
+    </div>
+    <div class="cards" id="col-concluida"></div>
+  </div>
+</div>
+
+<!-- Modal configurações -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <h2>Configurar Kanban</h2>
+    <p>Necessário apenas na primeira vez. Os dados ficam salvos no navegador.</p>
+    <div class="field">
+      <label>GitHub Personal Access Token</label>
+      <input type="password" id="inputToken" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>URL base do n8n (para atualizar status)</label>
+      <input type="url" id="inputN8n" placeholder="https://seu-n8n.com" autocomplete="off">
+    </div>
+    <button class="btn-primary" onclick="saveSettings()">Salvar e carregar</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const REPO    = 'Jonacir2023/JC';
+const TAREFAS = `vault/Tarefas`;
+
+// ── Config ────────────────────────────────────────────────
+function getConfig() {
+  return {
+    token: localStorage.getItem('jc_token') || '',
+    n8nUrl: localStorage.getItem('jc_n8n') || ''
+  };
+}
+function openSettings() {
+  const { token, n8nUrl } = getConfig();
+  document.getElementById('inputToken').value = token;
+  document.getElementById('inputN8n').value   = n8nUrl;
+  document.getElementById('settingsOverlay').classList.remove('hidden');
+}
+function saveSettings() {
+  const token  = document.getElementById('inputToken').value.trim();
+  const n8nUrl = document.getElementById('inputN8n').value.trim().replace(/\/$/, '');
+  if (!token) { showToast('Token obrigatório', 'error'); return; }
+  localStorage.setItem('jc_token', token);
+  localStorage.setItem('jc_n8n', n8nUrl);
+  document.getElementById('settingsOverlay').classList.add('hidden');
+  loadBoard();
+}
+
+// ── Toast ──────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `show ${type}`;
+  setTimeout(() => { t.className = ''; }, 3000);
+}
+
+// ── Frontmatter parser ────────────────────────────────────
+function parseFrontmatter(text) {
+  const match = text.match(/^---\s*\n([\s\S]*?)\n---/);
+  if (!match) return {};
+  const fm = {};
+  for (const line of match[1].split('\n')) {
+    const idx = line.indexOf(':');
+    if (idx < 0) continue;
+    const key = line.slice(0, idx).trim();
+    const val = line.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
+    fm[key] = val;
+  }
+  return fm;
+}
+
+// ── Fetch tasks ───────────────────────────────────────────
+async function fetchTasks() {
+  const { token } = getConfig();
+  const headers = {
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+
+  const listRes = await fetch(
+    `https://api.github.com/repos/${REPO}/contents/${TAREFAS}`,
+    { headers }
+  );
+  if (!listRes.ok) throw new Error(`GitHub: ${listRes.status} ${listRes.statusText}`);
+  const files = await listRes.json();
+
+  const taskFiles = files.filter(f =>
+    f.type === 'file' &&
+    f.name.endsWith('.md') &&
+    !f.name.startsWith('Índice')
+  );
+
+  const tasks = await Promise.all(taskFiles.map(async f => {
+    const res = await fetch(f.url, { headers });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const content = atob(data.content.replace(/\n/g, ''));
+    const fm = parseFrontmatter(content);
+    return { ...fm, _arquivo: f.name };
+  }));
+
+  return tasks.filter(Boolean);
+}
+
+// ── Render card ────────────────────────────────────────────
+function renderCard(task) {
+  const prioEmoji = { Alta: '🔴', Média: '🟡', Baixa: '🟢' };
+  const emoji = prioEmoji[task.prioridade] || '⚪';
+  const status = task.status || 'Aberta';
+
+  const prazoStr = task.previsao_termino
+    ? new Date(task.previsao_termino).toLocaleDateString('pt-BR')
+    : '—';
+
+  // Botões de troca de status
+  let btns = '';
+  if (status !== 'Em Andamento')
+    btns += `<button class="btn-status to-andamento" onclick="updateStatus('${task._arquivo}','Em Andamento',this)">→ Em Andamento</button>`;
+  if (status !== 'Concluída')
+    btns += `<button class="btn-status to-concluida" onclick="updateStatus('${task._arquivo}','Concluída',this)">✓ Concluída</button>`;
+  if (status !== 'Aberta')
+    btns += `<button class="btn-status to-aberta" onclick="updateStatus('${task._arquivo}','Aberta',this)">↩ Aberta</button>`;
+
+  return `
+    <div class="card" id="card-${task._arquivo}">
+      <div class="card-top">
+        <span class="card-id">#${task.id || '?'}</span>
+        <span class="prio-badge prio-${task.prioridade || 'Baixa'}">${emoji} ${task.prioridade || '—'}</span>
+      </div>
+      <div class="card-title">${task.assunto || task._arquivo}</div>
+      <div class="card-meta">
+        <div class="card-meta-row">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          ${task.responsavel || '—'}
+        </div>
+        <div class="card-meta-row">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Prazo: ${prazoStr}
+        </div>
+        <div class="card-meta-row">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+          ${task.setor || '—'}
+        </div>
+      </div>
+      <div class="card-actions">${btns}</div>
+    </div>
+  `;
+}
+
+// ── Load board ─────────────────────────────────────────────
+async function loadBoard() {
+  const { token } = getConfig();
+  if (!token) { openSettings(); return; }
+
+  const btn = document.getElementById('btnRefresh');
+  const icon = document.getElementById('refreshIcon');
+  btn.classList.add('spin'); icon.classList.add('spin');
+
+  // Mostrar skeletons
+  ['aberta','andamento','concluida'].forEach(k => {
+    document.getElementById(`col-${k}`).innerHTML =
+      '<div class="skeleton"></div>'.repeat(k === 'aberta' ? 2 : 1);
+  });
+
+  try {
+    const tasks = await fetchTasks();
+
+    const cols = { aberta: [], andamento: [], concluida: [] };
+    for (const t of tasks) {
+      const s = (t.status || 'Aberta').toLowerCase();
+      if (s.includes('andamento'))      cols.andamento.push(t);
+      else if (s.includes('conclu'))    cols.concluida.push(t);
+      else                              cols.aberta.push(t);
+    }
+
+    const render = (key, list) => {
+      document.getElementById(`col-${key}`).innerHTML =
+        list.length ? list.map(renderCard).join('') :
+        '<div class="empty">Nenhuma tarefa</div>';
+      document.getElementById(`cnt-${key}`).textContent = list.length;
+    };
+
+    render('aberta',    cols.aberta);
+    render('andamento', cols.andamento);
+    render('concluida', cols.concluida);
+
+    const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('lastUpdate').textContent = `Atualizado às ${now} · ${tasks.length} tarefa(s)`;
+
+  } catch (err) {
+    showToast('Erro ao carregar: ' + err.message, 'error');
+    document.getElementById('lastUpdate').textContent = 'Erro ao carregar';
+  } finally {
+    btn.classList.remove('spin'); icon.classList.remove('spin');
+  }
+}
+
+// ── Update status ──────────────────────────────────────────
+async function updateStatus(arquivo, novoStatus, btnEl) {
+  const { n8nUrl } = getConfig();
+  if (!n8nUrl) {
+    showToast('Configure a URL do n8n primeiro', 'error');
+    openSettings();
+    return;
+  }
+
+  const card = document.getElementById(`card-${arquivo}`);
+  card.querySelectorAll('.btn-status').forEach(b => b.classList.add('loading'));
+
+  try {
+    const res = await fetch(`${n8nUrl}/webhook/atualiza-status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ arquivo, novoStatus })
+    });
+    if (!res.ok) throw new Error(`n8n: ${res.status}`);
+    showToast(`✓ Status → "${novoStatus}"`, 'success');
+    // Aguarda 600ms e recarrega o board
+    setTimeout(loadBoard, 600);
+  } catch (err) {
+    showToast('Erro ao atualizar: ' + err.message, 'error');
+    card.querySelectorAll('.btn-status').forEach(b => b.classList.remove('loading'));
+  }
+}
+
+// ── Init ───────────────────────────────────────────────────
+document.getElementById('settingsOverlay').classList.add('hidden');
+loadBoard();
+</script>
+</body>
+</html>
