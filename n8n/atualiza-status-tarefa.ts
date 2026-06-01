@@ -11,6 +11,9 @@ import { workflow, trigger, node, expr } from 'n8n-workflow-sdk';
 //   → Code: atualiza frontmatter status + adiciona entrada no histórico
 //   → Salva arquivo atualizado no GitHub
 //   → Retorna confirmação ao Kanban
+//
+// Credencial: httpBearerAuth → "Bearer Auth account" (WhCpxC32BntVxpfd)
+// Atribuição manual necessária no n8n UI (nós HTTP Request GET e PUT)
 
 export default workflow('atualiza-status-tarefa', 'Atualiza Status de Tarefa → Obsidian')
 
@@ -31,22 +34,23 @@ export default workflow('atualiza-status-tarefa', 'Atualiza Status de Tarefa →
   }))
 
   // ── 2. Buscar arquivo no GitHub (necessário para obter SHA) ──
-  // URL usa $json.body.arquivo do webhook
   .to(node({
     type: 'n8n-nodes-base.httpRequest',
     version: 4,
     config: {
+      credentials: {
+        httpBearerAuth: { id: 'WhCpxC32BntVxpfd', name: 'Bearer Auth account' }
+      },
       parameters: {
         method: 'GET',
         url: expr('`https://api.github.com/repos/Jonacir2023/JC/contents/vault/Tarefas/${$json.body.arquivo}`'),
         authentication: 'genericCredentialType',
-        genericAuthType: 'httpHeaderAuth',
+        genericAuthType: 'httpBearerAuth',
         sendHeaders: true,
         headerParameters: {
           parameters: [
             { name: 'Accept',               value: 'application/vnd.github+json' },
-            { name: 'X-GitHub-Api-Version', value: '2022-11-28' },
-            { name: 'Authorization',         value: expr('`Bearer ${$credentials.githubToken}`') }
+            { name: 'X-GitHub-Api-Version', value: '2022-11-28' }
           ]
         },
         options: { response: { response: { responseFormat: 'json' } } }
@@ -56,7 +60,6 @@ export default workflow('atualiza-status-tarefa', 'Atualiza Status de Tarefa →
 
   // ── 3. Atualizar status no frontmatter ──────────────────────
   // Acessa dados do webhook via $('Webhook') — nome padrão do trigger no n8n.
-  // Se o nó trigger receber outro nome, ajuste a referência aqui.
   .to(node({
     type: 'n8n-nodes-base.code',
     version: 2,
@@ -69,13 +72,9 @@ const body       = $('Webhook').first().json.body;
 const arquivo    = body.arquivo;
 const novoStatus = body.novoStatus;
 
-// Decodifica o conteúdo base64 do GitHub
 const content = Buffer.from(fileData.content.replace(/\\n/g, ''), 'base64').toString('utf-8');
-
-// Substitui a linha de status no frontmatter
 const updated = content.replace(/^status:.*$/m, \`status: \${novoStatus}\`);
 
-// Adiciona linha no histórico
 const historyLine = \`- \${new Date().toLocaleString('pt-BR')} — Status alterado para "\${novoStatus}"\`;
 const withHistory = updated.replace(
   /(## Histórico\\s*\\n)/,
@@ -100,17 +99,19 @@ return [{
     type: 'n8n-nodes-base.httpRequest',
     version: 4,
     config: {
+      credentials: {
+        httpBearerAuth: { id: 'WhCpxC32BntVxpfd', name: 'Bearer Auth account' }
+      },
       parameters: {
         method: 'PUT',
         url: expr('`https://api.github.com/repos/Jonacir2023/JC/contents/vault/Tarefas/${$json.arquivo}`'),
         authentication: 'genericCredentialType',
-        genericAuthType: 'httpHeaderAuth',
+        genericAuthType: 'httpBearerAuth',
         sendHeaders: true,
         headerParameters: {
           parameters: [
             { name: 'Accept',               value: 'application/vnd.github+json' },
-            { name: 'X-GitHub-Api-Version', value: '2022-11-28' },
-            { name: 'Authorization',         value: expr('`Bearer ${$credentials.githubToken}`') }
+            { name: 'X-GitHub-Api-Version', value: '2022-11-28' }
           ]
         },
         sendBody: true,

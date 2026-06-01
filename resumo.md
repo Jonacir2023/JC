@@ -49,36 +49,51 @@ JC/
 
 ---
 
-## Workflow n8n (`gestao-tarefas-obsidian.ts`)
+## Workflows n8n
 
-**Fluxo completo:**
+### Workflow 1 — Formulário de Tarefas (ID: `Gd1NFdWTxZHXNPYR`) ✅ ATIVO
 
+**Fluxo:**
 ```
 FormTrigger (URL pública, abre no celular)
-  → Code: gera ID sequencial via $getWorkflowStaticData (sem banco externo)
-  → Set: mapeia campos para nomes internos padronizados
-  → If: valida Prioridade (Baixa | Média | Alta)
-  → If: valida Setor (Suprimentos | Transporte | Planejamento | Administração | Segurança)
   → Code: gera nota Markdown com frontmatter YAML
   → HTTP Request: cria arquivo em vault/Tarefas/ via GitHub API (PUT)
-  → Set: exibe confirmação na tela do formulário
+  → Form Completion: exibe confirmação na tela
 ```
 
-**Campos do formulário (preenchidos pelo usuário — ID é automático):**
-| Label no Formulário | Chave interna | Obrigatório |
+**Campos do formulário:**
+| Label | Chave | Obrigatório |
 |---|---|---|
+| ID da Tarefa | `id` | Sim (preenchido manualmente) |
 | Assunto | `assunto` | Sim |
-| Descricao | `descricao` | Não |
+| Descrição | `descricao` | Não |
 | Criador | `criador` | Sim |
-| Responsavel | `responsavel` | Sim |
-| Prioridade | `prioridade` | Sim (dropdown) |
-| Setor | `setor` | Sim (dropdown) |
-| DataLancamento | `data_lancamento` | Sim |
-| PrevisaoTermino | `previsao_termino` | Sim |
+| Responsável | `responsavel` | Sim |
+| Prioridade | `prioridade` | Sim (dropdown: Baixa/Média/Alta) |
+| Setor | `setor` | Sim (dropdown: 19 opções) |
+| Data de Lançamento | `data_lancamento` | Sim |
+| Previsão de Término | `previsao_termino` | Sim |
 
-**ID automático:** gerado pelo n8n via `$getWorkflowStaticData('global').lastId` (incremento sequencial persistente).
-
+**URL do formulário:** `https://jonacircazelli.app.n8n.cloud/form/nova-tarefa`
+**Credencial GitHub:** Bearer Auth account (WhCpxC32BntVxpfd) — httpBearerAuth
 **Nome do arquivo gerado:** `TAREFA-{id}-{assunto-slugificado}.md`
+
+---
+
+### Workflow 2 — Atualiza Status (ID: `IdB16tNSCsm42Yke`) ⚠️ INATIVO
+
+**Fluxo:**
+```
+Webhook POST /atualiza-status
+  → HTTP GET: busca arquivo no GitHub (obtém SHA)
+  → Code: atualiza frontmatter status + adiciona ao histórico
+  → HTTP PUT: salva arquivo atualizado no GitHub
+  → Set: retorna confirmação ao Kanban
+```
+
+**Body esperado:** `{ arquivo: "TAREFA-1-nome.md", novoStatus: "Em Andamento" }`
+**Credencial:** Bearer Auth account (WhCpxC32BntVxpfd) — ATRIBUIÇÃO MANUAL NECESSÁRIA NO UI
+**Para ativar:** atribuir credencial nos 2 nós HTTP Request → ativar toggle
 
 ---
 
@@ -154,11 +169,17 @@ tags: [tarefa, suprimentos, média]
 
 ## Estado Atual
 
-- Workflow n8n: FormTrigger mobile + ID automático + cria em GitHub E Notion
-- Kanban Notion criado e configurado em `🏗️ Gestão de Obras`
-- Tarefas de exemplo no vault: TAREFA-1 (Blocos de Concreto) e TAREFA-009 (Teste de Energia)
-- Script Python de utilitários concluído
-- Estrutura do vault Obsidian configurada com templates e índices Dataview
+- **Workflow 1 (Formulário):** `Gd1NFdWTxZHXNPYR` — ATIVO, 3 tarefas criadas com sucesso
+- **Workflow 2 (Atualiza Status):** `IdB16tNSCsm42Yke` — inativo, aguarda atribuição manual de credencial no UI
+- **Kanban Notion:** criado e configurado em `🏗️ Gestão de Obras` → `📋 Tarefas`
+- **Tarefas no vault:** TAREFA-1, TAREFA-2 (Liberação de acesso — Jonacir/Daison/Planejamento), e outras
+- **Script Python:** concluído
+- **Estrutura do vault Obsidian:** configurada com templates e índices Dataview
+
+### Pendente
+- Atribuir "Bearer Auth account" manualmente aos 2 nós HTTP Request do Workflow 2 no n8n UI
+- Ativar Workflow 2 no n8n UI
+- Verificar se o token GitHub do "Bearer Auth account" ainda é válido (tokens clássicos expiram)
 
 ---
 
