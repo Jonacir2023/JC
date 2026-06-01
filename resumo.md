@@ -14,10 +14,13 @@
 
 ## O que é este projeto
 
-Sistema pessoal de gestão de tarefas e conhecimento, com duas partes integradas:
+Sistema integrado de gestão de tarefas. Um único formulário web dispara a criação automática em três destinos:
 
-1. **Vault Obsidian** (`vault/`) — cofre de notas no padrão Zettelkasten, com Dataview para consultas dinâmicas
-2. **Automação n8n** (`n8n/`) — workflow que recebe tarefas via webhook e cria notas Markdown automaticamente no vault via GitHub API
+1. **Vault Obsidian** (`vault/`) — nota `.md` criada via GitHub API (sincroniza com Obsidian via plugin `obsidian-git`)
+2. **Google Sheets** — linha adicionada na planilha `Tarefas` para acompanhamento
+3. **Notion Kanban** — card criado no banco `📋 Tarefas` para gestão visual por status
+
+Também existe um webhook separado que atualiza o status da tarefa no GitHub quando arrastado no Kanban.
 
 ---
 
@@ -32,14 +35,15 @@ JC/
 │   ├── Tarefas/                  # Tarefas criadas pelo n8n
 │   │   ├── Índice de Tarefas.md  # Painel Dataview de tarefas
 │   │   ├── TAREFA-1-compra-de-blocos-de-concreto.md
-│   │   └── TAREFA-009-teste-de-energia.md
+│   │   └── TAREFA-2-liberacao-de-acesso.md
 │   ├── Notas/                    # Notas permanentes (Zettelkasten)
 │   ├── Projetos/                 # Projetos ativos
 │   ├── Recursos/                 # Referências e materiais
 │   ├── Templates/                # Templates (Nota, Tarefa, Diário, Projeto)
 │   └── Diário/                   # Registro diário
 ├── n8n/
-│   └── gestao-tarefas-obsidian.ts  # Workflow n8n (SDK)
+│   ├── gestao-tarefas-obsidian.ts    # Workflow 1 original (só GitHub)
+│   └── atualiza-status-tarefa.ts     # Workflow 2 — Atualiza Status via webhook
 ├── scripts/
 │   └── obsidian_tools.py         # Utilitários Python para o vault
 ├── resumo.md                     # Este arquivo
@@ -51,36 +55,42 @@ JC/
 
 ## Workflows n8n
 
-### Workflow 1 — Formulário de Tarefas (ID: `Gd1NFdWTxZHXNPYR`) ✅ ATIVO
+### Workflow 1 — Formulário Completo (ID: `Gd1NFdWTxZHXNPYR`) ✅ ATIVO
 
-**Fluxo:**
+**Fluxo (7 nós):**
 ```
-FormTrigger (URL pública, abre no celular)
-  → Code: gera nota Markdown com frontmatter YAML
-  → HTTP Request: cria arquivo em vault/Tarefas/ via GitHub API (PUT)
-  → Form Completion: exibe confirmação na tela
+FormTrigger (nova-tarefa)
+  → Code: gera .md com frontmatter YAML + prepara dados
+  → HTTP PUT (GitHub): cria arquivo em vault/Tarefas/
+  → Google Sheets: adiciona linha na planilha Tarefas
+  → Code: monta payload JSON para Notion API
+  → HTTP POST (Notion): cria card no banco 📋 Tarefas
+  → Form Completion: exibe confirmação com ID e assunto
 ```
+
+**URL do formulário:** `https://jonacircazelli.app.n8n.cloud/form/nova-tarefa`
 
 **Campos do formulário:**
 | Label | Chave | Obrigatório |
 |---|---|---|
-| ID da Tarefa | `id` | Sim (preenchido manualmente) |
+| ID da Tarefa | `id` | Sim (incrementar manualmente) |
 | Assunto | `assunto` | Sim |
 | Descrição | `descricao` | Não |
 | Criador | `criador` | Sim |
 | Responsável | `responsavel` | Sim |
-| Prioridade | `prioridade` | Sim (dropdown: Baixa/Média/Alta) |
+| Prioridade | `prioridade` | Sim (dropdown: Alta/Média/Baixa) |
 | Setor | `setor` | Sim (dropdown: 19 opções) |
 | Data de Lançamento | `data_lancamento` | Sim |
 | Previsão de Término | `previsao_termino` | Sim |
 
-**URL do formulário:** `https://jonacircazelli.app.n8n.cloud/form/nova-tarefa`
-**Credencial GitHub:** Bearer Auth account (WhCpxC32BntVxpfd) — httpBearerAuth
-**Nome do arquivo gerado:** `TAREFA-{id}-{assunto-slugificado}.md`
+**Credenciais necessárias (verificar no n8n UI):**
+- Nó `HTTP Request` (GitHub PUT) → `Bearer Auth account` (WhCpxC32BntVxpfd) — httpBearerAuth
+- Nó `Google Sheets` → `Google Sheets OAuth2 API` (96aqw9aGfS4g49f0) — auto-atribuída
+- Nó `HTTP Request 1` (Notion POST) → `Notion account` (ywVPmjRrlcTNtLTy) — predefinedCredentialType
 
 ---
 
-### Workflow 2 — Atualiza Status (ID: `IdB16tNSCsm42Yke`) ⚠️ INATIVO
+### Workflow 2 — Atualiza Status (ID: `IdB16tNSCsm42Yke`) ✅ ATIVO
 
 **Fluxo:**
 ```
@@ -88,18 +98,66 @@ Webhook POST /atualiza-status
   → HTTP GET: busca arquivo no GitHub (obtém SHA)
   → Code: atualiza frontmatter status + adiciona ao histórico
   → HTTP PUT: salva arquivo atualizado no GitHub
-  → Set: retorna confirmação ao Kanban
+  → Set: retorna confirmação ao chamador
 ```
 
-**Body esperado:** `{ arquivo: "TAREFA-1-nome.md", novoStatus: "Em Andamento" }`
-**Credencial:** Bearer Auth account (WhCpxC32BntVxpfd) — ATRIBUIÇÃO MANUAL NECESSÁRIA NO UI
-**Para ativar:** atribuir credencial nos 2 nós HTTP Request → ativar toggle
+**Body esperado:** `{ "arquivo": "TAREFA-1-nome.md", "novoStatus": "Em Andamento" }`
+**Webhook URL:** `https://jonacircazelli.app.n8n.cloud/webhook/atualiza-status`
+**Credencial:** Bearer Auth account (WhCpxC32BntVxpfd) — httpBearerAuth
+
+---
+
+## Destinos de Dados
+
+### Google Sheets
+
+- **ID da planilha:** `1-ef1308cpQcYfCEHJIhPIqYwEfKGusyqbULBRMlUiVU`
+- **Aba:** `Tarefas`
+- **Colunas:** ID | Assunto | Descrição | Criador | Responsável | Setor | Prioridade | Data de Lançamento | Previsão de Término | Status | Criado em | Arquivo GitHub
+- **Credencial n8n:** `Google Sheets OAuth2 API` (96aqw9aGfS4g49f0)
+
+> **Atenção:** A aba `Tarefas` precisa existir com a linha de cabeçalho acima antes da primeira execução.
+
+### Notion — Kanban de Tarefas
+
+- **Banco de dados:** `📋 Tarefas` em `🏗️ Gestão de Obras`
+- **Database ID:** `303b3e907f7b4dcf927957ca44367947`
+- **URL:** https://www.notion.so/303b3e907f7b4dcf927957ca44367947
+- **Credencial n8n:** `Notion account` (ywVPmjRrlcTNtLTy) — notionOAuth2Api
+
+**Views criadas:**
+| View | Tipo | Configuração |
+|---|---|---|
+| `🗂️ Kanban` | Board | Agrupado por Status (Aberta / Em Andamento / Concluída) |
+| `📄 Tabela` | Table | Ordenada por Prazo |
+| `📅 Por Prazo` | Calendar | Por campo Prazo |
+| `🗓️ Timeline` | Timeline | Data de Lançamento → Prazo, agrupado por Setor |
+
+**Campos do banco:**
+| Campo | Tipo | Valores |
+|---|---|---|
+| Assunto | Title | — |
+| ID Tarefa | Text | número gerado |
+| Status | Select | Aberta / Em Andamento / Concluída |
+| Prioridade | Select | 🔴 Alta / 🟡 Média / 🟢 Baixa |
+| Setor | Select | 19 opções |
+| Responsável | Text | — |
+| Criador | Text | — |
+| Descrição | Text | — |
+| Data de Lançamento | Date | — |
+| Prazo | Date | data previsao_termino |
+| Arquivo GitHub | Text | nome do .md no repo |
+
+### Vault Obsidian (GitHub)
+
+- **Pasta no repo:** `vault/Tarefas/`
+- **Padrão de nome:** `TAREFA-{id}-{assunto-slug}.md`
+- **Sincronização local:** Plugin `obsidian-git` aponta para `jonacir2023/jc` branch `main`
+- **Frontmatter gerado:** id, assunto, descricao, criador, responsavel, setor, prioridade, data_lancamento, previsao_termino, status, criado_em, tags
 
 ---
 
 ## Script Python (`scripts/obsidian_tools.py`)
-
-Utilitário CLI para manutenção do vault:
 
 ```bash
 python scripts/obsidian_tools.py vault/ check-links    # Verifica links quebrados
@@ -110,76 +168,47 @@ python scripts/obsidian_tools.py vault/ export-html    # Exporta notas para HTML
 
 ---
 
-## Frontmatter das Tarefas
+## Estado Atual (2026-06-01)
 
-```yaml
----
-id: "1"
-assunto: "Título da tarefa"
-descricao: "Descrição detalhada"
-criador: "Nome"
-responsavel: "Nome"
-setor: "Suprimentos"
-prioridade: "Média"          # Alta | Média | Baixa
-data_lancamento: "2026-05-31"
-previsao_termino: "2026-06-12"
-status: Aberta               # Aberta | Concluído
-criado_em: "2026-06-01T..."
-tags: [tarefa, suprimentos, média]
----
-```
-
----
-
-## Notion — Kanban de Reunião
-
-**Banco de dados:** `📋 Tarefas` dentro de `🏗️ Gestão de Obras`
-- **Database ID:** `303b3e907f7b4dcf927957ca44367947`
-- **Data Source ID:** `a96d3c71-bd9c-4473-9b4b-13f92894abca`
-- **URL:** https://www.notion.so/303b3e907f7b4dcf927957ca44367947
-
-**Views criadas:**
-- `🗂️ Kanban` — board agrupado por Status (Aberta / Em Andamento / Concluída)
-- `📄 Tabela` — tabela ordenada por Prazo
-
-**Campos do banco:**
-| Campo | Tipo | Valores |
-|---|---|---|
-| Assunto | Title | — |
-| ID Tarefa | Text | número gerado pelo n8n |
-| Status | Select | Aberta / Em Andamento / Concluída |
-| Prioridade | Select | 🔴 Alta / 🟡 Média / 🟢 Baixa |
-| Setor | Select | Suprimentos / Transporte / Planejamento / Administração / Segurança |
-| Responsável | Text | — |
-| Criador | Text | — |
-| Descrição | Text | — |
-| Data de Lançamento | Date | — |
-| Prazo | Date | — |
-| Arquivo GitHub | Text | nome do .md no repo |
-| Criado em | Created Time | automático |
-
-**Fluxo durante reunião:**
-1. Abrir Notion → `🏗️ Gestão de Obras` → `📋 Tarefas` → view `🗂️ Kanban`
-2. Arrastar cards entre colunas para atualizar status
-3. Todos com acesso à página veem as mudanças em tempo real
-
-**Credencial n8n necessária:** `notionToken` (Notion Integration Token)
-
----
-
-## Estado Atual
-
-- **Workflow 1 (Formulário):** `Gd1NFdWTxZHXNPYR` — ATIVO, 3 tarefas criadas com sucesso
-- **Workflow 2 (Atualiza Status):** `IdB16tNSCsm42Yke` — inativo, aguarda atribuição manual de credencial no UI
-- **Kanban Notion:** criado e configurado em `🏗️ Gestão de Obras` → `📋 Tarefas`
-- **Tarefas no vault:** TAREFA-1, TAREFA-2 (Liberação de acesso — Jonacir/Daison/Planejamento), e outras
-- **Script Python:** concluído
-- **Estrutura do vault Obsidian:** configurada com templates e índices Dataview
+| Componente | Estado |
+|---|---|
+| Workflow 1 (Formulário → GitHub + Sheets + Notion) | ✅ ATIVO — aguarda teste com credenciais verificadas |
+| Workflow 2 (Atualiza Status via webhook) | ✅ ATIVO — testado e funcionando (exec 25) |
+| Kanban Notion | ✅ Criado com 4 views |
+| Google Sheets | ⚠️ Planilha existe, mas aba `Tarefas` precisa de cabeçalho |
+| Vault Obsidian | ✅ Estrutura criada — sincronização local requer plugin obsidian-git |
+| Script Python | ✅ Concluído |
 
 ### Pendente
-- Atribuir "Bearer Auth account" manualmente aos 2 nós HTTP Request do Workflow 2 no n8n UI
-- Ativar Workflow 2 no n8n UI
-- Verificar se o token GitHub do "Bearer Auth account" ainda é válido (tokens clássicos expiram)
+
+1. **Verificar credenciais no n8n UI** — Abrir workflow `Gd1NFdWTxZHXNPYR`, confirmar que `HTTP Request` (GitHub) usa "Bearer Auth account" e `HTTP Request 1` (Notion) usa "Notion account"
+2. **Criar cabeçalho no Google Sheets** — Na aba `Tarefas`, linha 1: `ID | Assunto | Descrição | Criador | Responsável | Setor | Prioridade | Data de Lançamento | Previsão de Término | Status | Criado em | Arquivo GitHub`
+3. **Instalar obsidian-git** — No Obsidian local, instalar plugin Community "obsidian-git" e apontar para o repo `jonacir2023/jc` branch `main`
+4. **Testar ciclo completo** — Preencher formulário → verificar arquivo em vault/Tarefas/ no GitHub, linha na planilha e card no Notion
+5. **Backfill tarefas antigas** — TAREFA-1 e TAREFA-2 existem no GitHub mas não no Sheets/Notion; adicionar manualmente se necessário
+6. **Limpar Notion** — Deletar manualmente páginas vazias: Team Members, OKRs (×2), Recent Decisions, Página Inicial do Espaço de Equipe
+
+---
+
+## Ciclo Completo de uma Tarefa
+
+```
+Líder acessa → https://jonacircazelli.app.n8n.cloud/form/nova-tarefa
+        ↓
+  Preenche o formulário (ID, assunto, datas, setor, prioridade...)
+        ↓
+  n8n executa automaticamente:
+    1. Gera TAREFA-{id}-{slug}.md com frontmatter completo
+    2. Cria arquivo em vault/Tarefas/ via GitHub API    → Obsidian sincroniza
+    3. Adiciona linha na planilha Google Sheets          → histórico tabular
+    4. Cria card no Notion Kanban (status: Aberta)       → visão de equipe
+        ↓
+  Tela mostra: "✅ Tarefa #X — Assunto criada no GitHub, Planilha e Notion."
+        ↓
+  Reunião: arrastar card no Kanban (Aberta → Em Andamento → Concluída)
+        ↓
+  (Futuro) Webhook /atualiza-status → atualiza status no .md do GitHub
+```
 
 ---
 
