@@ -54,27 +54,29 @@ JC/
 **Fluxo completo:**
 
 ```
-Webhook POST /gestao-tarefas
-  → Mapeia campos do formulário
-  → Valida Prioridade (Baixa | Média | Alta)
-  → Valida Setor (Suprimentos | Transporte | Planejamento | Administração | Segurança)
-  → Gera nota Markdown com frontmatter YAML
-  → Cria arquivo em vault/Tarefas/ via GitHub API (PUT)
-  → Retorna confirmação JSON
+FormTrigger (URL pública, abre no celular)
+  → Code: gera ID sequencial via $getWorkflowStaticData (sem banco externo)
+  → Set: mapeia campos para nomes internos padronizados
+  → If: valida Prioridade (Baixa | Média | Alta)
+  → If: valida Setor (Suprimentos | Transporte | Planejamento | Administração | Segurança)
+  → Code: gera nota Markdown com frontmatter YAML
+  → HTTP Request: cria arquivo em vault/Tarefas/ via GitHub API (PUT)
+  → Set: exibe confirmação na tela do formulário
 ```
 
-**Campos do formulário de entrada:**
-| Campo | Chave JSON |
-|---|---|
-| ID | `Id` |
-| Assunto | `Assunto` |
-| Descrição | `Descrição do Assunto` |
-| Criador | `Criador` |
-| Responsável | `Responsável` |
-| Prioridade | `Prioridade` |
-| Setor | `Setor` |
-| Data de lançamento | `Data de lançamento` |
-| Previsão de término | `Previsão de Término` |
+**Campos do formulário (preenchidos pelo usuário — ID é automático):**
+| Label no Formulário | Chave interna | Obrigatório |
+|---|---|---|
+| Assunto | `assunto` | Sim |
+| Descricao | `descricao` | Não |
+| Criador | `criador` | Sim |
+| Responsavel | `responsavel` | Sim |
+| Prioridade | `prioridade` | Sim (dropdown) |
+| Setor | `setor` | Sim (dropdown) |
+| DataLancamento | `data_lancamento` | Sim |
+| PrevisaoTermino | `previsao_termino` | Sim |
+
+**ID automático:** gerado pelo n8n via `$getWorkflowStaticData('global').lastId` (incremento sequencial persistente).
 
 **Nome do arquivo gerado:** `TAREFA-{id}-{assunto-slugificado}.md`
 
@@ -116,7 +118,7 @@ tags: [tarefa, suprimentos, média]
 
 ## Estado Atual
 
-- Workflow n8n criado e funcional (código em TypeScript com n8n SDK)
+- Workflow n8n atualizado: FormTrigger mobile + ID automático via Static Data
 - Tarefas de exemplo no vault: TAREFA-1 (Blocos de Concreto) e TAREFA-009 (Teste de Energia)
 - Script Python de utilitários concluído
 - Estrutura do vault Obsidian configurada com templates e índices Dataview

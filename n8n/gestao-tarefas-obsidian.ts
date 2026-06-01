@@ -3,31 +3,116 @@ import { workflow, trigger, node, expr } from 'n8n-workflow-sdk';
 // Workflow: Gestão de Tarefas → Obsidian
 //
 // Fluxo:
-//   Webhook POST /gestao-tarefas
+//   FormTrigger (URL compartilhada — abre no celular)
+//   → Gera ID sequencial automático (Static Data — persiste entre execuções)
 //   → Mapeia campos do formulário
 //   → Valida Prioridade (Baixa | Média | Alta)
 //   → Valida Setor (Suprimentos | Transporte | Planejamento | Administração | Segurança)
 //   → Gera nota Markdown com frontmatter
 //   → Cria arquivo na pasta vault/Tarefas/ via GitHub API
-//   → Retorna confirmação
+//   → Retorna confirmação na tela do formulário
 
 export default workflow('gestao-tarefas-obsidian', 'Gestão de Tarefas → Obsidian')
 
-  // ── 1. Webhook ─────────────────────────────────────────────
+  // ── 1. Formulário (acessível por URL no celular) ────────────
   .add(trigger({
-    type: 'n8n-nodes-base.webhook',
+    type: 'n8n-nodes-base.formTrigger',
     version: 2,
     config: {
       parameters: {
-        path: 'gestao-tarefas',
-        method: 'POST',
+        formTitle: 'Nova Tarefa',
+        formDescription: 'Preencha os dados para registrar uma tarefa.',
         responseMode: 'lastNode',
-        authenticationMethod: 'none'
+        formFields: {
+          values: [
+            {
+              fieldLabel: 'Assunto',
+              fieldType: 'text',
+              requiredField: true,
+              placeholder: 'Título curto da tarefa'
+            },
+            {
+              fieldLabel: 'Descricao',
+              fieldType: 'textarea',
+              requiredField: false,
+              placeholder: 'Descreva a tarefa com detalhes'
+            },
+            {
+              fieldLabel: 'Criador',
+              fieldType: 'text',
+              requiredField: true,
+              placeholder: 'Seu nome completo'
+            },
+            {
+              fieldLabel: 'Responsavel',
+              fieldType: 'text',
+              requiredField: true,
+              placeholder: 'Nome do responsável pela execução'
+            },
+            {
+              fieldLabel: 'Prioridade',
+              fieldType: 'dropdown',
+              requiredField: true,
+              fieldOptions: {
+                values: [
+                  { option: 'Alta' },
+                  { option: 'Média' },
+                  { option: 'Baixa' }
+                ]
+              }
+            },
+            {
+              fieldLabel: 'Setor',
+              fieldType: 'dropdown',
+              requiredField: true,
+              fieldOptions: {
+                values: [
+                  { option: 'Suprimentos' },
+                  { option: 'Transporte' },
+                  { option: 'Planejamento' },
+                  { option: 'Administração' },
+                  { option: 'Segurança' }
+                ]
+              }
+            },
+            {
+              fieldLabel: 'DataLancamento',
+              fieldType: 'date',
+              requiredField: true
+            },
+            {
+              fieldLabel: 'PrevisaoTermino',
+              fieldType: 'date',
+              requiredField: true
+            }
+          ]
+        }
       }
     }
   }))
 
-  // ── 2. Mapear campos ────────────────────────────────────────
+  // ── 2. Gerar ID sequencial automático (Static Data) ─────────
+  // Static Data persiste no banco do n8n entre execuções.
+  // Sem race condition relevante para uso sequencial de formulário.
+  .to(node({
+    type: 'n8n-nodes-base.code',
+    version: 2,
+    config: {
+      parameters: {
+        language: 'javaScript',
+        jsCode: `
+const staticData = $getWorkflowStaticData('global');
+if (!staticData.lastId) staticData.lastId = 0;
+staticData.lastId += 1;
+
+const item = $input.first().json;
+return [{ json: { ...item, id: String(staticData.lastId) } }];
+        `
+      }
+    }
+  }))
+
+  // ── 3. Mapear campos ────────────────────────────────────────
   .to(node({
     type: 'n8n-nodes-base.set',
     version: 3,
@@ -36,15 +121,15 @@ export default workflow('gestao-tarefas-obsidian', 'Gestão de Tarefas → Obsid
         mode: 'manual',
         assignments: {
           assignments: [
-            { name: 'id',               type: 'string', value: expr('$json.Id') },
+            { name: 'id',               type: 'string', value: expr('$json.id') },
             { name: 'assunto',          type: 'string', value: expr('$json.Assunto') },
-            { name: 'descricao',        type: 'string', value: expr('$json["Descrição do Assunto"]') },
+            { name: 'descricao',        type: 'string', value: expr('$json.Descricao') },
             { name: 'criador',          type: 'string', value: expr('$json.Criador') },
-            { name: 'responsavel',      type: 'string', value: expr('$json.Responsável') },
+            { name: 'responsavel',      type: 'string', value: expr('$json.Responsavel') },
             { name: 'prioridade',       type: 'string', value: expr('$json.Prioridade') },
             { name: 'setor',            type: 'string', value: expr('$json.Setor') },
-            { name: 'data_lancamento',  type: 'string', value: expr('$json["Data de lançamento"]') },
-            { name: 'previsao_termino', type: 'string', value: expr('$json["Previsão de Término"]') },
+            { name: 'data_lancamento',  type: 'string', value: expr('$json.DataLancamento') },
+            { name: 'previsao_termino', type: 'string', value: expr('$json.PrevisaoTermino') },
             { name: 'timestamp',        type: 'string', value: expr('new Date().toISOString()') }
           ]
         }
@@ -52,7 +137,7 @@ export default workflow('gestao-tarefas-obsidian', 'Gestão de Tarefas → Obsid
     }
   }))
 
-  // ── 3. Validar Prioridade ───────────────────────────────────
+  // ── 4. Validar Prioridade ───────────────────────────────────
   .to(node({
     type: 'n8n-nodes-base.if',
     version: 2,
@@ -71,7 +156,7 @@ export default workflow('gestao-tarefas-obsidian', 'Gestão de Tarefas → Obsid
     }
   }))
 
-  // ── 4. Validar Setor ────────────────────────────────────────
+  // ── 5. Validar Setor ────────────────────────────────────────
   .to(node({
     type: 'n8n-nodes-base.if',
     version: 2,
@@ -92,7 +177,7 @@ export default workflow('gestao-tarefas-obsidian', 'Gestão de Tarefas → Obsid
     }
   }))
 
-  // ── 5. Gerar Markdown ───────────────────────────────────────
+  // ── 6. Gerar Markdown ───────────────────────────────────────
   .to(node({
     type: 'n8n-nodes-base.code',
     version: 2,
@@ -102,11 +187,9 @@ export default workflow('gestao-tarefas-obsidian', 'Gestão de Tarefas → Obsid
         jsCode: `
 const d = $input.first().json;
 
-// Emoji de prioridade
 const prioEmoji = { 'Alta': '🔴', 'Média': '🟡', 'Baixa': '🟢' };
 const emoji = prioEmoji[d.prioridade] ?? '⚪';
 
-// Nome seguro para o arquivo (sem caracteres especiais)
 const safeName = d.assunto
   .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
   .replace(/[^a-zA-Z0-9 ]/g, '')
@@ -164,7 +247,7 @@ tags: [tarefa, \${d.setor.toLowerCase()}, \${d.prioridade.toLowerCase()}]
 
 ## Histórico
 
-- \${new Date().toLocaleString('pt-BR')} — Tarefa criada via N8N
+- \${new Date().toLocaleString('pt-BR')} — Tarefa criada via Formulário N8N
 \`;
 
 return [{ json: { fileName, content, ...d } }];
@@ -173,7 +256,7 @@ return [{ json: { fileName, content, ...d } }];
     }
   }))
 
-  // ── 6. Criar arquivo no GitHub (vault/Tarefas/) ─────────────
+  // ── 7. Criar arquivo no GitHub (vault/Tarefas/) ─────────────
   .to(node({
     type: 'n8n-nodes-base.httpRequest',
     version: 4,
@@ -210,7 +293,7 @@ return [{ json: { fileName, content, ...d } }];
     }
   }))
 
-  // ── 7. Resposta de sucesso ──────────────────────────────────
+  // ── 8. Resposta exibida no formulário ───────────────────────
   .to(node({
     type: 'n8n-nodes-base.set',
     version: 3,
@@ -220,7 +303,7 @@ return [{ json: { fileName, content, ...d } }];
         assignments: {
           assignments: [
             { name: 'status',   type: 'string', value: 'ok' },
-            { name: 'mensagem', type: 'string', value: expr('`Tarefa "${$json.assunto}" criada no Obsidian com sucesso.`') },
+            { name: 'mensagem', type: 'string', value: expr('`✅ Tarefa #${$json.id} — "${$json.assunto}" registrada com sucesso!`') },
             { name: 'arquivo',  type: 'string', value: expr('$json.fileName') }
           ]
         }
