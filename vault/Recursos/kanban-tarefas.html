@@ -44,7 +44,6 @@
     button.primary { background: #cba6f7; color: #1e1e2e; border-color: #cba6f7; }
     button.primary:hover { opacity: 0.88; color: #1e1e2e; }
 
-    /* Stats */
     .stats { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
     .stat {
       background: #313244;
@@ -56,11 +55,10 @@
     .stat-value { font-size: 1.6rem; font-weight: 700; color: #cba6f7; line-height: 1; }
     .stat-label { font-size: 0.72rem; color: #a6adc8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
 
-    /* Board */
     .board {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
       align-items: start;
     }
 
@@ -80,7 +78,7 @@
     }
 
     .column-title {
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.6px;
@@ -95,26 +93,25 @@
       color: #a6adc8;
     }
 
-    .col-aberta .column-title      { color: #89b4fa; }
-    .col-andamento .column-title   { color: #f9e2af; }
-    .col-concluida .column-title   { color: #a6e3a1; }
-    .col-cancelada .column-title   { color: #f38ba8; }
+    .col-semstatus  .column-title { color: #6c7086; }
+    .col-aberta     .column-title { color: #89b4fa; }
+    .col-andamento  .column-title { color: #f9e2af; }
+    .col-concluida  .column-title { color: #a6e3a1; }
+    .col-cancelada  .column-title { color: #f38ba8; }
 
     .cards { display: flex; flex-direction: column; gap: 10px; min-height: 50px; }
 
-    /* Cards */
     .card {
       background: #313244;
       border-radius: 10px;
       padding: 13px 14px;
       border-left: 3px solid #45475a;
-      cursor: default;
       transition: box-shadow 0.15s;
     }
-    .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
-    .card.alta   { border-left-color: #f38ba8; }
-    .card.media  { border-left-color: #f9e2af; }
-    .card.baixa  { border-left-color: #a6e3a1; }
+    .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.35); }
+    .card.alta  { border-left-color: #f38ba8; }
+    .card.media { border-left-color: #f9e2af; }
+    .card.baixa { border-left-color: #a6e3a1; }
 
     .card-title {
       font-size: 0.92rem;
@@ -139,12 +136,16 @@
     .tag.setor       { background: #1e3a5f; color: #89b4fa; }
     .tag.responsavel { background: #3b2c4a; color: #cba6f7; }
     .tag.prazo       { background: #3d2a1e; color: #fab387; }
-    .tag.descricao   { background: #1e1e2e; color: #a6adc8; font-size: 0.70rem; max-width: 100%; white-space: normal; margin-top: 2px; }
+    .tag.criador     { background: #1e1e2e; color: #a6adc8; }
+    .tag.descricao   {
+      background: #1e1e2e; color: #a6adc8;
+      font-size: 0.70rem; white-space: normal;
+      max-width: 100%; margin-top: 2px;
+    }
 
-    .empty  { color: #585b70; font-size: 0.82rem; text-align: center; padding: 18px 0; }
+    .empty   { color: #585b70; font-size: 0.82rem; text-align: center; padding: 18px 0; }
     .loading { color: #a6adc8; font-size: 0.85rem; text-align: center; padding: 18px 0; }
 
-    /* Token modal */
     #token-modal {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.75);
@@ -173,23 +174,21 @@
       margin-bottom: 16px;
     }
     .modal-box input:focus { border-color: #cba6f7; }
-
     #refresh-info { font-size: 0.76rem; color: #585b70; margin-left: 6px; }
   </style>
 </head>
 <body>
 
-<!-- Token Modal -->
 <div id="token-modal">
   <div class="modal-box">
     <h2>🔑 Acesso ao Kanban</h2>
-    <p>Insira um token GitHub com acesso ao repositório. Ele é salvo apenas no seu navegador e nunca enviado a terceiros.</p>
-    <input type="password" id="token-input" placeholder="ghp_..." onkeydown="if(event.key==='Enter') salvarToken()" />
+    <p>Insira um token GitHub com acesso ao repositório. Salvo apenas no seu navegador.</p>
+    <input type="password" id="token-input" placeholder="ghp_..."
+           onkeydown="if(event.key==='Enter') salvarToken()" />
     <button class="primary" style="width:100%;padding:12px" onclick="salvarToken()">Carregar Tarefas</button>
   </div>
 </div>
 
-<!-- Header -->
 <header>
   <div>
     <h1>📋 Kanban de Tarefas</h1>
@@ -202,22 +201,29 @@
   </div>
 </header>
 
-<!-- Stats -->
-<div class="stats" id="stats">
+<div class="stats">
   <div class="stat"><div class="stat-value" id="s-total">—</div><div class="stat-label">Total</div></div>
-  <div class="stat"><div class="stat-value" id="s-abertas">—</div><div class="stat-label">Em Aberto</div></div>
+  <div class="stat"><div class="stat-value" id="s-pendentes">—</div><div class="stat-label">Pendentes</div></div>
   <div class="stat"><div class="stat-value" id="s-alta">—</div><div class="stat-label">Alta Prioridade</div></div>
   <div class="stat"><div class="stat-value" id="s-concluidas">—</div><div class="stat-label">Concluídas</div></div>
 </div>
 
-<!-- Board -->
 <div class="board">
+
+  <div class="column col-semstatus">
+    <div class="column-header">
+      <span class="column-title">⬜ Sem Status</span>
+      <span class="column-count" id="cnt-semstatus">0</span>
+    </div>
+    <div class="cards" id="col-semstatus"><p class="loading">Aguardando...</p></div>
+  </div>
+
   <div class="column col-aberta">
     <div class="column-header">
       <span class="column-title">🔵 Aberta</span>
       <span class="column-count" id="cnt-aberta">0</span>
     </div>
-    <div class="cards" id="col-aberta"><p class="loading">Aguardando...</p></div>
+    <div class="cards" id="col-aberta"><p class="empty">Nenhuma tarefa</p></div>
   </div>
 
   <div class="column col-andamento">
@@ -243,13 +249,16 @@
     </div>
     <div class="cards" id="col-cancelada"><p class="empty">Nenhuma tarefa</p></div>
   </div>
+
 </div>
 
 <script>
   const REPO = 'Jonacir2023/JC';
   const PATH = 'vault/Tarefas';
 
-  const colMap = {
+  const COL_MAP = {
+    'sem status':   'semstatus',
+    '':             'semstatus',
     'aberta':       'aberta',
     'em andamento': 'andamento',
     'concluída':    'concluida',
@@ -290,14 +299,12 @@
     const lp = p.toLowerCase();
     if (lp === 'alta') return 'alta';
     if (lp === 'média' || lp === 'media') return 'media';
-    return 'baixa';
+    if (lp === 'baixa') return 'baixa';
+    return '';
   }
 
   function prioEmoji(p = '') {
-    if (p === 'Alta') return '🔴';
-    if (p === 'Média') return '🟡';
-    if (p === 'Baixa') return '🟢';
-    return '';
+    return { 'Alta': '🔴', 'Média': '🟡', 'Baixa': '🟢' }[p] || '';
   }
 
   function fmtDate(d) {
@@ -308,15 +315,17 @@
   function renderCard(t) {
     const desc = (t.descricao || '').trim();
     return `
-      <div class="card ${prioClass(t.prioridade)}" title="${t.assunto || ''}">
+      <div class="card ${prioClass(t.prioridade)}">
         <div class="card-title">${t.assunto || 'Sem título'}</div>
         <div class="card-meta">
           <span class="tag id">#${t.id || '?'}</span>
-          ${t.setor       ? `<span class="tag setor">${t.setor}</span>` : ''}
-          ${t.responsavel ? `<span class="tag responsavel">👤 ${t.responsavel}</span>` : ''}
-          ${t.prioridade  ? `<span class="tag">${prioEmoji(t.prioridade)} ${t.prioridade}</span>` : ''}
-          ${t.previsao_termino ? `<span class="tag prazo">📅 ${fmtDate(t.previsao_termino)}</span>` : ''}
-          ${desc ? `<span class="tag descricao">${desc.substring(0, 80)}${desc.length > 80 ? '…' : ''}</span>` : ''}
+          ${t.setor        ? `<span class="tag setor">${t.setor}</span>` : ''}
+          ${t.criador      ? `<span class="tag criador">✍️ ${t.criador}</span>` : ''}
+          ${t.responsavel  ? `<span class="tag responsavel">👤 ${t.responsavel}</span>` : ''}
+          ${t.prioridade   ? `<span class="tag">${prioEmoji(t.prioridade)} ${t.prioridade}</span>` : ''}
+          ${t.data_lancamento    ? `<span class="tag">📌 ${fmtDate(t.data_lancamento)}</span>` : ''}
+          ${t.previsao_termino   ? `<span class="tag prazo">📅 ${fmtDate(t.previsao_termino)}</span>` : ''}
+          ${desc ? `<span class="tag descricao">${desc.substring(0, 90)}${desc.length > 90 ? '…' : ''}</span>` : ''}
         </div>
       </div>`;
   }
@@ -327,16 +336,16 @@
     const token = getToken();
     if (!token) return;
 
-    ['aberta','andamento','concluida','cancelada'].forEach(id =>
+    ['semstatus','aberta','andamento','concluida','cancelada'].forEach(id =>
       document.getElementById(`col-${id}`).innerHTML = '<p class="loading">Carregando...</p>'
     );
 
-    const buckets = { aberta: [], andamento: [], concluida: [], cancelada: [] };
+    const buckets = { semstatus: [], aberta: [], andamento: [], concluida: [], cancelada: [] };
 
     try {
       const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' };
       const listRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}`, { headers });
-      if (!listRes.ok) throw new Error('Falha ao listar arquivos');
+      if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`);
       const files = await listRes.json();
       const mdFiles = files.filter(f => f.name.endsWith('.md') && f.name !== 'Índice de Tarefas.md');
 
@@ -346,9 +355,9 @@
           const data = await r.json();
           const content = atob(data.content.replace(/\n/g, ''));
           const fm = parseFrontmatter(content);
-          const key = colMap[(fm.status || 'aberta').toLowerCase()] || 'aberta';
+          const key = COL_MAP[(fm.status || '').toLowerCase()] ?? 'semstatus';
           buckets[key].push(fm);
-        } catch { /* skip malformed file */ }
+        } catch { /* arquivo malformado, ignorar */ }
       }));
 
       Object.entries(buckets).forEach(([id, tarefas]) => {
@@ -358,26 +367,25 @@
           tarefas.length ? tarefas.map(renderCard).join('') : '<p class="empty">Nenhuma tarefa</p>';
       });
 
-      const total      = Object.values(buckets).flat().length;
-      const abertas    = buckets.aberta.length + buckets.andamento.length;
-      const altaPrio   = [...buckets.aberta, ...buckets.andamento].filter(t => t.prioridade === 'Alta').length;
-      const concluidas = buckets.concluida.length;
+      const total     = Object.values(buckets).flat().length;
+      const pendentes = buckets.semstatus.length + buckets.aberta.length + buckets.andamento.length;
+      const altaPrio  = [...buckets.semstatus, ...buckets.aberta, ...buckets.andamento]
+                          .filter(t => t.prioridade === 'Alta').length;
 
       document.getElementById('s-total').textContent     = total;
-      document.getElementById('s-abertas').textContent   = abertas;
+      document.getElementById('s-pendentes').textContent = pendentes;
       document.getElementById('s-alta').textContent      = altaPrio;
-      document.getElementById('s-concluidas').textContent = concluidas;
+      document.getElementById('s-concluidas').textContent = buckets.concluida.length;
 
       document.getElementById('refresh-info').textContent =
-        `· atualizado às ${new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+        `· ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
     } catch (e) {
-      document.getElementById('col-aberta').innerHTML =
+      document.getElementById('col-semstatus').innerHTML =
         `<p class="loading">❌ Erro: ${e.message}. Verifique o token.</p>`;
     }
   }
 
-  // Init
   if (getToken()) {
     document.getElementById('token-modal').style.display = 'none';
     carregarTarefas();
