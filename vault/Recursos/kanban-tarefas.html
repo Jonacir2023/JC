@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanban de Tarefas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1e1e2e;
+      color: #cdd6f4;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    h1 { font-size: 1.5rem; color: #cba6f7; font-weight: 700; }
+    .subtitle { font-size: 0.82rem; color: #a6adc8; margin-top: 3px; }
+
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    button {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1.5px solid #45475a;
+      background: #313244;
+      color: #cdd6f4;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    button:hover { border-color: #cba6f7; color: #cba6f7; }
+    button.primary { background: #cba6f7; color: #1e1e2e; border-color: #cba6f7; }
+    button.primary:hover { opacity: 0.88; color: #1e1e2e; }
+
+    /* Stats */
+    .stats { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat {
+      background: #313244;
+      border-radius: 10px;
+      padding: 12px 20px;
+      min-width: 90px;
+      text-align: center;
+    }
+    .stat-value { font-size: 1.6rem; font-weight: 700; color: #cba6f7; line-height: 1; }
+    .stat-label { font-size: 0.72rem; color: #a6adc8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+    /* Board */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 18px;
+      align-items: start;
+    }
+
+    .column {
+      background: #181825;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .column-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #313244;
+    }
+
+    .column-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .column-count {
+      background: #313244;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #a6adc8;
+    }
+
+    .col-aberta .column-title      { color: #89b4fa; }
+    .col-andamento .column-title   { color: #f9e2af; }
+    .col-concluida .column-title   { color: #a6e3a1; }
+    .col-cancelada .column-title   { color: #f38ba8; }
+
+    .cards { display: flex; flex-direction: column; gap: 10px; min-height: 50px; }
+
+    /* Cards */
+    .card {
+      background: #313244;
+      border-radius: 10px;
+      padding: 13px 14px;
+      border-left: 3px solid #45475a;
+      cursor: default;
+      transition: box-shadow 0.15s;
+    }
+    .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+    .card.alta   { border-left-color: #f38ba8; }
+    .card.media  { border-left-color: #f9e2af; }
+    .card.baixa  { border-left-color: #a6e3a1; }
+
+    .card-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 9px;
+      color: #cdd6f4;
+      line-height: 1.35;
+    }
+
+    .card-meta { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .tag {
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.73rem;
+      font-weight: 500;
+      background: #45475a;
+      color: #cdd6f4;
+      white-space: nowrap;
+    }
+    .tag.id          { background: #1e1e2e; color: #585b70; }
+    .tag.setor       { background: #1e3a5f; color: #89b4fa; }
+    .tag.responsavel { background: #3b2c4a; color: #cba6f7; }
+    .tag.prazo       { background: #3d2a1e; color: #fab387; }
+    .tag.descricao   { background: #1e1e2e; color: #a6adc8; font-size: 0.70rem; max-width: 100%; white-space: normal; margin-top: 2px; }
+
+    .empty  { color: #585b70; font-size: 0.82rem; text-align: center; padding: 18px 0; }
+    .loading { color: #a6adc8; font-size: 0.85rem; text-align: center; padding: 18px 0; }
+
+    /* Token modal */
+    #token-modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999;
+    }
+    .modal-box {
+      background: #313244;
+      border-radius: 16px;
+      padding: 36px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .modal-box h2 { color: #cba6f7; margin-bottom: 8px; font-size: 1.2rem; }
+    .modal-box p  { color: #a6adc8; font-size: 0.84rem; margin-bottom: 20px; line-height: 1.5; }
+    .modal-box input {
+      width: 100%;
+      background: #1e1e2e;
+      border: 1.5px solid #45475a;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #cdd6f4;
+      font-size: 0.95rem;
+      outline: none;
+      margin-bottom: 16px;
+    }
+    .modal-box input:focus { border-color: #cba6f7; }
+
+    #refresh-info { font-size: 0.76rem; color: #585b70; margin-left: 6px; }
+  </style>
+</head>
+<body>
+
+<!-- Token Modal -->
+<div id="token-modal">
+  <div class="modal-box">
+    <h2>🔑 Acesso ao Kanban</h2>
+    <p>Insira um token GitHub com acesso ao repositório. Ele é salvo apenas no seu navegador e nunca enviado a terceiros.</p>
+    <input type="password" id="token-input" placeholder="ghp_..." onkeydown="if(event.key==='Enter') salvarToken()" />
+    <button class="primary" style="width:100%;padding:12px" onclick="salvarToken()">Carregar Tarefas</button>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <div>
+    <h1>📋 Kanban de Tarefas</h1>
+    <p class="subtitle">Gestão em tempo real — via GitHub <span id="refresh-info"></span></p>
+  </div>
+  <div class="actions">
+    <button class="primary" onclick="window.open('https://jonacircazelli.app.n8n.cloud/form/nova-tarefa','_blank')">+ Nova Tarefa</button>
+    <button onclick="carregarTarefas()">↻ Atualizar</button>
+    <button onclick="limparToken()">🔑 Trocar Token</button>
+  </div>
+</header>
+
+<!-- Stats -->
+<div class="stats" id="stats">
+  <div class="stat"><div class="stat-value" id="s-total">—</div><div class="stat-label">Total</div></div>
+  <div class="stat"><div class="stat-value" id="s-abertas">—</div><div class="stat-label">Em Aberto</div></div>
+  <div class="stat"><div class="stat-value" id="s-alta">—</div><div class="stat-label">Alta Prioridade</div></div>
+  <div class="stat"><div class="stat-value" id="s-concluidas">—</div><div class="stat-label">Concluídas</div></div>
+</div>
+
+<!-- Board -->
+<div class="board">
+  <div class="column col-aberta">
+    <div class="column-header">
+      <span class="column-title">🔵 Aberta</span>
+      <span class="column-count" id="cnt-aberta">0</span>
+    </div>
+    <div class="cards" id="col-aberta"><p class="loading">Aguardando...</p></div>
+  </div>
+
+  <div class="column col-andamento">
+    <div class="column-header">
+      <span class="column-title">🟡 Em Andamento</span>
+      <span class="column-count" id="cnt-andamento">0</span>
+    </div>
+    <div class="cards" id="col-andamento"><p class="empty">Nenhuma tarefa</p></div>
+  </div>
+
+  <div class="column col-concluida">
+    <div class="column-header">
+      <span class="column-title">🟢 Concluída</span>
+      <span class="column-count" id="cnt-concluida">0</span>
+    </div>
+    <div class="cards" id="col-concluida"><p class="empty">Nenhuma tarefa</p></div>
+  </div>
+
+  <div class="column col-cancelada">
+    <div class="column-header">
+      <span class="column-title">🔴 Cancelada</span>
+      <span class="column-count" id="cnt-cancelada">0</span>
+    </div>
+    <div class="cards" id="col-cancelada"><p class="empty">Nenhuma tarefa</p></div>
+  </div>
+</div>
+
+<script>
+  const REPO = 'Jonacir2023/JC';
+  const PATH = 'vault/Tarefas';
+
+  const colMap = {
+    'aberta':       'aberta',
+    'em andamento': 'andamento',
+    'concluída':    'concluida',
+    'concluida':    'concluida',
+    'cancelada':    'cancelada'
+  };
+
+  function getToken() { return localStorage.getItem('gh_kanban_token'); }
+
+  function salvarToken() {
+    const t = document.getElementById('token-input').value.trim();
+    if (!t) return;
+    localStorage.setItem('gh_kanban_token', t);
+    document.getElementById('token-modal').style.display = 'none';
+    carregarTarefas();
+  }
+
+  function limparToken() {
+    localStorage.removeItem('gh_kanban_token');
+    location.reload();
+  }
+
+  function parseFrontmatter(text) {
+    const m = text.match(/^---\n([\s\S]*?)\n---/);
+    if (!m) return {};
+    const obj = {};
+    m[1].split('\n').forEach(line => {
+      const idx = line.indexOf(':');
+      if (idx < 0) return;
+      const key = line.slice(0, idx).trim();
+      const val = line.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
+      obj[key] = val;
+    });
+    return obj;
+  }
+
+  function prioClass(p = '') {
+    const lp = p.toLowerCase();
+    if (lp === 'alta') return 'alta';
+    if (lp === 'média' || lp === 'media') return 'media';
+    return 'baixa';
+  }
+
+  function prioEmoji(p = '') {
+    if (p === 'Alta') return '🔴';
+    if (p === 'Média') return '🟡';
+    if (p === 'Baixa') return '🟢';
+    return '';
+  }
+
+  function fmtDate(d) {
+    if (!d) return '';
+    try { return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'); } catch { return d; }
+  }
+
+  function renderCard(t) {
+    const desc = (t.descricao || '').trim();
+    return `
+      <div class="card ${prioClass(t.prioridade)}" title="${t.assunto || ''}">
+        <div class="card-title">${t.assunto || 'Sem título'}</div>
+        <div class="card-meta">
+          <span class="tag id">#${t.id || '?'}</span>
+          ${t.setor       ? `<span class="tag setor">${t.setor}</span>` : ''}
+          ${t.responsavel ? `<span class="tag responsavel">👤 ${t.responsavel}</span>` : ''}
+          ${t.prioridade  ? `<span class="tag">${prioEmoji(t.prioridade)} ${t.prioridade}</span>` : ''}
+          ${t.previsao_termino ? `<span class="tag prazo">📅 ${fmtDate(t.previsao_termino)}</span>` : ''}
+          ${desc ? `<span class="tag descricao">${desc.substring(0, 80)}${desc.length > 80 ? '…' : ''}</span>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function prioOrder(p) { return { 'Alta': 0, 'Média': 1, 'Baixa': 2 }[p] ?? 3; }
+
+  async function carregarTarefas() {
+    const token = getToken();
+    if (!token) return;
+
+    ['aberta','andamento','concluida','cancelada'].forEach(id =>
+      document.getElementById(`col-${id}`).innerHTML = '<p class="loading">Carregando...</p>'
+    );
+
+    const buckets = { aberta: [], andamento: [], concluida: [], cancelada: [] };
+
+    try {
+      const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' };
+      const listRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}`, { headers });
+      if (!listRes.ok) throw new Error('Falha ao listar arquivos');
+      const files = await listRes.json();
+      const mdFiles = files.filter(f => f.name.endsWith('.md') && f.name !== 'Índice de Tarefas.md');
+
+      await Promise.all(mdFiles.map(async file => {
+        try {
+          const r = await fetch(file.url, { headers });
+          const data = await r.json();
+          const content = atob(data.content.replace(/\n/g, ''));
+          const fm = parseFrontmatter(content);
+          const key = colMap[(fm.status || 'aberta').toLowerCase()] || 'aberta';
+          buckets[key].push(fm);
+        } catch { /* skip malformed file */ }
+      }));
+
+      Object.entries(buckets).forEach(([id, tarefas]) => {
+        tarefas.sort((a, b) => prioOrder(a.prioridade) - prioOrder(b.prioridade));
+        document.getElementById(`cnt-${id}`).textContent = tarefas.length;
+        document.getElementById(`col-${id}`).innerHTML =
+          tarefas.length ? tarefas.map(renderCard).join('') : '<p class="empty">Nenhuma tarefa</p>';
+      });
+
+      const total      = Object.values(buckets).flat().length;
+      const abertas    = buckets.aberta.length + buckets.andamento.length;
+      const altaPrio   = [...buckets.aberta, ...buckets.andamento].filter(t => t.prioridade === 'Alta').length;
+      const concluidas = buckets.concluida.length;
+
+      document.getElementById('s-total').textContent     = total;
+      document.getElementById('s-abertas').textContent   = abertas;
+      document.getElementById('s-alta').textContent      = altaPrio;
+      document.getElementById('s-concluidas').textContent = concluidas;
+
+      document.getElementById('refresh-info').textContent =
+        `· atualizado às ${new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+
+    } catch (e) {
+      document.getElementById('col-aberta').innerHTML =
+        `<p class="loading">❌ Erro: ${e.message}. Verifique o token.</p>`;
+    }
+  }
+
+  // Init
+  if (getToken()) {
+    document.getElementById('token-modal').style.display = 'none';
+    carregarTarefas();
+  }
+</script>
+</body>
+</html>
