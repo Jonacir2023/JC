@@ -293,7 +293,71 @@ return [{ json: { fileName, content, ...d } }];
     }
   }))
 
-  // ── 8. Resposta exibida no formulário ───────────────────────
+  // ── 8. Montar body da página Notion ────────────────────────
+  // Mapeia campos para o formato da API do Notion.
+  // Database ID: 303b3e907f7b4dcf927957ca44367947 (📋 Tarefas em 🏗️ Gestão de Obras)
+  .to(node({
+    type: 'n8n-nodes-base.code',
+    version: 2,
+    config: {
+      parameters: {
+        language: 'javaScript',
+        jsCode: `
+const d = $input.first().json;
+
+const prioMap = { 'Alta': '🔴 Alta', 'Média': '🟡 Média', 'Baixa': '🟢 Baixa' };
+
+const body = {
+  parent: { database_id: '303b3e907f7b4dcf927957ca44367947' },
+  properties: {
+    'Assunto':          { title:     [{ text: { content: d.assunto } }] },
+    'ID Tarefa':        { rich_text: [{ text: { content: String(d.id) } }] },
+    'Status':           { select:    { name: 'Aberta' } },
+    'Prioridade':       { select:    { name: prioMap[d.prioridade] || '🟢 Baixa' } },
+    'Setor':            { select:    { name: d.setor } },
+    'Responsável':      { rich_text: [{ text: { content: d.responsavel || '' } }] },
+    'Criador':          { rich_text: [{ text: { content: d.criador || '' } }] },
+    'Descrição':        { rich_text: [{ text: { content: d.descricao || '' } }] },
+    'Arquivo GitHub':   { rich_text: [{ text: { content: d.fileName } }] },
+    ...(d.data_lancamento  ? { 'Data de Lançamento': { date: { start: d.data_lancamento } } }  : {}),
+    ...(d.previsao_termino ? { 'Prazo':              { date: { start: d.previsao_termino } } } : {})
+  }
+};
+
+return [{ json: { ...d, notionBody: body } }];
+        `
+      }
+    }
+  }))
+
+  // ── 9. Criar página no Notion (banco 📋 Tarefas) ────────────
+  .to(node({
+    type: 'n8n-nodes-base.httpRequest',
+    version: 4,
+    config: {
+      parameters: {
+        method: 'POST',
+        url: 'https://api.notion.com/v1/pages',
+        authentication: 'genericCredentialType',
+        genericAuthType: 'httpHeaderAuth',
+        sendHeaders: true,
+        headerParameters: {
+          parameters: [
+            { name: 'Notion-Version', value: '2022-06-28' },
+            { name: 'Content-Type',   value: 'application/json' },
+            { name: 'Authorization',  value: expr('`Bearer ${$credentials.notionToken}`') }
+          ]
+        },
+        sendBody: true,
+        bodyContentType: 'json',
+        specifyBody: 'json',
+        jsonBody: expr('JSON.stringify($json.notionBody)'),
+        options: { response: { response: { responseFormat: 'json' } } }
+      }
+    }
+  }))
+
+  // ── 10. Resposta exibida no formulário ──────────────────────
   .to(node({
     type: 'n8n-nodes-base.set',
     version: 3,

@@ -116,9 +116,46 @@ tags: [tarefa, suprimentos, média]
 
 ---
 
+## Notion — Kanban de Reunião
+
+**Banco de dados:** `📋 Tarefas` dentro de `🏗️ Gestão de Obras`
+- **Database ID:** `303b3e907f7b4dcf927957ca44367947`
+- **Data Source ID:** `a96d3c71-bd9c-4473-9b4b-13f92894abca`
+- **URL:** https://www.notion.so/303b3e907f7b4dcf927957ca44367947
+
+**Views criadas:**
+- `🗂️ Kanban` — board agrupado por Status (Aberta / Em Andamento / Concluída)
+- `📄 Tabela` — tabela ordenada por Prazo
+
+**Campos do banco:**
+| Campo | Tipo | Valores |
+|---|---|---|
+| Assunto | Title | — |
+| ID Tarefa | Text | número gerado pelo n8n |
+| Status | Select | Aberta / Em Andamento / Concluída |
+| Prioridade | Select | 🔴 Alta / 🟡 Média / 🟢 Baixa |
+| Setor | Select | Suprimentos / Transporte / Planejamento / Administração / Segurança |
+| Responsável | Text | — |
+| Criador | Text | — |
+| Descrição | Text | — |
+| Data de Lançamento | Date | — |
+| Prazo | Date | — |
+| Arquivo GitHub | Text | nome do .md no repo |
+| Criado em | Created Time | automático |
+
+**Fluxo durante reunião:**
+1. Abrir Notion → `🏗️ Gestão de Obras` → `📋 Tarefas` → view `🗂️ Kanban`
+2. Arrastar cards entre colunas para atualizar status
+3. Todos com acesso à página veem as mudanças em tempo real
+
+**Credencial n8n necessária:** `notionToken` (Notion Integration Token)
+
+---
+
 ## Estado Atual
 
-- Workflow n8n atualizado: FormTrigger mobile + ID automático via Static Data
+- Workflow n8n: FormTrigger mobile + ID automático + cria em GitHub E Notion
+- Kanban Notion criado e configurado em `🏗️ Gestão de Obras`
 - Tarefas de exemplo no vault: TAREFA-1 (Blocos de Concreto) e TAREFA-009 (Teste de Energia)
 - Script Python de utilitários concluído
 - Estrutura do vault Obsidian configurada com templates e índices Dataview
