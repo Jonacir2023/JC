@@ -7,9 +7,17 @@ import { workflow, trigger, node, newCredential, expr } from '@n8n/workflow-sdk'
 //
 // Fluxo:
 //   FormTrigger (formulário hospedado no n8n.cloud)
-//   → Code (gera nota .md com frontmatter + base64)
+//   → Code (gera nota .md com frontmatter + base64 + todos os campos)
 //   → HTTP PUT (salva arquivo em vault/Tarefas/ via GitHub API)
+//   → Google Sheets (append row na planilha de tarefas)
 //   → Form Completion (exibe mensagem de sucesso ao usuário)
+//
+// Configuração necessária no N8N:
+//   1. Nó "Salvar no GitHub" → credencial Bearer Auth com o token GitHub
+//   2. Nó "Salvar na Planilha" → credencial Google Sheets OAuth2 + URL da planilha
+//      Colunas da planilha: ID | Assunto | Descrição | Criador | Responsável |
+//                           Setor | Prioridade | Data de Lançamento | Previsão de Término |
+//                           Status | Criado em
 
 const formTarefas = trigger({
   type: 'n8n-nodes-base.formTrigger',
@@ -118,7 +126,20 @@ tags: [tarefa, \${d.setor.toLowerCase()}, \${d.prioridade.toLowerCase()}]
 
 - \${new Date().toLocaleString('pt-BR')} — Tarefa criada via N8N (Formulário)
 \`;
-return [{ json: { fileName, contentBase64: Buffer.from(content).toString('base64'), assunto: d.assunto, id: d.id } }];`
+return [{ json: {
+  fileName,
+  contentBase64: Buffer.from(content).toString('base64'),
+  id: d.id,
+  assunto: d.assunto,
+  descricao: d.descricao || '',
+  criador: d.criador,
+  responsavel: d.responsavel,
+  setor: d.setor,
+  prioridade: d.prioridade,
+  data_lancamento: d.data_lancamento,
+  previsao_termino: d.previsao_termino,
+  timestamp
+} }];`
     }
   }
 });
@@ -155,6 +176,38 @@ const salvarGitHub = node({
   }
 });
 
+const salvarPlanilha = node({
+  type: 'n8n-nodes-base.googleSheets',
+  version: 4.7,
+  config: {
+    name: 'Salvar na Planilha (Google)',
+    credentials: { googleSheetsOAuth2Api: newCredential('Google Sheets') },
+    parameters: {
+      resource: 'sheet',
+      operation: 'append',
+      authentication: 'oAuth2',
+      documentId: { __rl: true, mode: 'url', value: 'COLE_A_URL_DA_PLANILHA_AQUI' },
+      sheetName: { __rl: true, mode: 'name', value: 'Tarefas' },
+      columns: {
+        mappingMode: 'defineBelow',
+        value: {
+          'ID': expr("{{ $('Gerar Nota Markdown').item.json.id }}"),
+          'Assunto': expr("{{ $('Gerar Nota Markdown').item.json.assunto }}"),
+          'Descrição': expr("{{ $('Gerar Nota Markdown').item.json.descricao }}"),
+          'Criador': expr("{{ $('Gerar Nota Markdown').item.json.criador }}"),
+          'Responsável': expr("{{ $('Gerar Nota Markdown').item.json.responsavel }}"),
+          'Setor': expr("{{ $('Gerar Nota Markdown').item.json.setor }}"),
+          'Prioridade': expr("{{ $('Gerar Nota Markdown').item.json.prioridade }}"),
+          'Data de Lançamento': expr("{{ $('Gerar Nota Markdown').item.json.data_lancamento }}"),
+          'Previsão de Término': expr("{{ $('Gerar Nota Markdown').item.json.previsao_termino }}"),
+          'Status': 'Aberta',
+          'Criado em': expr("{{ $('Gerar Nota Markdown').item.json.timestamp }}")
+        }
+      }
+    }
+  }
+});
+
 const concluido = node({
   type: 'n8n-nodes-base.form',
   version: 2.5,
@@ -164,7 +217,7 @@ const concluido = node({
       operation: 'completion',
       respondWith: 'text',
       completionTitle: '✅ Tarefa criada com sucesso!',
-      completionMessage: 'Sua tarefa foi registrada no Obsidian e estará disponível em instantes.'
+      completionMessage: 'Sua tarefa foi registrada no Obsidian e na planilha do Google Drive.'
     }
   }
 });
@@ -173,4 +226,5 @@ export default workflow('formulario-tarefas-obsidian', 'Formulário de Tarefas �
   .add(formTarefas)
   .to(gerarNota)
   .to(salvarGitHub)
+  .to(salvarPlanilha)
   .to(concluido);
