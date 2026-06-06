@@ -36,7 +36,7 @@
 
 ---
 
-**Relatório gerado**: 2026-06-06 16:01:52
+**Relatório gerado**: 2026-06-06 16:15:09
 **Próxima auditoria**: 2026-06-13
 
 Veja [[CLAUDE.md|CLAUDE.md]] para convenções do projeto.
