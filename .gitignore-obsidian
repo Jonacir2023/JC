@@ -1,0 +1,18 @@
+# Obsidian Vault — files to ignore in git
+
+# Obsidian local settings (user-specific)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/graph.json
+.obsidian/cache/
+.obsidian/plugins/*/data.json
+
+# Temporary files
+.DS_Store
+Thumbs.db
+
+# Keep these files tracked:
+# .obsidian/core-plugins.json
+# .obsidian/community-plugins.json
+# CLAUDE.md
+# OBSIDIAN-SETUP.md
