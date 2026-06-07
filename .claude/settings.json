@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Analise este prompt do usuário e identifique em qual categoria de skills ele se encaixa:\n\nCategorias:\n1. **Dev & Engineering**: dev, código, bug, refactor, engineer, arquitetura, performance, teste, pipeline, deploy\n2. **Research & Intelligence**: pesquisa, research, análise, inteligência, insights, investigação, descoberta, mercado, tendências, validação\n3. **Design & Creativity**: design, visual, interface, criatividade, imagem, diagrama, mockup, protótipo, ux, ui, branding\n\nPrompt do usuário: $ARGUMENTS\n\nResponda APENAS com o número (1, 2 ou 3) da categoria mais relevante, ou 0 se não se encaixa em nenhuma. Nada mais.",
+            "continueOnBlock": true
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\": \"🚀 Skills automáticos ativados!\\n\\n**Categorias disponíveis:**\\n1️⃣ **Dev & Engineering**: Superpowers, Repomix, Antfu Skills, GEO/SEO Claude, Dev Browser, Vexor Search, Skill Seekers, Web Scraper\\n2️⃣ **Research & Intelligence**: AutoResearch, Dialogue Evidence, PM Skills, JTBD Interview, Transformation IA, Deep Research\\n3️⃣ **Design & Creativity**: Claude Design, Schémas Dessinés, GPT Image 2, Art Algorithmique, Nothing Design, Canva Design\\n\\nMenção tópicos da sua área e receba recomendações automáticas de skills! 🎯\"}'",
+            "statusMessage": "Inicializando sistema de skills automáticos..."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -26,3 +26,50 @@ As code is added to this repository, update this file with:
 ## Language / Stack
 
 Not yet determined. Update this section once the technology stack is chosen.
+
+## Automated Skills System
+
+This repository uses automatic skill detection and recommendations based on conversation context. Skills are organized in 3 categories:
+
+### 1. Dev & Engineering Skills
+**Triggers:** dev, código, bug, refactor, engineer, arquitetura, performance, teste, pipeline, deploy
+
+**Available Skills:**
+- Superpowers - Senior engineer thinking
+- Repomix - Codebase analysis
+- Antfu Skills - Dev engineering toolkit
+- GEO / SEO Claude - AI visibility optimization
+- Dev Browser - Web navigation for QA
+- Vexor Search - Semantic search
+- Skill Seekers - Convert docs to skills
+- Web Scraper - Intelligent web scraping
+
+### 2. Research & Intelligence Skills
+**Triggers:** pesquisa, research, análise, inteligência, insights, investigação, descoberta, mercado, tendências, validação
+
+**Available Skills:**
+- AutoResearch - AI research automation
+- Dialogue Evidence - Critical analysis
+- PM Skills - Product toolkit
+- JTBD Interview - Customer research
+- Transformation IA - AI team maturity assessment
+- Deep Research - Multi-source research harness
+
+### 3. Design & Creativity Skills
+**Triggers:** design, visual, interface, criatividade, imagem, diagrama, mockup, protótipo, ux, ui, branding
+
+**Available Skills:**
+- Claude Design - 3D & motion toolkit
+- Schémas Dessinés - Diagram creation
+- GPT Image 2 - Image generation
+- Art Algorithmique - Generative art
+- Nothing Design - Industrial UI design
+- Canva Design - Modern graphics production
+
+## Automation Configuration
+
+Skills are configured via `.claude/settings.json` with two hooks:
+- **SessionStart**: Displays available skill categories on session init
+- **UserPromptSubmit**: Analyzes prompts and recommends relevant skills based on keywords
+
+The system works by detecting keywords in your prompts and suggesting the appropriate skill category. Invoke skills with `/skill-name` when recommendations appear.
