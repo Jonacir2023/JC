@@ -40,19 +40,22 @@ JC/
 
 ### Task Files (`vault/Tarefas/`)
 
-Tasks are created automatically by N8N via GitHub API. File naming:
+All records (Tarefas, Check-ins e Pautas) are created automatically by N8N via GitHub API and saved in `vault/Tarefas/`. File naming:
 
 ```
-TAREFA-{id}-{assunto-em-kebab-case-sem-acentos}.md
+TAREFA-{id}-{assunto-em-kebab-case-sem-acentos}.md    # tipo: Tarefa
+CHECKIN-{id}-{assunto-em-kebab-case-sem-acentos}.md   # tipo: Checkin
+PAUTA-{id}-{assunto-em-kebab-case-sem-acentos}.md     # tipo: Pauta
 ```
 
-Examples: `TAREFA-1-compra-de-blocos-de-concreto.md`, `TAREFA-009-teste-de-energia.md`
+Examples: `TAREFA-1-compra-de-blocos-de-concreto.md`, `CHECKIN-1-checkin-semanal.md`, `PAUTA-1-reuniao-de-obra.md`
 
 **Frontmatter fields (mandatory):**
 
 ```yaml
 ---
 id: "string"
+tipo: "Tarefa|Checkin|Pauta"
 assunto: "string"
 descricao: "string"
 criador: "string"
@@ -63,11 +66,13 @@ data_lancamento: "YYYY-MM-DD"
 previsao_termino: "YYYY-MM-DD"
 status: "Aberta|Em Andamento|Concluído"
 criado_em: "ISO 8601 timestamp"
-tags: [tarefa, {setor_lowercase}, {prioridade_lowercase}]
+tags: [tarefa|checkin|pauta, {setor_lowercase}, {prioridade_lowercase}]
 ---
 ```
 
 **Status values:** `Aberta` → `Em Andamento` → `Concluído`
+
+**Type emojis:** ✅ Checkin · 📋 Pauta · (prioridade) Tarefa
 
 **Priority emojis:** 🔴 Alta · 🟡 Média · 🟢 Baixa
 
@@ -83,6 +88,8 @@ When changing `status` in a task file, always append an entry to the **Históric
 
 ```
 tarefa: adiciona {Assunto} ({id})          # new task
+checkin: adiciona {Assunto} ({id})         # new check-in
+pauta: adiciona {Assunto} ({id})           # new pauta
 status: {filename} → {new status}          # status update
 tarefa: atualiza {Assunto} ({id})          # general update
 ```
