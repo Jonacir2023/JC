@@ -1,1 +1,6 @@
-["dataview", "templater-obsidian", "obsidian-git"]
+[
+  "dataview",
+  "templater-obsidian",
+  "obsidian-git",
+  "obsidian-kanban"
+]
