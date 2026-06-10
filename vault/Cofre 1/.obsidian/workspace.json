@@ -1,20 +1,40 @@
 {
   "main": {
-    "id": "60ca373ac30bbabe",
+    "id": "bfe558070df8a3f5",
     "type": "split",
     "children": [
       {
-        "id": "61be231022631534",
+        "id": "4bcac8a0738d8ae0",
         "type": "tabs",
         "children": [
           {
-            "id": "20b43ba91ce3b023",
+            "id": "22a0f14011384b4c",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Bem-vindo.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "Nova aba"
+              "title": "Bem-vindo"
+            }
+          }
+        ]
+      },
+      {
+        "id": "f59a2cc946199f23",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "960c66a50b487a8d",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Visualização em gráfico"
             }
           }
         ]
@@ -23,15 +43,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "3152850d8b52205a",
+    "id": "4513adc9f26639dd",
     "type": "split",
     "children": [
       {
-        "id": "4084f8044a810d7f",
+        "id": "c62c471359c2ef83",
         "type": "tabs",
         "children": [
           {
-            "id": "454d4820fb4e428a",
+            "id": "0c4f54ce4d800d37",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -44,7 +64,7 @@
             }
           },
           {
-            "id": "dd00974a715634b5",
+            "id": "f25a3eb29e3fd7ff",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -61,7 +81,7 @@
             }
           },
           {
-            "id": "2703f1d6f0b7d575",
+            "id": "1e6738abd6ccbb7c",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -77,19 +97,20 @@
     "width": 300
   },
   "right": {
-    "id": "5d72d20976da3b2f",
+    "id": "d8542721f632ee36",
     "type": "split",
     "children": [
       {
-        "id": "02023b1532cb04ac",
+        "id": "0502ef965c230227",
         "type": "tabs",
         "children": [
           {
-            "id": "961b2065556f48ec",
+            "id": "4d147369e71c053e",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
+                "file": "Bem-vindo.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -99,11 +120,25 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Links inversos"
+              "title": "Links inversos para Bem-vindo"
             }
           },
           {
-            "id": "ae0b26e5e360c046",
+            "id": "a4c24c2af02cac8a",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Bem-vindo.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Links de saída para Bem-vindo"
+            }
+          },
+          {
+            "id": "a332cc7b3ee0aca9",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -118,7 +153,7 @@
             }
           },
           {
-            "id": "bbf2ecbed7ed32a3",
+            "id": "3aa2a1648a554886",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -129,6 +164,21 @@
               },
               "icon": "lucide-archive",
               "title": "Todas as propriedades"
+            }
+          },
+          {
+            "id": "967dd007183c6d9a",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Bem-vindo.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Sumário de Bem-vindo"
             }
           }
         ]
@@ -145,10 +195,12 @@
       "canvas:Criar novo canvas": false,
       "daily-notes:Abrir a nota de hoje": false,
       "templates:Inserir modelo": false,
-      "markdown-importer:Abrir importador Markdown": false,
+      "command-palette:Abrir paleta de comandos": false,
       "bases:Criar nova base": false
     }
   },
-  "active": "20b43ba91ce3b023",
-  "lastOpenFiles": []
+  "active": "22a0f14011384b4c",
+  "lastOpenFiles": [
+    "Bem-vindo.md"
+  ]
 }
