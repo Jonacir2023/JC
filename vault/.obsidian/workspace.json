@@ -140,9 +140,6 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "templater-obsidian:Templater": false,
-      "obsidian-git:Open Git source control": false,
-      "obsidian-kanban:Create new board": false,
       "switcher:Abrir a troca rápida": false,
       "graph:Abrir visualização em gráfico": false,
       "canvas:Criar novo canvas": false,
@@ -152,6 +149,40 @@
       "bases:Criar nova base": false
     }
   },
-  "active": "20b43ba91ce3b023",
-  "lastOpenFiles": []
+  "active": "454d4820fb4e428a",
+  "lastOpenFiles": [
+    "Templates/Tarefa.md",
+    "Templates/Projeto.md",
+    "Templates/Nota.md",
+    "Templates/Diário.md",
+    "Templates",
+    "Tarefas/Índice de Tarefas.md",
+    "Tarefas/TAREFA-2-liberacao-de-acesso.md",
+    "Tarefas/TAREFA-1-compra-de-blocos-de-concreto.md",
+    "Tarefas/TAREFA-009-teste-de-energia.md",
+    "Tarefas/TAREFA-006-teste.md",
+    "Tarefas/TAREFA-005-fechamento-de-recesso.md",
+    "Tarefas/TAREFA-004-liberacao-de-area-trecho-1.md",
+    "Tarefas/TAREFA-003-compra-de-epi.md",
+    "Tarefas",
+    "Recursos/Índice de Recursos.md",
+    "Recursos/Anexos",
+    "Recursos",
+    "Projetos/Índice de Projetos.md",
+    "Projetos",
+    "Notas/Índice de Notas.md",
+    "Notas/O método Zettelkasten.md",
+    "Notas/Guia do Dataview.md",
+    "Notas/Como fazer notas atômicas.md",
+    "Notas",
+    "Início.md",
+    "Inbox/Entrada.md",
+    "Inbox",
+    "Diário",
+    "Cofre 1/Bem-vindo.md",
+    "Cofre 1",
+    "Cofre 1/crie um link.md",
+    "Cofre 1/Pasta teste..md",
+    "Cofre 1/Sem título.md"
+  ]
 }
