@@ -153,6 +153,14 @@
   },
   "active": "1a1044c20b69cd6a",
   "lastOpenFiles": [
+    "Templates/Pauta.md",
+    "Templates/Diário de Obras.md",
+    "Templates/Checkin.md",
+    "Recursos/Scripts de Manutenção do Vault.md",
+    "Recursos/N8N - Integração de Tarefas.md",
+    "Projetos/Implantação JC - Obsidian + N8N.md",
+    "Notas/Sistema JC - Estrutura e Convenções.md",
+    "Diário/Índice de Diário.md",
     "Templates/Tarefa.md",
     "Templates/Projeto.md",
     "Templates/Nota.md",
@@ -177,14 +185,8 @@
     "Notas/Guia do Dataview.md",
     "Notas/Como fazer notas atômicas.md",
     "Notas",
-    "Início.md",
-    "Inbox/Entrada.md",
     "Inbox",
     "Diário",
-    "Cofre 1/Bem-vindo.md",
-    "Cofre 1",
-    "Cofre 1/crie um link.md",
-    "Cofre 1/Pasta teste..md",
-    "Cofre 1/Sem título.md"
+    "Cofre 1"
   ]
 }
