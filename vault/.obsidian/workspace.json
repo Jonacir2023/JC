@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "61be231022631534",
+        "id": "34eb53b3753ed243",
         "type": "tabs",
         "children": [
           {
-            "id": "20b43ba91ce3b023",
+            "id": "1a1044c20b69cd6a",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -70,7 +70,8 @@
               "title": "Marcadores"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -146,10 +147,11 @@
       "daily-notes:Abrir a nota de hoje": false,
       "templates:Inserir modelo": false,
       "markdown-importer:Abrir importador Markdown": false,
-      "bases:Criar nova base": false
+      "bases:Criar nova base": false,
+      "obsidian-git:Open Git source control": false
     }
   },
-  "active": "454d4820fb4e428a",
+  "active": "1a1044c20b69cd6a",
   "lastOpenFiles": [
     "Templates/Tarefa.md",
     "Templates/Projeto.md",
