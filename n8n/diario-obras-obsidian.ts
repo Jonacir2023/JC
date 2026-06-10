@@ -154,6 +154,26 @@ tags: [diário, obras]
 
 ---
 
+## Outros Registros desta Obra
+
+\`\`\`dataview
+TABLE data, responsavel, status, clima
+FROM "Diário"
+WHERE obra = "\${d.obra}" AND file.name != this.file.name
+SORT data DESC
+\`\`\`
+
+---
+
+## Check-ins desta Obra
+
+\`\`\`dataview
+TABLE data_lancamento AS "Data", responsavel, status, assunto
+FROM "Tarefas"
+WHERE tipo = "Checkin" AND obra_ref = "\${d.obra}"
+SORT data_lancamento DESC
+\`\`\`
+
 ## Histórico
 
 - \${new Date().toLocaleString('pt-BR')} — Diário criado via N8N

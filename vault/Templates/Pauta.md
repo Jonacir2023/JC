@@ -49,6 +49,17 @@ tags: [pauta]
 
 
 
+---
+
+## Tarefas Originadas desta Pauta
+
+```dataview
+TABLE assunto, responsavel, prioridade, status, previsao_termino AS "Prazo"
+FROM "Tarefas"
+WHERE pauta_ref = this.file.name
+SORT data_lancamento ASC
+```
+
 ## Histórico
 
 - <% tp.date.now("DD/MM/YYYY HH:mm") %> — Pauta criada

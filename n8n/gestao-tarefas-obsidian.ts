@@ -46,6 +46,8 @@ export default workflow('gestao-tarefas-obsidian', 'Gestão de Tarefas → Obsid
             { name: 'setor',            type: 'string', value: expr('$json.Setor') },
             { name: 'data_lancamento',  type: 'string', value: expr('$json["Data de lançamento"]') },
             { name: 'previsao_termino', type: 'string', value: expr('$json["Previsão de Término"]') },
+            { name: 'pauta_ref',        type: 'string', value: expr('$json.Pauta ?? ""') },
+            { name: 'obra_ref',         type: 'string', value: expr('$json.Obra ?? ""') },
             { name: 'timestamp',        type: 'string', value: expr('new Date().toISOString()') }
           ]
         }
@@ -159,6 +161,11 @@ const secaoExtra = {
   'Tarefa': ''
 };
 
+const pautaRefFrontmatter = d.pauta_ref ? \`\npauta_ref: "\${d.pauta_ref}"\` : '';
+const obraRefFrontmatter = d.obra_ref ? \`\nobra_ref: "\${d.obra_ref}"\` : '';
+const pautaRefLinha = d.pauta_ref ? \`| **Pauta de Origem** | [[\${d.pauta_ref}]] |\n\` : '';
+const obraRefLinha = d.obra_ref ? \`| **Obra** | \${d.obra_ref} |\n\` : '';
+
 const content = \`---
 id: "\${d.id}"
 tipo: "\${tipo}"
@@ -171,7 +178,7 @@ prioridade: "\${d.prioridade}"
 data_lancamento: "\${d.data_lancamento}"
 previsao_termino: "\${d.previsao_termino}"
 status: Aberta
-criado_em: "\${d.timestamp}"
+criado_em: "\${d.timestamp}"\${pautaRefFrontmatter}\${obraRefFrontmatter}
 tags: [\${tipoTag}, \${d.setor.toLowerCase()}, \${d.prioridade.toLowerCase()}]
 ---
 
@@ -187,7 +194,7 @@ tags: [\${tipoTag}, \${d.setor.toLowerCase()}, \${d.prioridade.toLowerCase()}]
 | **Responsável** | \${d.responsavel} |
 | **Lançamento** | \${dataLancamento} |
 | **Prazo** | \${previsaoTermino} |
-
+\${pautaRefLinha}\${obraRefLinha}
 ---
 
 ## Descrição
