@@ -8,6 +8,7 @@ Bem-vindo ao seu cofre. Use esta página como painel principal.
 
 - [[Inbox/Entrada|Caixa de Entrada]] — captura rápida de ideias
 - [[Tarefas/Índice de Tarefas|Tarefas]] — recebidas via N8N
+- [[Diário/Índice de Diário|Diário de Obras]] — registro diário via N8N + Supabase
 - [[Projetos/Índice de Projetos|Projetos]] — tudo em andamento
 - [[Recursos/Índice de Recursos|Recursos]] — referências e materiais
 
@@ -32,7 +33,7 @@ LIMIT 5
 | [[Notas/Índice de Notas\|Notas]] | Conhecimento permanente |
 | [[Projetos/Índice de Projetos\|Projetos]] | Projetos ativos |
 | [[Tarefas/Índice de Tarefas\|Tarefas]] | Tarefas recebidas do N8N |
-| Diário | Registro diário |
+| [[Diário/Índice de Diário\|Diário]] | Diário de obras (N8N + Supabase) |
 | [[Recursos/Índice de Recursos\|Recursos]] | Referências e anexos |
 
 ---

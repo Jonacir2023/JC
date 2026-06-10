@@ -10,6 +10,7 @@ Cada nota aqui deve ser **atômica** — uma ideia por nota — e ter pelo menos
 
 ## Notas
 
+- [[Notas/Sistema JC - Estrutura e Convenções]]
 - [[Notas/Como fazer notas atômicas]]
 - [[Notas/O método Zettelkasten]]
 

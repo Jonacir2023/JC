@@ -6,7 +6,7 @@ Projetos ativos com prazo ou resultado definido.
 
 ## Ativos
 
-_(nenhum projeto ativo ainda — crie um abaixo)_
+- [[Projetos/Implantação JC - Obsidian + N8N]]
 
 ## Como criar um projeto
 

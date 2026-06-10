@@ -1,14 +1,14 @@
 import { workflow, trigger, node, expr } from 'n8n-workflow-sdk';
 
-// Workflow: Gestão de Tarefas → Obsidian
+// Workflow: Gestão de Tarefas, Check-ins e Pautas → Obsidian
 //
 // Fluxo:
 //   Webhook POST /gestao-tarefas
-//   → Mapeia campos do formulário
+//   → Mapeia campos do formulário (inclui Tipo: Tarefa | Checkin | Pauta)
 //   → Valida Prioridade (Baixa | Média | Alta)
 //   → Valida Setor (Suprimentos | Transporte | Planejamento | Administração | Segurança)
-//   → Gera nota Markdown com frontmatter
-//   → Cria arquivo na pasta vault/Tarefas/ via GitHub API
+//   → Gera nota Markdown com frontmatter conforme o Tipo
+//   → Cria/atualiza arquivo na pasta vault/Tarefas/ via GitHub API
 //   → Retorna confirmação
 
 export default workflow('gestao-tarefas-obsidian', 'Gestão de Tarefas → Obsidian')
@@ -37,6 +37,7 @@ export default workflow('gestao-tarefas-obsidian', 'Gestão de Tarefas → Obsid
         assignments: {
           assignments: [
             { name: 'id',               type: 'string', value: expr('$json.Id') },
+            { name: 'tipo',             type: 'string', value: expr('$json.Tipo ?? "Tarefa"') },
             { name: 'assunto',          type: 'string', value: expr('$json.Assunto') },
             { name: 'descricao',        type: 'string', value: expr('$json["Descrição do Assunto"]') },
             { name: 'criador',          type: 'string', value: expr('$json.Criador') },
@@ -92,7 +93,7 @@ export default workflow('gestao-tarefas-obsidian', 'Gestão de Tarefas → Obsid
     }
   }))
 
-  // ── 5. Gerar Markdown ───────────────────────────────────────
+  // ── 5. Gerar Markdown conforme o Tipo ───────────────────────
   .to(node({
     type: 'n8n-nodes-base.code',
     version: 2,
@@ -101,10 +102,22 @@ export default workflow('gestao-tarefas-obsidian', 'Gestão de Tarefas → Obsid
         language: 'javaScript',
         jsCode: `
 const d = $input.first().json;
+const tipo = d.tipo || 'Tarefa';
 
-// Emoji de prioridade
+// Emojis
 const prioEmoji = { 'Alta': '🔴', 'Média': '🟡', 'Baixa': '🟢' };
 const emoji = prioEmoji[d.prioridade] ?? '⚪';
+const tipoEmoji = { 'Tarefa': emoji, 'Checkin': '✅', 'Pauta': '📋' };
+const headerEmoji = tipoEmoji[tipo] ?? emoji;
+
+// Prefixo do arquivo por tipo
+const tipoPrefix = { 'Tarefa': 'TAREFA', 'Checkin': 'CHECKIN', 'Pauta': 'PAUTA' };
+const prefix = tipoPrefix[tipo] ?? 'TAREFA';
+const tipoTag = tipo.toLowerCase();
+
+// Prefixo do commit por tipo
+const commitPrefixMap = { 'Tarefa': 'tarefa', 'Checkin': 'checkin', 'Pauta': 'pauta' };
+const commitPrefix = commitPrefixMap[tipo] ?? 'tarefa';
 
 // Nome seguro para o arquivo (sem caracteres especiais)
 const safeName = d.assunto
@@ -114,7 +127,7 @@ const safeName = d.assunto
   .replace(/\\s+/g, '-')
   .toLowerCase();
 
-const fileName = \`TAREFA-\${d.id}-\${safeName}.md\`;
+const fileName = \`\${prefix}-\${d.id}-\${safeName}.md\`;
 
 const dataLancamento = d.data_lancamento
   ? new Date(d.data_lancamento).toLocaleDateString('pt-BR')
@@ -123,8 +136,32 @@ const previsaoTermino = d.previsao_termino
   ? new Date(d.previsao_termino).toLocaleDateString('pt-BR')
   : '';
 
+// Seções extras por tipo
+const secaoExtra = {
+  'Pauta': \`
+## Tópicos Discutidos
+
+
+
+## Decisões
+
+
+
+## Encaminhamentos
+
+- [ ]
+\`,
+  'Checkin': \`
+## Observações
+
+
+\`,
+  'Tarefa': ''
+};
+
 const content = \`---
 id: "\${d.id}"
+tipo: "\${tipo}"
 assunto: "\${d.assunto}"
 descricao: "\${d.descricao}"
 criador: "\${d.criador}"
@@ -135,14 +172,15 @@ data_lancamento: "\${d.data_lancamento}"
 previsao_termino: "\${d.previsao_termino}"
 status: Aberta
 criado_em: "\${d.timestamp}"
-tags: [tarefa, \${d.setor.toLowerCase()}, \${d.prioridade.toLowerCase()}]
+tags: [\${tipoTag}, \${d.setor.toLowerCase()}, \${d.prioridade.toLowerCase()}]
 ---
 
-# \${emoji} \${d.assunto}
+# \${headerEmoji} \${d.assunto}
 
 | Campo | Valor |
 |---|---|
 | **ID** | \${d.id} |
+| **Tipo** | \${tipo} |
 | **Setor** | \${d.setor} |
 | **Prioridade** | \${emoji} \${d.prioridade} |
 | **Criador** | \${d.criador} |
@@ -157,6 +195,7 @@ tags: [tarefa, \${d.setor.toLowerCase()}, \${d.prioridade.toLowerCase()}]
 \${d.descricao}
 
 ---
+\${secaoExtra[tipo] ?? ''}
 
 ## Anotações
 
@@ -164,10 +203,10 @@ tags: [tarefa, \${d.setor.toLowerCase()}, \${d.prioridade.toLowerCase()}]
 
 ## Histórico
 
-- \${new Date().toLocaleString('pt-BR')} — Tarefa criada via N8N
+- \${new Date().toLocaleString('pt-BR')} — \${tipo} criado via N8N
 \`;
 
-return [{ json: { fileName, content, ...d } }];
+return [{ json: { fileName, content, commitPrefix, ...d } }];
         `
       }
     }
@@ -197,7 +236,7 @@ return [{ json: { fileName, content, ...d } }];
           parameters: [
             {
               name: 'message',
-              value: expr('`tarefa: adiciona ${$json.assunto} (${$json.id})`')
+              value: expr('`${$json.commitPrefix}: adiciona ${$json.assunto} (${$json.id})`')
             },
             {
               name: 'content',
@@ -220,7 +259,7 @@ return [{ json: { fileName, content, ...d } }];
         assignments: {
           assignments: [
             { name: 'status',   type: 'string', value: 'ok' },
-            { name: 'mensagem', type: 'string', value: expr('`Tarefa "${$json.assunto}" criada no Obsidian com sucesso.`') },
+            { name: 'mensagem', type: 'string', value: expr('`${$json.tipo} "${$json.assunto}" criado no Obsidian com sucesso.`') },
             { name: 'arquivo',  type: 'string', value: expr('$json.fileName') }
           ]
         }
