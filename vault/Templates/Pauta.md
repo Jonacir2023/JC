@@ -1,16 +1,17 @@
 ---
 id: <% tp.file.title %>
 tipo: Pauta
-assunto: 
-descricao: 
-criador: 
-responsavel: 
-setor: 
-prioridade: 
+assunto:
+descricao:
+criador:
+responsavel:
+setor:
+prioridade:
 data_lancamento: <% tp.date.now("YYYY-MM-DD") %>
-previsao_termino: 
+previsao_termino:
 status: Aberta
-tags: [pauta]
+tags:
+  - pauta
 ---
 
 # 📋 <% tp.file.title %>

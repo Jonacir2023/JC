@@ -4,17 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "34eb53b3753ed243",
+        "id": "b693927aa787604d",
         "type": "tabs",
         "children": [
           {
-            "id": "1a1044c20b69cd6a",
+            "id": "49b6d5d96cd1c1c5",
             "type": "leaf",
             "state": {
-              "type": "empty",
+              "type": "graph",
               "state": {},
-              "icon": "lucide-file",
-              "title": "Nova aba"
+              "icon": "lucide-git-fork",
+              "title": "Visualização em gráfico"
             }
           }
         ]
@@ -70,8 +70,7 @@
               "title": "Marcadores"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
@@ -151,7 +150,7 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "1a1044c20b69cd6a",
+  "active": "49b6d5d96cd1c1c5",
   "lastOpenFiles": [
     "Templates/Pauta.md",
     "Templates/Diário de Obras.md",
