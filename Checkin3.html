@@ -99,7 +99,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
 .card-aging.alert{color:var(--red)}
 .card-resp{font-size:11px;color:var(--ink-soft);font-weight:600}
 .card-actions{display:flex;gap:4px}
-.card-btn{background:none;border:none;cursor:pointer;font-size:16px;padding:2px 5px;border-radius:4px;transition:background .15s}
+.card-btn{background:none;border:none;cursor:pointer;font-size:18px;padding:8px 10px;border-radius:4px;transition:background .15s}
 .card-btn:hover{background:#f0ece7}
 .card-dates{font-size:11px;color:var(--ink-faint);margin-top:3px}
 
@@ -274,7 +274,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
     <div class="cal-grid" id="cal-grid"></div>
   </div>
   <div class="sec">
-    <div class="sec-title">📅 Reuniões do Mês</div>
+    <div class="sec-title">📋 Assuntos Criados</div>
     <div id="lista-reunioes-cal"></div>
   </div>
 </div>
@@ -896,10 +896,10 @@ function renderCalendario(){
   const diasMes=new Date(ano,mes+1,0).getDate();
   const hoje=new Date();
   const eventosDias={};
-  reunioes.forEach(r=>{
-    if(!r.data)return;
-    const[a,m,d]=r.data.split('-').map(Number);
-    if(m-1===mes&&a===ano)eventosDias[d]=(eventosDias[d]||0)+1;
+  assuntos.forEach(a=>{
+    if(!a.dataLanc)return;
+    const[a_ano,a_mes,a_dia]=String(a.dataLanc).slice(0,10).split('-').map(Number);
+    if(a_ano===ano&&a_mes-1===mes)eventosDias[a_dia]=(eventosDias[a_dia]||0)+1;
   });
   const dias=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   let html=dias.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
@@ -910,20 +910,22 @@ function renderCalendario(){
   }
   document.getElementById('cal-grid').innerHTML=html;
   const lr=document.getElementById('lista-reunioes-cal');
-  const rm=reunioes.filter(r=>{
-    if(!r.data)return false;
-    const[a,m]=r.data.split('-').map(Number);
-    return m-1===mes&&a===ano;
-  });
-  lr.innerHTML=rm.length?rm.map(r=>`
+  const assuntosDoMes=assuntos.filter(a=>{
+    if(!a.dataLanc)return false;
+    const[a_ano,a_mes]=String(a.dataLanc).slice(0,10).split('-').map(Number);
+    return a_ano===ano&&a_mes===mes+1;
+  }).sort((a,b)=>String(b.dataLanc).localeCompare(String(a.dataLanc)));
+  lr.innerHTML=assuntosDoMes.length?assuntosDoMes.map(a=>`
     <div class="ultimas-item">
-      <div class="ultimas-data">${r.data} ${r.hora||''}</div>
-      <div class="ultimas-titulo">Reunião de Obra</div>
+      <div class="ultimas-data">${a.dataLanc||''}</div>
+      <div class="ultimas-titulo">${a.assunto}</div>
       <div class="ultimas-meta">
-        <span class="badge badge-gray">📌 ${r.assuntos?r.assuntos.length:0} assuntos</span>
+        <span class="badge ${priorCor(a.prioridade)}">${a.prioridade}</span>
+        <span class="badge ${statusBadge(a.status)}">${statusLabel(a.status)}</span>
+        ${a.setor?`<span class="badge ${setorCor(a.setor)}">${a.setor}</span>`:''}
       </div>
     </div>
-  `).join(''):'<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-txt">Nenhuma reunião neste mês</div></div>';
+  `).join(''):'<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-txt">Nenhum assunto neste mês</div></div>';
 }
 
 function calNav(dir){calMes=new Date(calMes.getFullYear(),calMes.getMonth()+dir,1);renderCalendario()}
