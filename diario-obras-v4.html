@@ -2921,6 +2921,7 @@ function renderConfig() {
   renderConfigEquip();
   renderConfigVL();
   renderConfigAtiv();
+  renderAtividadesDodiaCadastro();
   renderConfigEventos('seguranca');
   renderConfigEventos('meio_ambiente');
   document.getElementById('histCount').textContent = Object.keys(history).length;
@@ -3082,9 +3083,28 @@ function renderConfigAtiv() {
     cont.innerHTML = '<div class="empty">Nenhuma atividade</div>';
     return;
   }
+  const hoje = new Date().toISOString().slice(0, 10);
+  const savedAtiv = S.get(`ativDia_${hoje}`) || {};
   state.atividades.forEach(a => {
+    const checked = !!savedAtiv[a.id];
     const row = document.createElement('div');
-    row.className = 'item-row';
+    row.className = 'item-row' + (checked ? ' checked' : '');
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = checked;
+    checkbox.style.marginRight = '10px';
+    checkbox.style.cursor = 'pointer';
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) {
+        savedAtiv[a.id] = { qty: '', local: '' };
+      } else {
+        delete savedAtiv[a.id];
+      }
+      S.set(`ativDia_${hoje}`, savedAtiv);
+      renderConfigAtiv();
+      renderAtividadesDodiaCadastro();
+    });
 
     const info = document.createElement('div');
     info.className = 'item-info';
@@ -3116,6 +3136,7 @@ function renderConfigAtiv() {
     acts.appendChild(btnEdit);
     acts.appendChild(btnDel);
 
+    row.appendChild(checkbox);
     row.appendChild(info);
     row.appendChild(acts);
     cont.appendChild(row);
@@ -3367,85 +3388,83 @@ function removerEquipamento(id) {
   });
 }
 
-function irParaAtividades(){
-  const t=document.querySelector('.tab[data-view="config"]');
-  if(t)t.click();
-  setTimeout(()=>{
-    const st=document.querySelector('.subtab[data-pane="atividades"]');
-    if(st)st.click();
-    renderAtividadesCheckbox();
-  },200);
-}
+function renderAtividadesDodiaCadastro(){
+  const cont = document.getElementById('atividadesCheckboxList');
+  const hoje = new Date().toISOString().slice(0, 10);
+  const savedAtiv = S.get(`ativDia_${hoje}`) || {};
+  const selecionadas = state.atividades.filter(a => savedAtiv[a.id]);
 
-function renderAtividadesCheckbox(){
-  const cont=document.getElementById('atividadesCheckboxList');
-  const hoje=new Date().toISOString().slice(0,10);
-  const savedAtiv=S.get(`ativDia_${hoje}`)|| {};
-  cont.innerHTML=state.atividades.length?state.atividades.map(a=>{
-    const checked=!!savedAtiv[a.id];
-    const qty=savedAtiv[a.id]?.qty||'';
-    const local=savedAtiv[a.id]?.local||'';
-    return `
-      <div style="border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;background:var(--bg-card)">
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-          <input type="checkbox" id="chk_${a.id}" ${checked?'checked':''} onchange="atualizarAtividadeCheckbox('${a.id}')">
-          <label for="chk_${a.id}" style="flex:1;cursor:pointer;font-weight:700">${a.desc}</label>
-        </div>
-        ${checked?`
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-left:28px">
-            <div>
-              <label style="font-size:11px;color:var(--ink-faint)">Quantidade</label>
-              <input type="text" id="qty_${a.id}" value="${qty}" placeholder="Ex: 10" onchange="atualizarAtividadeCheckbox('${a.id}')">
-            </div>
-            <div>
-              <label style="font-size:11px;color:var(--ink-faint)">Local</label>
-              <input type="text" id="local_${a.id}" value="${local}" placeholder="Ex: Bloco A" onchange="atualizarAtividadeCheckbox('${a.id}')">
-            </div>
-          </div>
-        `:''}
-      </div>
-    `;
-  }).join(''):'<p style="color:var(--ink-faint)">Nenhuma atividade cadastrada. Crie uma acima.</p>';
-}
-
-function atualizarAtividadeCheckbox(id){
-  const hoje=new Date().toISOString().slice(0,10);
-  let savedAtiv=S.get(`ativDia_${hoje}`)|| {};
-  const checked=document.getElementById(`chk_${id}`).checked;
-  if(checked){
-    const qty=document.getElementById(`qty_${id}`)?.value||'';
-    const local=document.getElementById(`local_${id}`)?.value||'';
-    savedAtiv[id]={qty,local};
-  } else {
-    delete savedAtiv[id];
+  if (selecionadas.length === 0) {
+    cont.innerHTML = '<p style="color:var(--ink-faint);text-align:center;padding:20px">Marque atividades acima para aparecerem aqui</p>';
+    return;
   }
-  S.set(`ativDia_${hoje}`,savedAtiv);
-  renderAtividadesCheckbox();
+
+  cont.innerHTML = selecionadas.map(a => `
+    <div style="border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;background:var(--bg-card)">
+      <div style="font-weight:700;margin-bottom:10px">${a.desc}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label style="font-size:11px;color:var(--ink-faint);display:block;margin-bottom:4px">Quantidade</label>
+          <input type="text" value="${savedAtiv[a.id]?.qty || ''}" placeholder="Ex: 10"
+            onchange="atualizarQtyLocalAtiv('${a.id}', 'qty', this.value);renderAtividadesDodiaCadastro()">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--ink-faint);display:block;margin-bottom:4px">Local de Execução</label>
+          <input type="text" value="${savedAtiv[a.id]?.local || ''}" placeholder="Ex: Bloco A"
+            onchange="atualizarQtyLocalAtiv('${a.id}', 'local', this.value);renderAtividadesDodiaCadastro()">
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function atualizarQtyLocalAtiv(atId, tipo, valor) {
+  const hoje = new Date().toISOString().slice(0, 10);
+  let savedAtiv = S.get(`ativDia_${hoje}`) || {};
+  if (!savedAtiv[atId]) savedAtiv[atId] = { qty: '', local: '' };
+  savedAtiv[atId][tipo] = valor;
+  S.set(`ativDia_${hoje}`, savedAtiv);
 }
 
 function marcarTodasAtividadesCheckbox(marcar){
-  state.atividades.forEach(a=>{
-    const el=document.getElementById(`chk_${a.id}`);
-    if(el)el.checked=marcar;
+  const hoje = new Date().toISOString().slice(0, 10);
+  let savedAtiv = S.get(`ativDia_${hoje}`) || {};
+  state.atividades.forEach(a => {
+    if (marcar) {
+      savedAtiv[a.id] = { qty: '', local: '' };
+    } else {
+      delete savedAtiv[a.id];
+    }
   });
-  setTimeout(()=>renderAtividadesCheckbox(),0);
+  S.set(`ativDia_${hoje}`, savedAtiv);
+  renderConfigAtiv();
+  renderAtividadesDodiaCadastro();
+}
+
+function irParaAtividades(){
+  const t = document.querySelector('.tab[data-view="config"]');
+  if (t) t.click();
+  setTimeout(() => {
+    const st = document.querySelector('.subtab[data-pane="atividades"]');
+    if (st) st.click();
+  }, 200);
 }
 
 function salvarAtividadesDodia(){
-  const hoje=new Date().toISOString().slice(0,10);
-  if(currentDate===hoje){
-    currentDay.atividadesMarcadas={};
-    const savedAtiv=S.get(`ativDia_${hoje}`)|| {};
-    Object.keys(savedAtiv).forEach(atId=>{
-      currentDay.atividadesMarcadas[atId]={...savedAtiv[atId]};
+  const hoje = new Date().toISOString().slice(0, 10);
+  if(currentDate === hoje){
+    currentDay.atividadesMarcadas = {};
+    const savedAtiv = S.get(`ativDia_${hoje}`) || {};
+    Object.keys(savedAtiv).forEach(atId => {
+      currentDay.atividadesMarcadas[atId] = { ...savedAtiv[atId] };
     });
     salvarDiarioDia();
     renderDiario();
     toast('Atividades salvas!');
-    const t=document.querySelector('.tab[data-view="diario"]');
-    if(t)t.click();
+    const t = document.querySelector('.tab[data-view="diario"]');
+    if (t) t.click();
   } else {
-    toast('Volte ao dia atual para salvar','var(--red)');
+    toast('Volte ao dia atual para salvar', 'var(--red)');
   }
 }
 
