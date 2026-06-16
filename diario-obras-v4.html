@@ -3485,20 +3485,33 @@ function salvarAtividade() {
   const desc = document.getElementById('modalAtivDesc').value.trim();
   const local = document.getElementById('modalAtivLocal').value.trim();
   const unidade = document.getElementById('modalAtivUnidade').value.trim();
-  if (!desc) { toast('Descrição obrigatória'); return; }
-  if (editingItem.id) {
-    const a = state.atividades.find(x => x.id === editingItem.id);
-    if (a) {
-      a.desc = desc; a.local = local; a.unidade = unidade;
-    }
-  } else {
-    state.atividades.push({ id: uid('a'), desc, local, unidade });
+
+  if (!desc) {
+    toast('Descrição é obrigatória', 'var(--red)');
+    return;
   }
-  saveState();
-  fecharModal('modalAtividade');
-  renderConfigAtiv();
-  renderAtividadesDodiaCadastro();
-  toast('Salvo');
+
+  try {
+    if (editingItem && editingItem.id) {
+      // Editar existente
+      const idx = state.atividades.findIndex(x => x.id === editingItem.id);
+      if (idx >= 0) {
+        state.atividades[idx] = { id: editingItem.id, desc, local, unidade };
+      }
+    } else {
+      // Criar nova
+      const newId = uid('a');
+      state.atividades.push({ id: newId, desc, local, unidade });
+    }
+
+    saveState();
+    fecharModal('modalAtividade');
+    renderConfigAtiv();
+    renderAtividadesDodiaCadastro();
+    toast('✓ Atividade salva');
+  } catch (e) {
+    toast('Erro ao salvar: ' + e.message, 'var(--red)');
+  }
 }
 function removerAtividade(id) {
   confirmar('Remover esta atividade?', () => {
