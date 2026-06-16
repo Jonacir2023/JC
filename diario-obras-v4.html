@@ -3449,22 +3449,39 @@ function abrirAbaAtividades(){
 
 function salvarAtividadesDodia(){
   const hoje = new Date().toISOString().slice(0, 10);
-  if(currentDay && currentDay.data && currentDay.data === hoje){
-    currentDay.atividadesMarcadas = {};
-    const savedAtiv = S.get(`ativDia_${hoje}`) || {};
-    Object.keys(savedAtiv).forEach(atId => {
-      currentDay.atividadesMarcadas[atId] = { ...savedAtiv[atId] };
-    });
-    salvarDiarioDia();
-    renderDiario();
-    toast('✓ Atividades salvas e adicionadas ao Diário!');
-    setTimeout(() => {
-      const t = document.querySelector('.tab[data-view="diario"]');
-      if (t) t.click();
-    }, 300);
-  } else {
-    toast('Volte ao dia atual para salvar', 'var(--red)');
+
+  // Se não tem currentDay inicializado, inicializa com hoje
+  if (!currentDay || !currentDay.data) {
+    initCurrentDay(hoje);
   }
+
+  const dataDiario = currentDay.data || hoje;
+
+  // Copiar atividades selecionadas para o dia atual
+  currentDay.atividadesMarcadas = {};
+  const savedAtiv = S.get(`ativDia_${hoje}`) || {};
+
+  Object.keys(savedAtiv).forEach(atId => {
+    currentDay.atividadesMarcadas[atId] = { ...savedAtiv[atId] };
+  });
+
+  // Salvar e renderizar
+  salvarDiarioDia();
+  renderDiario();
+  renderAtividadesDia();
+
+  toast('✓ Atividades salvas e adicionadas ao Diário!');
+
+  // Redirecionar para Diário
+  setTimeout(() => {
+    const t = document.querySelector('.tab[data-view="diario"]');
+    if (t) {
+      t.click();
+      setTimeout(() => {
+        initCurrentDay(dataDiario);
+      }, 200);
+    }
+  }, 300);
 }
 
 function abrirModalAtividade() {
