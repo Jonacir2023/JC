@@ -2247,43 +2247,39 @@ function marcarTodosTipo(tipo, valor) {
 function renderAtividadesDia() {
   const cont = document.getElementById('atividadesList');
   cont.innerHTML = '';
-  if (state.atividades.length === 0) {
-    cont.innerHTML = '<div class="empty">Cadastre atividades em ⚙️ Cadastro</div>';
-  } else {
-    state.atividades.forEach(a => {
-      const checked = !!currentDay.atividadesMarcadas[a.id];
-      const ativData = currentDay.atividadesMarcadas[a.id];
-      const qtd = (ativData && ativData.qty) || '';
-      const local = (ativData && ativData.local) || a.local || '';
-      const unid = a.unidade || '';
-      const row = document.createElement('div');
-      row.className = 'item-row clickable ' + (checked ? 'checked' : '');
-      row.innerHTML = `
-        <div class="checkbox"></div>
-        <div class="item-info">
-          <div class="item-name">${escapeHtml(a.desc)}</div>
-          ${local ? `<div class="item-meta">${escapeHtml(local)}</div>` : ''}
-        </div>
-        <div style="display:flex;align-items:center;gap:4px;min-width:90px">
-          <input type="number" step="any" min="0" placeholder="Qtd" value="${qtd}"
-            style="width:60px;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)"
-            onclick="event.stopPropagation()"
-            oninput="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
-            onchange="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
-            onblur="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)">
-          ${unid ? `<span style="font-size:11px;color:var(--ink-faint);white-space:nowrap">${escapeHtml(unid)}</span>` : ''}
-        </div>
-      `;
-      row.onclick = (e) => {
-        if (e.target.tagName === 'INPUT') return;
-        if (checked) delete currentDay.atividadesMarcadas[a.id];
-        else currentDay.atividadesMarcadas[a.id] = {qty: '', local: ''};
-        salvarDiarioDia(false);
-        renderAtividadesDia();
-      };
-      cont.appendChild(row);
-    });
+  const selecionadas = state.atividades.filter(a => !!currentDay.atividadesMarcadas[a.id]);
+
+  if (selecionadas.length === 0) {
+    cont.innerHTML = '<div class="empty">Nenhuma atividade selecionada. Clique ➕ para adicionar.</div>';
+    return;
   }
+
+  selecionadas.forEach(a => {
+    const ativData = currentDay.atividadesMarcadas[a.id];
+    const qtd = (ativData && ativData.qty) || '';
+    const local = (ativData && ativData.local) || a.local || '';
+    const unid = a.unidade || '';
+    const row = document.createElement('div');
+    row.className = 'item-row checked';
+    row.innerHTML = `
+      <div class="checkbox"></div>
+      <div class="item-info">
+        <div class="item-name">${escapeHtml(a.desc)}</div>
+        ${local ? `<div class="item-meta">${escapeHtml(local)}</div>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;min-width:90px">
+        <input type="number" step="any" min="0" placeholder="Qtd" value="${qtd}"
+          style="width:60px;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)"
+          onclick="event.stopPropagation()"
+          oninput="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
+          onchange="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
+          onblur="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)">
+        ${unid ? `<span style="font-size:11px;color:var(--ink-faint);white-space:nowrap">${escapeHtml(unid)}</span>` : ''}
+      </div>
+    `;
+    cont.appendChild(row);
+  });
+}
 }
 
 function salvarQtdAtividade(atId, valor) {
@@ -3492,20 +3488,28 @@ function salvarAtividade() {
   if (!desc) { toast('Descrição obrigatória'); return; }
   if (editingItem.id) {
     const a = state.atividades.find(x => x.id === editingItem.id);
-    a.desc = desc; a.local = local; a.unidade = unidade;
+    if (a) {
+      a.desc = desc; a.local = local; a.unidade = unidade;
+    }
   } else {
     state.atividades.push({ id: uid('a'), desc, local, unidade });
   }
   saveState();
   fecharModal('modalAtividade');
   renderConfigAtiv();
+  renderAtividadesDodiaCadastro();
   toast('Salvo');
 }
 function removerAtividade(id) {
   confirmar('Remover esta atividade?', () => {
     state.atividades = state.atividades.filter(a => a.id !== id);
+    const hoje = new Date().toISOString().slice(0, 10);
+    let savedAtiv = S.get(`ativDia_${hoje}`) || {};
+    delete savedAtiv[id];
+    S.set(`ativDia_${hoje}`, savedAtiv);
     saveState();
     renderConfigAtiv();
+    renderAtividadesDodiaCadastro();
     toast('Removido');
   });
 }
