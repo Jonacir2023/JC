@@ -26,9 +26,9 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
 .hdr-date{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--accent2);text-align:right}
 .hdr-settings{background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;padding:2px}
 
-.tabs{display:flex;overflow-x:auto;gap:0;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.08)}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid rgba(255,255,255,.08)}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:none;padding:10px 14px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;color:#888;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab{padding:10px 4px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.3px;color:#888;border-bottom:3px solid transparent;cursor:pointer;text-align:center;transition:all .2s;touch-action:manipulation;user-select:none}
 .tab.active{color:#f0ece7;border-bottom-color:var(--accent)}
 .tab:hover:not(.active){color:#ccc}
 
@@ -212,11 +212,11 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
     </div>
   </div>
   <nav class="tabs">
-    <div class="tab active" onclick="goTab('checkin',this)">📋 Check-in</div>
-    <div class="tab" onclick="goTab('cadastro',this)">⚙️ Cadastro</div>
-    <div class="tab" onclick="goTab('calendario',this)">📅 Calendário</div>
-    <div class="tab" onclick="goTab('resumo',this)">📊 Resumo</div>
-    <div class="tab" onclick="goTab('dashboard',this)">🚀 Dashb</div>
+    <div class="tab active" onclick="goTab('checkin',this)">📋<br>Check-in</div>
+    <div class="tab" onclick="goTab('cadastro',this)">⚙️<br>Cadastro</div>
+    <div class="tab" onclick="goTab('calendario',this)">📅<br>Calendário</div>
+    <div class="tab" onclick="goTab('resumo',this)">📊<br>Resumo</div>
+    <div class="tab" onclick="goTab('dashboard',this)">🚀<br>Dashb</div>
   </nav>
 </header>
 
