@@ -368,6 +368,19 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   </div>
 </div>
 
+<!-- MODAL AÇÕES CARD -->
+<div class="modal-overlay" id="modal-acoes">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModal('modal-acoes')">✕</button>
+    <div class="modal-title" id="acoes-titulo" style="font-size:14px;margin-bottom:16px"></div>
+    <button class="btn btn-full" id="acoes-fazendo" style="margin-bottom:10px;background:var(--yellow);color:#fff;font-size:16px" onclick="acoesCard('fazendo')">⚡ FAZENDO</button>
+    <button class="btn btn-full" id="acoes-concluido" style="margin-bottom:10px;background:var(--green);color:#fff;font-size:16px" onclick="acoesCard('concluido')">✅ CONCLUÍDO</button>
+    <button class="btn btn-full" id="acoes-cancelado" style="margin-bottom:10px;background:#aaa;color:#fff;font-size:16px" onclick="acoesCard('cancelado')">🚫 CANCELADO</button>
+    <button class="btn btn-full" id="acoes-afazer" style="margin-bottom:10px;background:var(--blue);color:#fff;font-size:16px" onclick="acoesCard('afazer')">🎯 A FAZER</button>
+    <button class="btn btn-outline btn-full" style="font-size:16px" onclick="acoesEditar()">✏️ EDITAR</button>
+  </div>
+</div>
+
 <!-- MODAL CONFIG -->
 <div class="config-modal" id="modal-config">
   <div class="modal">
@@ -559,7 +572,7 @@ function renderKanbanCheckin(){
           <span class="kol-count">${cards.length}</span>
         </div>
         ${cards.length?cards.map(a=>`
-          <div class="card">
+          <div class="card" onclick="abrirAcoes('${a.id}')" style="cursor:pointer">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <div class="card-title">${a.assunto}</div>
               ${aging(a)}
@@ -569,21 +582,13 @@ function renderKanbanCheckin(){
               <span class="badge ${priorCor(a.prioridade)}">${a.prioridade}</span>
               ${a.setor?`<span class="badge ${setorCor(a.setor)}">${a.setor}</span>`:''}
             </div>
-            <div class="card-meta" style="margin-bottom:4px">
-              <span class="badge ${statusBadge(a.status)}">${statusLabel(a.status)}</span>
-            </div>
             <div class="card-dates">
               ${a.dataLanc?`📅 ${formatDate(a.dataLanc)}`:''}
               ${a.dataTerm?` → 🏁 ${formatDate(a.dataTerm)}`:''}
             </div>
             <div class="card-footer">
               <span class="card-resp">👤 ${a.resp||'—'}${a.criador?' · ✍️ '+a.criador:''}</span>
-              <div class="card-actions">
-                ${c.status==='afazer'?`<button class="card-btn" onclick="moverCard('${a.id}','fazendo')" title="Iniciar">⚡</button>`:''}
-                ${c.status!=='concluido'?`<button class="card-btn" onclick="moverCard('${a.id}','concluido')" title="Concluir">✅</button>`:''}
-                ${c.status!=='cancelado'&&c.status!=='concluido'?`<button class="card-btn" onclick="moverCard('${a.id}','cancelado')" title="Cancelar">🚫</button>`:''}
-                <button class="card-btn" onclick="editarAssunto('${a.id}')" title="Editar">✏️</button>
-              </div>
+              <span class="badge ${statusBadge(a.status)}">${statusLabel(a.status)}</span>
             </div>
           </div>
         `).join(''):`<div class="drop-zone">Nenhum assunto aqui</div>`}
@@ -631,6 +636,27 @@ async function salvarCheckInGoogle(reuniao) {
   } catch (err) {
     console.error('Erro salvar CheckIn:', err);
   }
+}
+
+let _acoesId=null;
+function abrirAcoes(id){
+  _acoesId=id;
+  const a=assuntos.find(x=>String(x.id)===String(id));
+  if(!a)return;
+  document.getElementById('acoes-titulo').textContent=a.assunto;
+  document.getElementById('acoes-fazendo').style.display=a.status==='fazendo'?'none':'block';
+  document.getElementById('acoes-afazer').style.display=a.status==='afazer'?'none':'block';
+  document.getElementById('acoes-concluido').style.display=a.status==='concluido'?'none':'block';
+  document.getElementById('acoes-cancelado').style.display=a.status==='cancelado'?'none':'block';
+  document.getElementById('modal-acoes').classList.add('open');
+}
+function acoesCard(status){
+  fecharModal('modal-acoes');
+  if(_acoesId)moverCard(_acoesId,status);
+}
+function acoesEditar(){
+  fecharModal('modal-acoes');
+  if(_acoesId)editarAssunto(_acoesId);
 }
 
 function moverCard(id,status){
