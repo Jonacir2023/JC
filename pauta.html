@@ -297,6 +297,9 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
 </div>
 
 <script>
+// 🔗 Google Apps Script API
+const APPS_SCRIPT_URL_PAUTA = 'https://script.google.com/macros/s/AKfycbw_k_qgegafYphrVCGJf9r_rZqxI0jtAjTBhJ7CHZoztjF4ANnz-hJT9ot9VDIqEBjKBA/exec';
+
 // ── STORAGE
 const S = {
   get(k){try{return JSON.parse(localStorage.getItem('pauta_'+k))}catch{return null}},
@@ -411,6 +414,7 @@ function enviarAssunto(){
 
   assuntos.push(item);
   S.set('assuntos', assuntos);
+  criarPautaGoogle(item);
 
   // Limpar form
   document.getElementById('f-assunto').value = '';
@@ -490,6 +494,49 @@ function limparAssuntos(){
   S.set('assuntos', assuntos);
   renderListar();
   notify('Assuntos limpos','var(--red)');
+}
+
+// ── INTEGRAÇÃO COM GOOGLE SHEETS
+async function criarPautaGoogle(item) {
+  if (!APPS_SCRIPT_URL_PAUTA) return;
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL_PAUTA + '?path=pauta&action=criar', {
+      method: 'POST',
+      body: JSON.stringify({
+        assunto: item.assunto,
+        descricao: item.desc,
+        criador: item.criador,
+        responsavel: item.resp,
+        setor: item.setor,
+        prioridade: item.prioridade === 'alta' ? 'Alta' : item.prioridade === 'media' ? 'Média' : 'Baixa',
+        data_lancamento: item.dataLanc,
+        data_termino: item.dataTerm
+      })
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      console.log('✅ Pauta criada no Google Sheets');
+    }
+  } catch (err) {
+    console.error('Erro criar pauta no Google Sheets:', err);
+  }
+}
+
+async function atualizarStatusPautaGoogle(id, novoStatus) {
+  if (!APPS_SCRIPT_URL_PAUTA) return;
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL_PAUTA + '?path=pauta&action=atualizar-status', {
+      method: 'POST',
+      body: JSON.stringify({
+        id: id,
+        novo_status: novoStatus === 'afazer' ? 'Aberta' : novoStatus === 'fazendo' ? 'Em Andamento' : 'Concluído'
+      })
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+  } catch (err) {
+    console.error('Erro atualizar status:', err);
+  }
 }
 
 // ── EXPORTAR
