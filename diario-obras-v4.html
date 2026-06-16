@@ -1141,15 +1141,13 @@
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">🛠️ Atividades do Dia</div>
-      <button class="icon-btn" onclick="abrirModalAtivExtra()" title="Atividade avulsa">➕</button>
+      <button class="icon-btn" onclick="irParaAtividades()" title="Selecionar atividades">➕</button>
     </div>
     <div class="quick-actions">
       <button class="quick-btn" onclick="marcarTodosTipo('atividades', true)">✓ Todas</button>
       <button class="quick-btn" onclick="marcarTodosTipo('atividades', false)">✗ Limpar</button>
     </div>
     <div id="atividadesList"></div>
-    <label style="margin-top:14px">Observações / atividades avulsas (texto livre)</label>
-    <textarea id="atividadesExtra" rows="3" placeholder="Outras atividades não cadastradas..."></textarea>
   </div>
   
   <div class="section">
@@ -1399,9 +1397,23 @@
   <!-- ATIVIDADES -->
   <div class="config-pane" id="pane-atividades">
     <div class="section">
+      <div class="section-title"><div class="section-title-text">🛠️ Atividades Cadastradas</div></div>
       <button class="add-btn-full" onclick="abrirModalAtividade()">+ Adicionar Atividade Padrão</button>
       <hr class="divider">
       <div id="configAtivList"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><div class="section-title-text">✓ Atividades do Dia</div></div>
+      <p style="font-size:12px;color:var(--ink-faint);margin-bottom:14px;font-style:italic">
+        Marque as atividades realizadas hoje. Você pode ajustar a quantidade e o local de execução para cada uma.
+      </p>
+      <div class="quick-actions" style="margin-bottom:14px">
+        <button class="quick-btn" onclick="marcarTodasAtividadesCheckbox(true)">✓ Marcar Todas</button>
+        <button class="quick-btn" onclick="marcarTodasAtividadesCheckbox(false)">✗ Desmarcar</button>
+      </div>
+      <div id="atividadesCheckboxList"></div>
+      <button class="btn btn-primary" style="margin-top:16px;width:100%" onclick="salvarAtividadesDodia()">💾 Salvar Atividades do Dia</button>
     </div>
   </div>
   
@@ -2240,7 +2252,9 @@ function renderAtividadesDia() {
   } else {
     state.atividades.forEach(a => {
       const checked = !!currentDay.atividadesMarcadas[a.id];
-      const qtd = (currentDay.atividadesQtd && currentDay.atividadesQtd[a.id]) || '';
+      const ativData = currentDay.atividadesMarcadas[a.id];
+      const qtd = (ativData && ativData.qty) || '';
+      const local = (ativData && ativData.local) || a.local || '';
       const unid = a.unidade || '';
       const row = document.createElement('div');
       row.className = 'item-row clickable ' + (checked ? 'checked' : '');
@@ -2248,7 +2262,7 @@ function renderAtividadesDia() {
         <div class="checkbox"></div>
         <div class="item-info">
           <div class="item-name">${escapeHtml(a.desc)}</div>
-          ${a.local ? `<div class="item-meta">${escapeHtml(a.local)}</div>` : ''}
+          ${local ? `<div class="item-meta">${escapeHtml(local)}</div>` : ''}
         </div>
         <div style="display:flex;align-items:center;gap:4px;min-width:90px">
           <input type="number" step="any" min="0" placeholder="Qtd" value="${qtd}"
@@ -2263,31 +2277,10 @@ function renderAtividadesDia() {
       row.onclick = (e) => {
         if (e.target.tagName === 'INPUT') return;
         if (checked) delete currentDay.atividadesMarcadas[a.id];
-        else currentDay.atividadesMarcadas[a.id] = true;
+        else currentDay.atividadesMarcadas[a.id] = {qty: '', local: ''};
         salvarDiarioDia(false);
         renderAtividadesDia();
       };
-      cont.appendChild(row);
-    });
-  }
-  if (currentDay.atividadesAvulsas.length > 0) {
-    const sep = document.createElement('div');
-    sep.style.cssText = 'font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin:10px 4px 4px;font-weight:600';
-    sep.textContent = '• Avulsas do dia';
-    cont.appendChild(sep);
-    currentDay.atividadesAvulsas.forEach((a, idx) => {
-      const row = document.createElement('div');
-      row.className = 'item-row checked';
-      row.innerHTML = `
-        <div class="checkbox"></div>
-        <div class="item-info">
-          <div class="item-name">${escapeHtml(a.desc)}</div>
-          ${a.local ? `<div class="item-meta">${escapeHtml(a.local)}</div>` : ''}
-        </div>
-        <div class="item-actions">
-          <button class="icon-btn" onclick="event.stopPropagation();removerAtivAvulsa(${idx})">🗑️</button>
-        </div>
-      `;
       cont.appendChild(row);
     });
   }
@@ -3372,6 +3365,88 @@ function removerEquipamento(id) {
     renderConfigEquip();
     toast('Removido');
   });
+}
+
+function irParaAtividades(){
+  const t=document.querySelector('.tab[data-view="config"]');
+  if(t)t.click();
+  setTimeout(()=>{
+    const st=document.querySelector('.subtab[data-pane="atividades"]');
+    if(st)st.click();
+    renderAtividadesCheckbox();
+  },200);
+}
+
+function renderAtividadesCheckbox(){
+  const cont=document.getElementById('atividadesCheckboxList');
+  const hoje=new Date().toISOString().slice(0,10);
+  const savedAtiv=S.get(`ativDia_${hoje}`)|| {};
+  cont.innerHTML=state.atividades.length?state.atividades.map(a=>{
+    const checked=!!savedAtiv[a.id];
+    const qty=savedAtiv[a.id]?.qty||'';
+    const local=savedAtiv[a.id]?.local||'';
+    return `
+      <div style="border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;background:var(--bg-card)">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <input type="checkbox" id="chk_${a.id}" ${checked?'checked':''} onchange="atualizarAtividadeCheckbox('${a.id}')">
+          <label for="chk_${a.id}" style="flex:1;cursor:pointer;font-weight:700">${a.desc}</label>
+        </div>
+        ${checked?`
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-left:28px">
+            <div>
+              <label style="font-size:11px;color:var(--ink-faint)">Quantidade</label>
+              <input type="text" id="qty_${a.id}" value="${qty}" placeholder="Ex: 10" onchange="atualizarAtividadeCheckbox('${a.id}')">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--ink-faint)">Local</label>
+              <input type="text" id="local_${a.id}" value="${local}" placeholder="Ex: Bloco A" onchange="atualizarAtividadeCheckbox('${a.id}')">
+            </div>
+          </div>
+        `:''}
+      </div>
+    `;
+  }).join(''):'<p style="color:var(--ink-faint)">Nenhuma atividade cadastrada. Crie uma acima.</p>';
+}
+
+function atualizarAtividadeCheckbox(id){
+  const hoje=new Date().toISOString().slice(0,10);
+  let savedAtiv=S.get(`ativDia_${hoje}`)|| {};
+  const checked=document.getElementById(`chk_${id}`).checked;
+  if(checked){
+    const qty=document.getElementById(`qty_${id}`)?.value||'';
+    const local=document.getElementById(`local_${id}`)?.value||'';
+    savedAtiv[id]={qty,local};
+  } else {
+    delete savedAtiv[id];
+  }
+  S.set(`ativDia_${hoje}`,savedAtiv);
+  renderAtividadesCheckbox();
+}
+
+function marcarTodasAtividadesCheckbox(marcar){
+  state.atividades.forEach(a=>{
+    const el=document.getElementById(`chk_${a.id}`);
+    if(el)el.checked=marcar;
+  });
+  setTimeout(()=>renderAtividadesCheckbox(),0);
+}
+
+function salvarAtividadesDodia(){
+  const hoje=new Date().toISOString().slice(0,10);
+  if(currentDate===hoje){
+    currentDay.atividadesMarcadas={};
+    const savedAtiv=S.get(`ativDia_${hoje}`)|| {};
+    Object.keys(savedAtiv).forEach(atId=>{
+      currentDay.atividadesMarcadas[atId]={...savedAtiv[atId]};
+    });
+    salvarDiarioDia();
+    renderDiario();
+    toast('Atividades salvas!');
+    const t=document.querySelector('.tab[data-view="diario"]');
+    if(t)t.click();
+  } else {
+    toast('Volte ao dia atual para salvar','var(--red)');
+  }
 }
 
 function abrirModalAtividade() {
