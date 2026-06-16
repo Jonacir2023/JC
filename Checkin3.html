@@ -384,6 +384,9 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
 </div>
 
 <script>
+// 🔗 Google Apps Script API
+const APPS_SCRIPT_URL_PAUTA = 'https://script.google.com/macros/s/AKfycbw_k_qgegafYphrVCGJf9r_rZqxI0jtAjTBhJ7CHZoztjF4ANnz-hJT9ot9VDIqEBjKBA/exec';
+
 const S={
   get(k){try{return JSON.parse(localStorage.getItem('chk_'+k))}catch{return null}},
   set(k,v){localStorage.setItem('chk_'+k,JSON.stringify(v))}
@@ -602,6 +605,47 @@ function renderKanbanCheckin(){
   }).join('');
 }
 
+// ── INTEGRAÇÃO COM GOOGLE SHEETS
+async function sincronizarComGoogle(assunto) {
+  if (!APPS_SCRIPT_URL_PAUTA) return;
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL_PAUTA + '?path=pauta&action=atualizar-status', {
+      method: 'POST',
+      body: JSON.stringify({
+        id: assunto.id,
+        novo_status: assunto.status === 'afazer' ? 'Aberta' :
+                      assunto.status === 'fazendo' ? 'Em Andamento' : 'Concluído'
+      })
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error);
+  } catch (err) {
+    console.error('Erro sincronizar com Google:', err);
+  }
+}
+
+async function salvarCheckInGoogle(reuniao) {
+  if (!APPS_SCRIPT_URL_PAUTA) return;
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL_PAUTA + '?path=checkin&action=salvar', {
+      method: 'POST',
+      body: JSON.stringify({
+        data: reuniao.data,
+        hora: reuniao.hora,
+        obra: config.obra,
+        assuntos: reuniao.assuntos.map(a => ({id: a.id, assunto: a.assunto, status: a.status})),
+        resumo: 'CheckIn de ' + new Date(reuniao.data).toLocaleDateString('pt-BR')
+      })
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      notify('✅ CheckIn salvo no Google Sheets!');
+    }
+  } catch (err) {
+    console.error('Erro salvar CheckIn:', err);
+  }
+}
+
 function moverCard(id,status){
   const a=assuntos.find(x=>x.id===id);
   if(a){
@@ -614,6 +658,7 @@ function moverCard(id,status){
 }
 
 function sincronizarPlanilha(assunto){
+  sincronizarComGoogle(assunto);
   if(!config.whSalvar){return;}
   notify('Sincronizando com a planilha...');
   enviarWebhook(config.whSalvar,{
@@ -722,6 +767,7 @@ function salvarReuniao(){
     assuntos:[...assuntos]
   };
   reunioes.push(reuniao);S.set('reunioes',reunioes);notify('Reunião salva!');
+  salvarCheckInGoogle(reuniao);
   // WEBHOOK N8N: enviar reunião salva
   // enviarWebhook(config.whSalvar,{tipo:'salvar_reuniao',reuniao});
 }

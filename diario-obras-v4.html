@@ -1714,6 +1714,9 @@
 <div class="toast" id="toast">Salvo</div>
 
 <script>
+// 🔗 Google Apps Script API
+const APPS_SCRIPT_URL_DIARIO = 'https://script.google.com/macros/s/AKfycbyhxIGlmcAiGK_dzV2UKjqH7WkGfE3BOEFxHPk4c73evSHLjcZgDo0iOCUxcyo1ezo67A/exec';
+
 // ============================================================
 // CONSTANTES E ESTADO
 // ============================================================
@@ -2102,6 +2105,56 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// ============================================================
+// INTEGRAÇÃO COM GOOGLE SHEETS
+// ============================================================
+
+async function salvarDiarioGoogle(diarioData) {
+  if (!APPS_SCRIPT_URL_DIARIO) return;
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=salvar', {
+      method: 'POST',
+      body: JSON.stringify(diarioData)
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      console.log('✅ Diário sincronizado com Google Sheets');
+    }
+  } catch (err) {
+    console.error('Erro salvar diário no Google Sheets:', err);
+  }
+}
+
+async function carregarDiarioGoogle(data) {
+  if (!APPS_SCRIPT_URL_DIARIO) return;
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=carregar&data=' + data);
+    const result = await resp.json();
+    if (result.ok && result.diario) {
+      history[data] = result.diario;
+      saveHistory();
+      currentDay = JSON.parse(JSON.stringify(result.diario));
+      renderDiario();
+      toast('✅ Diário carregado do Google Sheets');
+    }
+  } catch (err) {
+    console.error('Erro carregar diário:', err);
+  }
+}
+
+async function gerarRelatorioGoogle(data) {
+  if (!APPS_SCRIPT_URL_DIARIO) return;
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=relatorio&data=' + data);
+    const result = await resp.json();
+    if (result.ok && result.relatorio) {
+      return result.relatorio;
+    }
+  } catch (err) {
+    console.error('Erro gerar relatório:', err);
+  }
+}
+
 function salvarDiarioDia(notificar) {
   if (!currentDay || !currentDay.data) return;
   const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.tempo ||
@@ -2116,6 +2169,7 @@ function salvarDiarioDia(notificar) {
   if (temDado) {
     history[currentDay.data] = JSON.parse(JSON.stringify(currentDay));
     saveHistory();
+    salvarDiarioGoogle(currentDay);
   } else if (history[currentDay.data]) {
     delete history[currentDay.data];
     saveHistory();
