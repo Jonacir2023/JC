@@ -10,7 +10,7 @@
  * - GET /api/checkin/historico
  */
 
-const SHEET_ID = ''; // Será preenchido com ID da planilha
+const SHEET_ID = '19fTP_qyxv1QiLdxBz3jbvTb46DKedrkApEVExmSxKEM';
 const SHEET_NAME_PAUTA = 'Pauta';
 const SHEET_NAME_CHECKIN = 'CheckIn';
 

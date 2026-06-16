@@ -9,7 +9,7 @@
  * - GET /api/diario/lista-mes?mes=YYYY-MM
  */
 
-const SHEET_ID = ''; // Será preenchido com ID da planilha
+const SHEET_ID = '19fTP_qyxv1QiLdxBz3jbvTb46DKedrkApEVExmSxKEM';
 const SHEET_NAME_DIARIO = 'Diário';
 
 function doGet(e) {
