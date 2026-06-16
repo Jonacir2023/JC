@@ -248,7 +248,6 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   <div class="sec">
     <div class="sec-title">⚡ Ações da Reunião</div>
     <button class="btn btn-primary btn-full" onclick="salvarReuniao()">💾 SALVAR REUNIÃO</button>
-    <button class="btn btn-secondary btn-full" onclick="salvarTelegram()">✈️ SALVAR E ENVIAR TELEGRAM</button>
     <button class="btn btn-outline btn-full" onclick="capturarCheckin()" style="margin-bottom:0;border-color:var(--blue);color:var(--blue)">📸 CAPTURAR IMAGEM</button>
 
   </div>
@@ -294,7 +293,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   <div id="dashboard-conteudo"></div>
 </div>
 
-<!-- MODAL ASSUNTO — campos alinhados ao n8n -->
+<!-- MODAL ASSUNTO -->
 <div class="modal-overlay" id="modal-assunto">
   <div class="modal">
     <button class="modal-close" onclick="fecharModal('modal-assunto')">✕</button>
@@ -375,10 +374,6 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
     <button class="modal-close" onclick="fecharModal('modal-config')">✕</button>
     <div class="modal-title">⚙️ Configurar Obra</div>
     <div class="frow"><label>Nome da Obra</label><input type="text" id="cfg-obra" placeholder="Ex: Obra X - Bloco A"/></div>
-    <div class="frow"><label>Webhook n8n — Salvar Reunião</label><input type="text" id="cfg-wh-salvar" placeholder="https://..."/></div>
-    <div class="frow"><label>Webhook n8n — Telegram</label><input type="text" id="cfg-wh-telegram" placeholder="https://..."/></div>
-    <div class="frow"><label>Webhook n8n — Carregar Planilha (GET)</label><input type="text" id="cfg-wh-carregar" placeholder="https://jonacircazelli.app.n8n.cloud/webhook/chekin/carregar"/></div>
-    <div class="frow"><label>Webhook n8n — PDF / Relatório</label><input type="text" id="cfg-wh-pdf" placeholder="https://..."/></div>
     <button class="btn btn-primary btn-full" onclick="salvarConfig()">SALVAR CONFIGURAÇÕES</button>
   </div>
 </div>
@@ -392,9 +387,9 @@ const S={
   set(k,v){localStorage.setItem('chk_'+k,JSON.stringify(v))}
 };
 
-let config=S.get('config')||{obra:'',whSalvar:'',whTelegram:'',whCarregar:'',whPDF:''};
+let config=S.get('config')||{obra:''};
 
-// Campo renomeado: "assunto" (alinhado ao n8n). dataLanc e dataTerm adicionados.
+// dataLanc e dataTerm adicionados.
 let assuntos=S.get('assuntos')||[
   {id:1,assunto:'Verificação de EPI',desc:'Conferir uso correto de equipamentos de proteção',prioridade:'alta',setor:'Segurança',resp:'',status:'afazer',dataLanc:'2026-06-01',dataTerm:'2026-06-05',criadoEm:Date.now()-86400000*2},
   {id:2,assunto:'Reunião de Planejamento',desc:'Alinhamento de atividades para o dia',prioridade:'media',setor:'Planejamento',resp:'',status:'afazer',dataLanc:'2026-06-02',dataTerm:'2026-06-02',criadoEm:Date.now()},
@@ -472,49 +467,6 @@ async function carregarDaPlanilhaGoogle() {
 
 function carregarDaPlanilha(){
   carregarDaPlanilhaGoogle();
-  if(!config.whCarregar){return;}
-  notify('Carregando assuntos da planilha...','var(--blue)');
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', config.whCarregar, true);
-  xhr.onload = function(){
-    if(xhr.status >= 200 && xhr.status < 300){
-      try{
-        var resp = JSON.parse(xhr.responseText);
-        if(resp.ok && resp.assuntos && resp.assuntos.length > 0){
-          assuntos = resp.assuntos.map(function(a){
-            return {
-              id: a.id || Date.now(),
-              assunto: a.assunto || '',
-              desc: a.desc || '',
-              criador: a.criador || '',
-              resp: a.resp || '',
-              setor: a.setor || '',
-              prioridade: a.prioridade || 'media',
-              status: a.status || 'afazer',
-              dataLanc: a.dataLanc || '',
-              dataTerm: a.dataTerm || '',
-              criadoEm: a.criadoEm || Date.now(),
-              concluidoEm: a.concluidoEm || null
-            };
-          });
-          S.set('assuntos', assuntos);
-          renderCheckin();
-          if(document.getElementById('page-cadastro').classList.contains('active')) renderCadastro();
-          notify('Assuntos atualizados da planilha!');
-        } else {
-          notify('Planilha vazia ou sem dados novos','var(--yellow)');
-        }
-      } catch(e){
-        notify('Erro ao processar dados da planilha','var(--red)');
-      }
-    } else {
-      notify('Erro ao conectar com a planilha','var(--red)');
-    }
-  };
-  xhr.onerror = function(){
-    notify('Sem conexao com a planilha','var(--red)');
-  };
-  xhr.send();
 }
 
 function initData(){
@@ -694,12 +646,6 @@ function moverCard(id,status){
 
 function sincronizarPlanilha(assunto){
   sincronizarComGoogle(assunto);
-  if(!config.whSalvar){return;}
-  notify('Sincronizando com a planilha...');
-  enviarWebhook(config.whSalvar,{
-    tipo:'atualizar_status',
-    assuntos:[assunto]
-  });
 }
 
 function renderCadastro(){
@@ -803,28 +749,8 @@ function salvarReuniao(){
   };
   reunioes.push(reuniao);S.set('reunioes',reunioes);notify('Reunião salva!');
   salvarCheckInGoogle(reuniao);
-  // WEBHOOK N8N: enviar reunião salva
-  // enviarWebhook(config.whSalvar,{tipo:'salvar_reuniao',reuniao});
 }
 
-function salvarTelegram(){
-  salvarReuniao();
-  if(!config.whTelegram){
-    notify('Configure o webhook do Telegram nas configuracoes','var(--yellow)');
-    return;
-  }
-  var data = document.getElementById('ci-data').value;
-  var hora = document.getElementById('ci-hora').value;
-  var obra = config.obra || 'Obra';
-  notify('Enviando relatorio para Telegram...');
-  enviarWebhook(config.whTelegram, {
-    tipo: 'telegram_relatorio',
-    obra: obra,
-    data: data,
-    hora: hora,
-    assuntos: assuntos
-  });
-}
 function capturarCheckin(){
   notify('Preparando imagem...');
 
@@ -962,23 +888,6 @@ function prepararImpressao(tipo){
   setTimeout(function(){pk.style.display='none';},3000);
 }
 
-function enviarWebhook(url,payload){
-  if(!url){notify('Configure o webhook nas configuracoes','var(--yellow)');return;}
-  var xhr=new XMLHttpRequest();
-  xhr.open('POST',url,true);
-  xhr.setRequestHeader('Content-Type','application/json');
-  xhr.onload=function(){
-    if(xhr.status>=200&&xhr.status<300){
-      notify('Enviado com sucesso!');
-    } else {
-      notify('Erro ao enviar (status '+xhr.status+')','var(--red)');
-    }
-  };
-  xhr.onerror=function(){
-    notify('Erro de conexao. Verifique se o workflow do n8n esta ativo.','var(--red)');
-  };
-  xhr.send(JSON.stringify(payload));
-}
 
 function renderCalendario(){
   const ano=calMes.getFullYear(),mes=calMes.getMonth();
@@ -1153,15 +1062,11 @@ function renderDashboard(){
 
 function abrirConfig(){
   document.getElementById('cfg-obra').value=config.obra||'';
-  document.getElementById('cfg-wh-salvar').value=config.whSalvar||'';
-  document.getElementById('cfg-wh-telegram').value=config.whTelegram||'';
-  document.getElementById('cfg-wh-carregar').value=config.whCarregar||'';
-  document.getElementById('cfg-wh-pdf').value=config.whPDF||'';
   document.getElementById('modal-config').classList.add('open');
 }
 
 function salvarConfig(){
-  config={obra:document.getElementById('cfg-obra').value,whSalvar:document.getElementById('cfg-wh-salvar').value,whTelegram:document.getElementById('cfg-wh-telegram').value,whCarregar:document.getElementById('cfg-wh-carregar').value,whPDF:document.getElementById('cfg-wh-pdf').value};
+  config={obra:document.getElementById('cfg-obra').value};
   S.set('config',config);
   document.getElementById('hdr-obra-label').textContent=config.obra||'— Configure a obra —';
   fecharModal('modal-config');notify('Configurações salvas!');
