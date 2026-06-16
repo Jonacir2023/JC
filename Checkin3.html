@@ -455,8 +455,8 @@ async function carregarDaPlanilhaGoogle() {
         setor: p.setor,
         prioridade: p.prioridade.toLowerCase().replace(' ', ''),
         status: p.status === 'Aberta' ? 'afazer' : p.status === 'Em Andamento' ? 'fazendo' : 'concluido',
-        dataLanc: p.data_lançamento,
-        dataTerm: p.data_término,
+        dataLanc: p.data_lançamento ? String(p.data_lançamento).slice(0,10) : '',
+        dataTerm: p.data_término ? String(p.data_término).slice(0,10) : '',
         criadoEm: new Date(p.criado_em).getTime()
       }));
       S.set('assuntos', assuntos);
@@ -584,7 +584,9 @@ function aging(a){
 
 function formatDate(d){
   if(!d)return '';
-  const[a,m,dia]=d.split('-');
+  const str=String(d).slice(0,10);
+  const[a,m,dia]=str.split('-');
+  if(!dia)return String(d);
   return `${dia}/${m}/${a}`;
 }
 
