@@ -54,7 +54,7 @@ function doPost(e) {
 // ============================================================
 
 function salvarDiario(diarioData) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME_DIARIO);
   if (!sheet) return errorResponse('Aba Diário não encontrada');
 
@@ -115,7 +115,7 @@ function montarLinhasDiario(id, dados, agora) {
 }
 
 function carregarDiario(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME_DIARIO);
   if (!sheet) return errorResponse('Aba Diário não encontrada');
 
@@ -224,7 +224,7 @@ ${d.atividadesExtra ? `\nObservações: ${d.atividadesExtra}` : ''}
 }
 
 function listarDiariosMes(mes) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME_DIARIO);
   if (!sheet) return errorResponse('Aba Diário não encontrada');
 

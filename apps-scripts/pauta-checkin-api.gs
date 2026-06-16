@@ -61,7 +61,7 @@ function doPost(e) {
 // ============================================================
 
 function listarPautas() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME_PAUTA);
   if (!sheet) return errorResponse('Aba Pauta não encontrada');
 
@@ -85,7 +85,7 @@ function listarPautas() {
 }
 
 function criarPauta(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME_PAUTA);
   if (!sheet) return errorResponse('Aba Pauta não encontrada');
 
@@ -120,7 +120,7 @@ function criarPauta(data) {
 }
 
 function atualizarStatusPauta(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME_PAUTA);
   if (!sheet) return errorResponse('Aba Pauta não encontrada');
 
@@ -146,7 +146,7 @@ function atualizarStatusPauta(data) {
 // ============================================================
 
 function salvarCheckIn(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME_CHECKIN);
   if (!sheet) return errorResponse('Aba CheckIn não encontrada');
 
@@ -173,7 +173,7 @@ function salvarCheckIn(data) {
 }
 
 function listarCheckIns() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME_CHECKIN);
   if (!sheet) return errorResponse('Aba CheckIn não encontrada');
 
