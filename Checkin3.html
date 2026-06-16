@@ -454,7 +454,7 @@ async function carregarDaPlanilhaGoogle() {
         resp: p.responsável,
         setor: p.setor,
         prioridade: p.prioridade.toLowerCase().replace(' ', ''),
-        status: p.status.toLowerCase().replace(' ', ''),
+        status: p.status === 'Aberta' ? 'afazer' : p.status === 'Em Andamento' ? 'fazendo' : 'concluido',
         dataLanc: p.data_lançamento,
         dataTerm: p.data_término,
         criadoEm: new Date(p.criado_em).getTime()
