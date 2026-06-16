@@ -1733,6 +1733,12 @@ const HISTORY_KEY = 'diario_obras_v3_history';
 const DIAS_SEMANA = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 const DIAS_SEMANA_CURTO = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
 
+// localStorage helper
+const S = {
+  get(k) { try { return JSON.parse(localStorage.getItem('diario_' + k)); } catch(e) { return null; } },
+  set(k, v) { localStorage.setItem('diario_' + k, JSON.stringify(v)); }
+};
+
 const DEFAULT_DATA = {
   obra: {
     nome: '',
