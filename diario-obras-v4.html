@@ -3449,7 +3449,7 @@ function abrirAbaAtividades(){
 
 function salvarAtividadesDodia(){
   const hoje = new Date().toISOString().slice(0, 10);
-  if(currentDate === hoje){
+  if(currentDay && currentDay.data && currentDay.data === hoje){
     currentDay.atividadesMarcadas = {};
     const savedAtiv = S.get(`ativDia_${hoje}`) || {};
     Object.keys(savedAtiv).forEach(atId => {
@@ -3457,12 +3457,15 @@ function salvarAtividadesDodia(){
     });
     salvarDiarioDia();
     renderDiario();
-    toast('Atividades salvas!');
-    const t = document.querySelector('.tab[data-view="diario"]');
-    if (t) t.click();
+    toast('✓ Atividades salvas e adicionadas ao Diário!');
+    setTimeout(() => {
+      const t = document.querySelector('.tab[data-view="diario"]');
+      if (t) t.click();
+    }, 300);
   } else {
     toast('Volte ao dia atual para salvar', 'var(--red)');
   }
+}
 }
 
 function abrirModalAtividade() {
