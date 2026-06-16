@@ -438,7 +438,40 @@ function goTab(id,el){
   if(id==='dashboard')renderDashboard();
 }
 
+// ── CARREGAR DO GOOGLE SHEETS
+async function carregarDaPlanilhaGoogle() {
+  try {
+    notify('Carregando da planilha Google...', 'var(--blue)');
+    const resp = await fetch(APPS_SCRIPT_URL_PAUTA + '?path=pauta&action=listar');
+    const data = await resp.json();
+
+    if (data.pautas && data.pautas.length > 0) {
+      assuntos = data.pautas.map(p => ({
+        id: p.id,
+        assunto: p.assunto,
+        desc: p.descrição,
+        criador: p.criador,
+        resp: p.responsável,
+        setor: p.setor,
+        prioridade: p.prioridade.toLowerCase().replace(' ', ''),
+        status: p.status.toLowerCase().replace(' ', ''),
+        dataLanc: p.data_lançamento,
+        dataTerm: p.data_término,
+        criadoEm: new Date(p.criado_em).getTime()
+      }));
+      S.set('assuntos', assuntos);
+      renderKanbanCheckin();atualizarContadores();
+      notify('✅ Assuntos atualizados da planilha!');
+    } else {
+      notify('Nenhum assunto encontrado na planilha', 'var(--yellow)');
+    }
+  } catch (err) {
+    notify('❌ Erro ao carregar: ' + err.message, 'var(--red)');
+  }
+}
+
 function carregarDaPlanilha(){
+  carregarDaPlanilhaGoogle();
   if(!config.whCarregar){return;}
   notify('Carregando assuntos da planilha...','var(--blue)');
   var xhr = new XMLHttpRequest();
