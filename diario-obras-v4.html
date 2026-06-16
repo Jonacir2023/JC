@@ -2112,13 +2112,25 @@ document.addEventListener('DOMContentLoaded', () => {
 async function salvarDiarioGoogle(diarioData) {
   if (!APPS_SCRIPT_URL_DIARIO) return;
   try {
-    const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=salvar', {
-      method: 'POST',
-      body: JSON.stringify(diarioData)
-    });
-    const data = await resp.json();
-    if (data.ok) {
-      console.log('✅ Diário sincronizado com Google Sheets');
+    // Mostra indicador de salvamento
+    const headerDate = document.querySelector('.header-date');
+    if (headerDate) {
+      const originalText = headerDate.textContent;
+      headerDate.textContent = '💾 Salvando...';
+
+      const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=salvar', {
+        method: 'POST',
+        body: JSON.stringify(diarioData)
+      });
+      const data = await resp.json();
+
+      if (data.ok) {
+        // Volta ao texto original
+        setTimeout(() => {
+          headerDate.textContent = originalText;
+        }, 2000);
+        console.log('✅ Diário sincronizado com Google Sheets');
+      }
     }
   } catch (err) {
     console.error('Erro salvar diário no Google Sheets:', err);
@@ -4256,7 +4268,16 @@ window.addEventListener('DOMContentLoaded', () => {
   cal.year = t.getFullYear();
   cal.month = t.getMonth();
   atualizarInfoAutoBackup();
-  setInterval(() => salvarDiarioDia(false), 5000);
+
+  // Autosave local a cada 10 segundos
+  setInterval(() => salvarDiarioDia(false), 10000);
+
+  // Autosave no Google Sheets a cada 30 segundos
+  setInterval(() => {
+    if (currentDay && currentDay.data) {
+      salvarDiarioGoogle(currentDay);
+    }
+  }, 30000);
 });
 </script>
 </body>
