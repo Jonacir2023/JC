@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Pauta"/>
+<title>PAUTA — Envio de Assuntos</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#e8e4df;--bg-card:#f0ece7;--bg-dark:#1c1c1c;--bg-mid:#2e2b28;
+  --ink:#1c1a18;--ink-soft:#4a4540;--ink-faint:#8a8178;
+  --accent:#d4541a;--accent2:#e8a030;--line:#ccc5bc;
+  --green:#2d6a40;--red:#b83228;--blue:#1e3f6e;--yellow:#c99500;
+  --serif:'Barlow Condensed','Arial Narrow',sans-serif;
+  --sans:'Barlow',-apple-system,sans-serif;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.12)
+}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100vh}
+body{max-width:480px;margin:0 auto;padding-bottom:82px}
+
+.hdr{background:var(--bg-dark);color:#f0ece7;padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:0 3px 16px rgba(0,0,0,.4);border-bottom:3px solid var(--accent)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.hdr-logo{font-family:var(--serif);font-size:22px;font-weight:800;letter-spacing:1px;color:#f0ece7}
+.hdr-logo span{color:var(--accent)}
+.hdr-sub{font-size:11px;color:#aaa;margin-top:1px}
+.hdr-date{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--accent2);text-align:right}
+.btn-admin{background:none;border:1px solid rgba(255,255,255,.2);color:#aaa;font-size:11px;font-weight:700;letter-spacing:.5px;padding:5px 10px;border-radius:6px;cursor:pointer;text-transform:uppercase;font-family:var(--serif)}
+.btn-admin:hover{background:rgba(255,255,255,.08)}
+
+.tabs{display:flex;overflow-x:auto;gap:0;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.08)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;padding:10px 8px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;color:#888;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;text-align:center;text-transform:uppercase;transition:all .2s}
+.tab.active{color:#f0ece7;border-bottom-color:var(--accent)}
+.tab:hover:not(.active){color:#ccc}
+
+.page{display:none;padding:16px}
+.page.active{display:block}
+
+.sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--bg-dark);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+.frow{margin-bottom:10px}
+.frow label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
+.frow input,.frow select,.frow textarea{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#fff;color:var(--ink);transition:border .2s;outline:none}
+.frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
+.frow textarea{resize:vertical;min-height:70px}
+.frow-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#b8431a}
+.btn-secondary{background:var(--bg-dark);color:#f0ece7}
+.btn-green{background:var(--green);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+.btn-full{width:100%;justify-content:center;margin-bottom:8px}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-outline{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+
+.pri-group{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}
+.pri-btn{padding:9px 6px;border-radius:8px;border:2px solid var(--line);background:#fff;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;text-align:center;text-transform:uppercase;transition:all .18s;color:var(--ink-soft)}
+.pri-btn.sel-alta{background:#fde8e8;border-color:var(--red);color:var(--red)}
+.pri-btn.sel-media{background:#fef3dc;border-color:var(--yellow);color:var(--yellow)}
+.pri-btn.sel-baixa{background:#e1f0e6;border-color:var(--green);color:var(--green)}
+
+.status-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.status-btn{padding:9px 6px;border-radius:8px;border:2px solid var(--line);background:#fff;font-family:var(--serif);font-size:12px;font-weight:700;letter-spacing:.4px;cursor:pointer;text-align:center;text-transform:uppercase;transition:all .18s;color:var(--ink-soft)}
+.status-btn.sel-afazer{background:#dde8f5;border-color:var(--blue);color:var(--blue)}
+.status-btn.sel-fazendo{background:#fef3dc;border-color:var(--yellow);color:var(--yellow)}
+.status-btn.sel-concluido{background:#e1f0e6;border-color:var(--green);color:var(--green)}
+.status-btn.sel-cancelado{background:#ede9e4;border-color:var(--ink-faint);color:var(--ink-faint)}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--serif);letter-spacing:.4px;text-transform:uppercase}
+.badge-red{background:#fde8e8;color:var(--red)}
+.badge-yellow{background:#fef3dc;color:var(--yellow)}
+.badge-green{background:#e1f0e6;color:var(--green)}
+.badge-blue{background:#dde8f5;color:var(--blue)}
+.badge-gray{background:#ede9e4;color:var(--ink-soft)}
+
+.card-assunto{background:#fff;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card-assunto-titulo{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.card-assunto-desc{font-size:12px;color:var(--ink-soft);margin-bottom:6px;line-height:1.4}
+.card-assunto-meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.card-assunto-footer{font-size:11px;color:var(--ink-faint);display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;padding-top:6px;border-top:1px solid #f0ece7}
+
+.confirm-box{display:none;background:#e1f0e6;border:1.5px solid var(--green);border-radius:10px;padding:14px;text-align:center;margin-bottom:12px}
+.confirm-box.show{display:block}
+.confirm-box-icon{font-size:28px;margin-bottom:4px}
+.confirm-box-txt{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--green)}
+.confirm-box-sub{font-size:12px;color:var(--ink-soft);margin-top:2px}
+
+.export-status{border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;font-weight:600;display:none}
+.export-status.ok{display:block;background:#e1f0e6;border:1px solid var(--green);color:var(--green)}
+.export-status.err{display:block;background:#fde8e8;border:1px solid var(--red);color:var(--red)}
+
+.empty-state{text-align:center;padding:32px 16px;color:var(--ink-faint)}
+.empty-state-icon{font-size:36px;margin-bottom:8px}
+.empty-state-txt{font-size:13px}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-start;justify-content:center;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg-card);border-radius:var(--radius);padding:20px 16px;width:100%;max-width:480px;margin:16px auto;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.modal-title{font-family:var(--serif);font-size:18px;font-weight:800;margin-bottom:16px;color:var(--bg-dark);display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink-soft)}
+
+.atabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.atab{padding:6px 12px;border-radius:6px;font-family:var(--serif);font-size:12px;font-weight:700;letter-spacing:.4px;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);text-transform:uppercase;transition:all .18s}
+.atab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.admin-section{display:none}
+.admin-section.active{display:block}
+
+.adm-item{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid var(--line)}
+.adm-item-name{font-size:13px;font-weight:600;flex:1}
+.adm-rm{background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:4px;transition:background .15s}
+.adm-rm:hover{background:#fde8e8}
+
+.notif{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 20px;border-radius:8px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;z-index:400;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none}
+.notif.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="notif" id="notif"></div>
+
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-logo">PAU<span>TA</span></div>
+      <div class="hdr-sub">Envio de Assuntos</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="hdr-date" id="hdr-date"></div>
+      <button class="btn-admin" onclick="abrirAdmin()">⚙️ Admin</button>
+    </div>
+  </div>
+  <nav class="tabs">
+    <div class="tab active" onclick="goTab('envio',this)">📤 Envio</div>
+    <div class="tab" onclick="goTab('listar',this)">📋 Listar</div>
+    <div class="tab" onclick="goTab('exportar',this)">🚀 Exportar</div>
+  </nav>
+</header>
+
+<!-- ===== ENVIO ===== -->
+<div class="page active" id="page-envio">
+
+  <div class="confirm-box" id="confirm-envio">
+    <div class="confirm-box-icon">✅</div>
+    <div class="confirm-box-txt">Assunto registrado!</div>
+    <div class="confirm-box-sub">Clique em Novo para adicionar mais</div>
+    <br>
+    <button class="btn btn-secondary btn-full" onclick="novoAssunto()">+ NOVO ASSUNTO</button>
+  </div>
+
+  <div id="form-envio">
+    <div class="sec">
+      <div class="sec-title">📌 Novo Assunto</div>
+
+      <div class="frow">
+        <label>Assunto</label>
+        <input type="text" id="f-assunto" placeholder="Descreva o assunto da reunião"/>
+      </div>
+
+      <div class="frow">
+        <label>Descrição</label>
+        <textarea id="f-descricao" placeholder="Detalhes adicionais..."></textarea>
+      </div>
+
+      <div class="frow-2">
+        <div class="frow">
+          <label>Criador</label>
+          <select id="f-criador">
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+        <div class="frow">
+          <label>Responsável</label>
+          <select id="f-responsavel">
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="frow">
+        <label>Setor</label>
+        <select id="f-setor">
+          <option value="">Selecione...</option>
+        </select>
+      </div>
+
+      <div class="frow-2">
+        <div class="frow">
+          <label>Data de Lançamento</label>
+          <input type="date" id="f-data-lanc"/>
+        </div>
+        <div class="frow">
+          <label>Data de Término</label>
+          <input type="date" id="f-data-term"/>
+        </div>
+      </div>
+
+      <div class="frow">
+        <label>Prioridade</label>
+        <div class="pri-group">
+          <button class="pri-btn" onclick="setPrioridade('alta',this)">🔴 Alta</button>
+          <button class="pri-btn sel-media" onclick="setPrioridade('media',this)">🟡 Média</button>
+          <button class="pri-btn" onclick="setPrioridade('baixa',this)">🟢 Baixa</button>
+        </div>
+      </div>
+
+      <div class="frow">
+        <label>Status</label>
+        <div class="status-group">
+          <button class="status-btn sel-afazer" onclick="setStatus('afazer',this)">🎯 A Fazer</button>
+          <button class="status-btn" onclick="setStatus('fazendo',this)">⚡ Fazendo</button>
+          <button class="status-btn" onclick="setStatus('concluido',this)">✅ Concluído</button>
+          <button class="status-btn" onclick="setStatus('cancelado',this)">🚫 Cancelado</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="enviarAssunto()">✔ ENVIAR ASSUNTO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LISTAR ===== -->
+<div class="page" id="page-listar">
+  <div class="sec">
+    <div class="sec-title">📋 Assuntos Registrados</div>
+    <div id="lista-assuntos">
+      <div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-txt">Nenhum assunto registrado</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXPORTAR ===== -->
+<div class="page" id="page-exportar">
+  <div class="sec">
+    <div class="sec-title">🚀 Exportar para n8n</div>
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">Envia todos os assuntos registrados para o workflow de integração.</p>
+    <div id="export-status"></div>
+    <button class="btn btn-green btn-full" onclick="exportarParaN8n()">📤 EXPORTAR PARA N8N</button>
+    <button class="btn btn-outline btn-full" onclick="limparAssuntos()" style="margin-top:6px;margin-bottom:0;border-color:var(--red);color:var(--red)">🗑️ LIMPAR TODOS OS ASSUNTOS</button>
+  </div>
+  <div class="sec">
+    <div class="sec-title">⚙️ Configuração</div>
+    <div class="frow">
+      <label>URL do Webhook n8n</label>
+      <input type="text" id="cfg-webhook" placeholder="https://jonacircazelli.app.n8n.cloud/webhook/..."/>
+    </div>
+    <button class="btn btn-secondary btn-full" onclick="salvarConfig()">💾 SALVAR CONFIGURAÇÃO</button>
+  </div>
+</div>
+
+<!-- MODAL ADMIN -->
+<div class="modal-overlay" id="modal-admin">
+  <div class="modal">
+    <div class="modal-title">
+      ⚙️ Administração
+      <button class="modal-close" onclick="fecharAdmin()">✕</button>
+    </div>
+    <div class="atabs">
+      <button class="atab active" onclick="abaAdmin('membros',this)">👥 Membros</button>
+      <button class="atab" onclick="abaAdmin('setores',this)">🏗️ Setores</button>
+      <button class="atab" onclick="abaAdmin('backup',this)">💾 Backup</button>
+    </div>
+
+    <!-- MEMBROS -->
+    <div class="admin-section active" id="admin-membros">
+      <div class="frow-2" style="align-items:flex-end;margin-bottom:10px">
+        <div class="frow" style="margin-bottom:0"><label>Nome do Membro</label><input type="text" id="inp-membro" placeholder="Nome completo"/></div>
+        <button class="btn btn-primary btn-sm" onclick="addMembro()">+ ADD</button>
+      </div>
+      <div id="lista-membros-adm"></div>
+    </div>
+
+    <!-- SETORES -->
+    <div class="admin-section" id="admin-setores">
+      <div class="frow-2" style="align-items:flex-end;margin-bottom:10px">
+        <div class="frow" style="margin-bottom:0"><label>Nome do Setor</label><input type="text" id="inp-setor" placeholder="Ex: Segurança"/></div>
+        <button class="btn btn-primary btn-sm" onclick="addSetor()">+ ADD</button>
+      </div>
+      <div id="lista-setores-adm"></div>
+    </div>
+
+    <!-- BACKUP -->
+    <div class="admin-section" id="admin-backup">
+      <button class="btn btn-secondary btn-full" onclick="gravarBackup()">💾 GRAVAR CADASTROS</button>
+      <div style="margin-top:10px">
+        <label class="frow"><span style="display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase">Restaurar Cadastros</span>
+          <input type="file" accept=".json" onchange="restaurarBackup(event)"/>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STORAGE
+const S = {
+  get(k){try{return JSON.parse(localStorage.getItem('pauta_'+k))}catch{return null}},
+  set(k,v){localStorage.setItem('pauta_'+k,JSON.stringify(v))}
+};
+
+let assuntos = S.get('assuntos') || [];
+let membros  = S.get('membros')  || [];
+let setores  = S.get('setores')  || [
+  'Administração','Administração Contratual','Engenharia','Gestão','Financeiro',
+  'Manutenção Mecânica Pesada','Marketing','Medição','Meio Ambiente','Operações',
+  'Planejamento','Produção Civil','Produção Elétrica','Produção Mecânica',
+  'Qualidade','Recursos Humanos','RH','Segurança','Suprimentos','TI','Transporte'
+];
+let config   = S.get('config')   || {webhook:''};
+
+let _prioridade = 'media';
+let _status     = 'afazer';
+
+// ── INIT
+function init(){
+  const agora = new Date();
+  document.getElementById('hdr-date').textContent =
+    agora.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'}) + ' ' +
+    agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+  document.getElementById('f-data-lanc').value = agora.toISOString().slice(0,10);
+  document.getElementById('cfg-webhook').value = config.webhook || '';
+
+  popularSelects();
+}
+
+setInterval(()=>{
+  const agora = new Date();
+  const el = document.getElementById('hdr-date');
+  if(el) el.textContent = agora.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'}) + ' ' +
+    agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}, 30000);
+
+// ── NOTIFY
+function notify(msg, cor){
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.style.background = cor || 'var(--green)';
+  n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'), 2500);
+}
+
+// ── TABS
+function goTab(id, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='listar') renderListar();
+}
+
+// ── PRIORIDADE / STATUS
+function setPrioridade(p, el){
+  _prioridade = p;
+  document.querySelectorAll('.pri-btn').forEach(b=>{
+    b.className = 'pri-btn';
+  });
+  el.className = 'pri-btn sel-'+p;
+}
+
+function setStatus(s, el){
+  _status = s;
+  document.querySelectorAll('.status-btn').forEach(b=>{
+    b.className = 'status-btn';
+  });
+  el.className = 'status-btn sel-'+s;
+}
+
+// ── SELECTS
+function popularSelects(){
+  const opts = (arr, placeholder) =>
+    '<option value="">'+placeholder+'</option>' +
+    arr.slice().sort((a,b)=>a.localeCompare(b,'pt-BR')).map(v=>'<option>'+v+'</option>').join('');
+
+  ['f-criador','f-responsavel'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = membros.length
+      ? opts(membros,'Selecione...')
+      : '<option value="">— Cadastre membros em Admin —</option>';
+  });
+
+  const fs = document.getElementById('f-setor');
+  if(fs) fs.innerHTML = opts(setores,'Selecione o setor...');
+}
+
+// ── ENVIAR
+function enviarAssunto(){
+  const assunto   = document.getElementById('f-assunto').value.trim();
+  const descricao = document.getElementById('f-descricao').value.trim();
+  const criador   = document.getElementById('f-criador').value;
+  const resp      = document.getElementById('f-responsavel').value;
+  const setor     = document.getElementById('f-setor').value;
+  const dataLanc  = document.getElementById('f-data-lanc').value;
+  const dataTerm  = document.getElementById('f-data-term').value;
+
+  if(!assunto){ notify('Informe o assunto','var(--red)'); return; }
+  if(!setor)  { notify('Selecione o setor','var(--red)'); return; }
+
+  const item = {
+    id: Date.now().toString(),
+    assunto, desc: descricao, criador, resp, setor,
+    prioridade: _prioridade, status: _status,
+    dataLanc, dataTerm,
+    criadoEm: Date.now()
+  };
+
+  assuntos.push(item);
+  S.set('assuntos', assuntos);
+
+  // Limpar form
+  document.getElementById('f-assunto').value = '';
+  document.getElementById('f-descricao').value = '';
+  document.getElementById('f-data-term').value = '';
+  _prioridade = 'media';
+  _status = 'afazer';
+  document.querySelectorAll('.pri-btn').forEach(b=>b.className='pri-btn');
+  document.querySelector('.pri-btn:nth-child(2)').className='pri-btn sel-media';
+  document.querySelectorAll('.status-btn').forEach(b=>b.className='status-btn');
+  document.querySelector('.status-btn:first-child').className='status-btn sel-afazer';
+
+  document.getElementById('form-envio').style.display = 'none';
+  document.getElementById('confirm-envio').classList.add('show');
+}
+
+function novoAssunto(){
+  document.getElementById('confirm-envio').classList.remove('show');
+  document.getElementById('form-envio').style.display = '';
+  document.getElementById('f-assunto').focus();
+}
+
+// ── LISTAR
+function priorBadge(p){
+  return p==='alta'?'badge-red':p==='media'?'badge-yellow':'badge-green';
+}
+function statusBadge(s){
+  return s==='afazer'?'badge-blue':s==='fazendo'?'badge-yellow':s==='concluido'?'badge-green':'badge-gray';
+}
+function statusLabel(s){
+  return s==='afazer'?'A Fazer':s==='fazendo'?'Fazendo':s==='concluido'?'Concluído':'Cancelado';
+}
+function formatDate(d){
+  if(!d) return '';
+  const p = d.split('-');
+  return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : d;
+}
+
+function renderListar(){
+  const cont = document.getElementById('lista-assuntos');
+  if(!assuntos.length){
+    cont.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-txt">Nenhum assunto registrado</div></div>';
+    return;
+  }
+  cont.innerHTML = [...assuntos].reverse().map(a=>`
+    <div class="card-assunto">
+      <div class="card-assunto-titulo">${a.assunto}</div>
+      ${a.desc?`<div class="card-assunto-desc">${a.desc}</div>`:''}
+      <div class="card-assunto-meta">
+        <span class="badge ${priorBadge(a.prioridade)}">${a.prioridade}</span>
+        <span class="badge ${statusBadge(a.status)}">${statusLabel(a.status)}</span>
+        ${a.setor?`<span class="badge badge-blue">${a.setor}</span>`:''}
+      </div>
+      <div class="card-assunto-footer">
+        ${a.criador?`<span>✍️ ${a.criador}</span>`:''}
+        ${a.resp?`<span>👤 ${a.resp}</span>`:''}
+        ${a.dataLanc?`<span>📅 ${formatDate(a.dataLanc)}${a.dataTerm?' → 🏁 '+formatDate(a.dataTerm):''}</span>`:''}
+      </div>
+      <div style="margin-top:8px;text-align:right">
+        <button class="btn btn-sm btn-red" onclick="removerAssunto('${a.id}')">🗑️ Remover</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function removerAssunto(id){
+  if(!confirm('Remover este assunto?')) return;
+  assuntos = assuntos.filter(a=>a.id!==id);
+  S.set('assuntos', assuntos);
+  renderListar();
+  notify('Removido','var(--red)');
+}
+
+function limparAssuntos(){
+  if(!confirm('Limpar TODOS os assuntos?')) return;
+  assuntos = [];
+  S.set('assuntos', assuntos);
+  renderListar();
+  notify('Assuntos limpos','var(--red)');
+}
+
+// ── EXPORTAR
+function salvarConfig(){
+  config.webhook = document.getElementById('cfg-webhook').value.trim();
+  S.set('config', config);
+  notify('Configuração salva!');
+}
+
+function exportarParaN8n(){
+  if(!assuntos.length){ notify('Nenhum assunto para exportar','var(--yellow)'); return; }
+  if(!config.webhook){ notify('Configure a URL do webhook antes','var(--yellow)'); return; }
+
+  // Mapear para o formato do Chekin/n8n
+  const payload = {
+    assuntos: assuntos.map(a=>({
+      id: a.id,
+      assunto: a.assunto,
+      desc: a.desc || '',
+      criador: a.criador || '',
+      resp: a.resp || '',
+      setor: a.setor || '',
+      prioridade: a.prioridade || 'media',
+      status: a.status || 'afazer',
+      dataLanc: a.dataLanc || '',
+      dataTerm: a.dataTerm || '',
+      criadoEm: a.criadoEm || Date.now()
+    })),
+    exportado_em: new Date().toISOString(),
+    total: assuntos.length
+  };
+
+  const statusEl = document.getElementById('export-status');
+  statusEl.className = '';
+  statusEl.innerHTML = '⏳ Enviando...';
+  statusEl.style.display = 'block';
+  statusEl.style.background = '#fef3dc';
+  statusEl.style.border = '1px solid var(--yellow)';
+  statusEl.style.color = 'var(--yellow)';
+  statusEl.style.padding = '12px';
+  statusEl.style.borderRadius = '8px';
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', config.webhook, true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function(){
+    if(xhr.status >= 200 && xhr.status < 300){
+      statusEl.className = 'export-status ok';
+      statusEl.innerHTML = '✅ <strong>Exportado com sucesso!</strong><br>'+assuntos.length+' assunto(s) enviado(s) para o n8n.';
+      notify('Enviado com sucesso!');
+    } else {
+      statusEl.className = 'export-status err';
+      statusEl.innerHTML = '❌ <strong>Erro na exportação</strong><br>Status: '+xhr.status;
+      notify('Erro ao enviar','var(--red)');
+    }
+  };
+  xhr.onerror = function(){
+    statusEl.className = 'export-status err';
+    statusEl.innerHTML = '❌ <strong>Erro de conexão</strong><br>Verifique se o workflow do n8n está ativo.';
+    notify('Erro de conexão','var(--red)');
+  };
+  xhr.send(JSON.stringify(payload));
+}
+
+// ── ADMIN
+function abrirAdmin(){
+  document.getElementById('modal-admin').classList.add('open');
+  renderMembrosAdm();
+  renderSetoresAdm();
+}
+
+function fecharAdmin(){
+  document.getElementById('modal-admin').classList.remove('open');
+}
+
+function abaAdmin(aba, el){
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('admin-'+aba).classList.add('active');
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// MEMBROS
+function addMembro(){
+  const v = document.getElementById('inp-membro').value.trim();
+  if(!v){ notify('Informe o nome','var(--red)'); return; }
+  if(membros.includes(v)){ notify('Já cadastrado','var(--yellow)'); return; }
+  membros.push(v);
+  S.set('membros', membros);
+  document.getElementById('inp-membro').value = '';
+  renderMembrosAdm();
+  popularSelects();
+  notify('Membro adicionado!');
+}
+
+function removerMembro(v){
+  membros = membros.filter(m=>m!==v);
+  S.set('membros', membros);
+  renderMembrosAdm();
+  popularSelects();
+  notify('Removido','var(--red)');
+}
+
+function renderMembrosAdm(){
+  const cont = document.getElementById('lista-membros-adm');
+  if(!membros.length){
+    cont.innerHTML = '<div class="empty-state" style="padding:16px 0"><div class="empty-state-txt">Nenhum membro cadastrado</div></div>';
+    return;
+  }
+  cont.innerHTML = [...membros].sort((a,b)=>a.localeCompare(b,'pt-BR')).map(m=>`
+    <div class="adm-item">
+      <span class="adm-item-name">👤 ${m}</span>
+      <button class="adm-rm" onclick="removerMembro('${m.replace(/'/g,"\\'")}')">🗑️</button>
+    </div>
+  `).join('');
+}
+
+// SETORES
+function addSetor(){
+  const v = document.getElementById('inp-setor').value.trim();
+  if(!v){ notify('Informe o setor','var(--red)'); return; }
+  if(setores.includes(v)){ notify('Já cadastrado','var(--yellow)'); return; }
+  setores.push(v);
+  S.set('setores', setores);
+  document.getElementById('inp-setor').value = '';
+  renderSetoresAdm();
+  popularSelects();
+  notify('Setor adicionado!');
+}
+
+function removerSetor(v){
+  setores = setores.filter(s=>s!==v);
+  S.set('setores', setores);
+  renderSetoresAdm();
+  popularSelects();
+  notify('Removido','var(--red)');
+}
+
+function renderSetoresAdm(){
+  const cont = document.getElementById('lista-setores-adm');
+  if(!setores.length){
+    cont.innerHTML = '<div class="empty-state" style="padding:16px 0"><div class="empty-state-txt">Nenhum setor cadastrado</div></div>';
+    return;
+  }
+  cont.innerHTML = [...setores].sort((a,b)=>a.localeCompare(b,'pt-BR')).map(s=>`
+    <div class="adm-item">
+      <span class="adm-item-name">🏗️ ${s}</span>
+      <button class="adm-rm" onclick="removerSetor('${s.replace(/'/g,"\\'")}')">🗑️</button>
+    </div>
+  `).join('');
+}
+
+// BACKUP
+function gravarBackup(){
+  const backup = {
+    _pauta_backup: true,
+    _data: new Date().toISOString(),
+    membros, setores
+  };
+  const blob = new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'pauta_cadastros_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  notify('Backup gravado!');
+}
+
+function restaurarBackup(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try{
+      const d = JSON.parse(ev.target.result);
+      if(!d._pauta_backup){ notify('Arquivo inválido','var(--red)'); return; }
+      if(Array.isArray(d.membros)){ membros = d.membros; S.set('membros',membros); }
+      if(Array.isArray(d.setores)){ setores = d.setores; S.set('setores',setores); }
+      popularSelects();
+      renderMembrosAdm();
+      renderSetoresAdm();
+      notify('Cadastros restaurados!');
+      e.target.value = '';
+    } catch(err){ notify('Arquivo corrompido','var(--red)'); }
+  };
+  r.readAsText(file);
+}
+
+// FECHAR MODAL CLICANDO FORA
+document.getElementById('modal-admin').addEventListener('click', function(e){
+  if(e.target === this) fecharAdmin();
+});
+
+init();
+</script>
+</body>
+</html>
