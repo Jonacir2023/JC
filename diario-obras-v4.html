@@ -1141,6 +1141,7 @@
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">🛠️ Atividades do Dia</div>
+      <button class="icon-btn" onclick="abrirAbaAtividades()" title="Selecionar atividades">➕</button>
     </div>
     <div id="atividadesList"></div>
   </div>
@@ -3430,6 +3431,15 @@ function marcarTodasAtividadesCheckbox(marcar){
   S.set(`ativDia_${hoje}`, savedAtiv);
   renderConfigAtiv();
   renderAtividadesDodiaCadastro();
+}
+
+function abrirAbaAtividades(){
+  const t = document.querySelector('.tab[data-view="config"]');
+  if (t) t.click();
+  setTimeout(() => {
+    const st = document.querySelector('.subtab[data-pane="atividades"]');
+    if (st) st.click();
+  }, 200);
 }
 
 function salvarAtividadesDodia(){
