@@ -2275,12 +2275,12 @@ function salvarDiarioDia(notificar) {
   if (temDado) {
     history[currentDay.data] = JSON.parse(JSON.stringify(currentDay));
     saveHistory();
-    salvarDiarioGoogle(currentDay);
   } else if (history[currentDay.data]) {
     delete history[currentDay.data];
     saveHistory();
   }
   if (notificar) {
+    salvarDiarioGoogle(currentDay);
     toast('Diário salvo no histórico');
     backupAutomatico();
   }
