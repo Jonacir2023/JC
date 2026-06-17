@@ -4692,13 +4692,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Autosave local a cada 10 segundos
   setInterval(() => salvarDiarioDia(false), 10000);
-
-  // Autosave no Google Sheets a cada 30 segundos
-  setInterval(() => {
-    if (currentDay && currentDay.data) {
-      salvarDiarioGoogle(currentDay);
-    }
-  }, 30000);
 });
 </script>
 </body>
