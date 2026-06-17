@@ -11,7 +11,7 @@
 // 4. A URL gerada é a mesma usada em APPS_SCRIPT_URL_DIARIO no HTML
 // ============================================================
 
-const SHEET_ID           = '19fTP_qyxv1QiLdxBz3jbvTb46DKedrkApEVExmSxKEM';
+const SHEET_ID           = '10s86jccaYDECSNjvac4oLSaiQ2ngEHgPWbZU6i2dpmo';
 const SHEET_NAME_PAUTA   = 'Pauta';
 const SHEET_NAME_CHECKIN = 'CheckIn';
 const SHEET_NAME_DIARIO  = 'Diário';
@@ -165,12 +165,16 @@ function listarCheckIns() {
 // ============================================================
 
 function salvarDiario(payload) {
-  const ss    = SpreadsheetApp.openById(SHEET_ID);
-  let sheet   = ss.getSheetByName(SHEET_NAME_DIARIO);
+  const ss  = SpreadsheetApp.openById(SHEET_ID);
+  let sheet = ss.getSheetByName(SHEET_NAME_DIARIO);
 
-  // Criar aba se não existir, com cabeçalho formatado
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME_DIARIO);
+  // Criar aba se não existir
+  if (!sheet) sheet = ss.insertSheet(SHEET_NAME_DIARIO);
+
+  // Se cabeçalho está no formato antigo (col A = "id") ou vazio, reescreve
+  const colA = sheet.getRange(1, 1).getValue();
+  if (colA !== 'Data') {
+    sheet.clearContents();
     const hr = sheet.getRange(1, 1, 1, COLUNAS_DIARIO.length);
     hr.setValues([COLUNAS_DIARIO]);
     hr.setBackground('#2c2c2c');
