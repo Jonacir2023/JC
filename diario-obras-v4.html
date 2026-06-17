@@ -3898,34 +3898,39 @@ function buildRelatorio(day) {
   }
   txt += `\n${divisor}\n\n`;
   
-  // Equipamentos
-  const equipsAtivos = state.equipamentos.filter(e => day.equipamentos[e.id] && day.equipamentos[e.id].ativo);
+  // Equipamentos (novo sistema: localStorage equipDia_data)
+  const savedEquip = S.get(`equipDia_${day.data}`) || {};
+  const equipsAtivos = state.equipamentos.filter(e => savedEquip[e.id]);
   if (equipsAtivos.length > 0) {
-    txt += `*🚜 Equipamentos Utilizados — ${equipsAtivos.length}*\n`;
+    const gruposEquip = {};
     equipsAtivos.forEach(e => {
-      const d = day.equipamentos[e.id];
-      let linha = `• ${e.numero} – ${e.desc}`;
-      if (d.operadorNome) {
-        linha += ` – ${d.operadorMat ? d.operadorMat + ' ' : ''}${d.operadorNome}`;
-      }
-      if (d.status && d.status !== 'Operando') linha += ` (${d.status})`;
-      if (d.horimetro) linha += ` — Hor.: ${d.horimetro}h`;
-      txt += linha + '\n';
+      const k = e.desc.trim();
+      if (!gruposEquip[k]) gruposEquip[k] = { desc: k, isMotorista: e.isMotorista, count: 0 };
+      gruposEquip[k].count++;
     });
-    // Veículos Leves
-    const vlAtivos = (day.veiculosLeves || []).filter(v => v.frotaId);
-    if (vlAtivos.length > 0) {
-      txt += `\n*🚗 Veículos Leves — ${vlAtivos.length}*\n`;
-      vlAtivos.forEach(v => {
-        const frota = (state.veiculosFrota || []).find(f => f.id === v.frotaId);
-        const desc = frota ? frota.desc : '—';
-        const placa = frota ? frota.placa : '';
-        let lv = `• ${desc}`;
-        if (placa) lv += ` (${placa})`;
-        if (v.motoristaNome) lv += ` — ${v.motoristaNome}`;
-        txt += lv + '\n';
-      });
-    }
+    const ordenadosEquip = Object.values(gruposEquip).sort((a, b) => a.desc.localeCompare(b.desc, 'pt-BR'));
+    txt += `*🚜 Equipamentos Utilizados — ${equipsAtivos.length}*\n`;
+    ordenadosEquip.forEach(g => {
+      txt += `• ${g.isMotorista ? '🚛' : '🚜'} ${g.desc} — ${g.count} un.\n`;
+    });
+    txt += `\n${divisor}\n\n`;
+  }
+
+  // Veículos Leves (novo sistema: localStorage vlDia_data)
+  const savedVL = S.get(`vlDia_${day.data}`) || {};
+  const vlAtivos = (state.veiculosFrota || []).filter(v => savedVL[v.id]);
+  if (vlAtivos.length > 0) {
+    const gruposVL = {};
+    vlAtivos.forEach(v => {
+      const k = v.desc.trim();
+      if (!gruposVL[k]) gruposVL[k] = { desc: k, count: 0 };
+      gruposVL[k].count++;
+    });
+    const ordenadosVL = Object.values(gruposVL).sort((a, b) => a.desc.localeCompare(b.desc, 'pt-BR'));
+    txt += `*🚗 Veículos Leves — ${vlAtivos.length}*\n`;
+    ordenadosVL.forEach(g => {
+      txt += `• ${g.desc} — ${g.count} un.\n`;
+    });
     txt += `\n${divisor}\n\n`;
   }
   
@@ -3963,7 +3968,13 @@ function buildRelatorio(day) {
       if (ev.acao) txt += `   Ação: ${ev.acao}\n`;
     });
   }
-  
+
+  // Observações do Dia
+  if (day.observacoesDia && day.observacoesDia.trim()) {
+    txt += `\n${divisor}\n\n`;
+    txt += `*📝 Observações do Dia*\n${day.observacoesDia.trim()}\n`;
+  }
+
   return txt;
 }
 
