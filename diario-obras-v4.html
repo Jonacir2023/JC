@@ -1192,7 +1192,14 @@
     <div id="evAmbList"></div>
     <button class="add-btn-full" onclick="abrirModalEventoAvulso('meio_ambiente')">+ Registrar evento avulso</button>
   </div>
-  
+
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-text">📝 Observações do Dia</div>
+    </div>
+    <textarea id="observacoesDia" placeholder="Registre aqui informações importantes do dia: ocorrências, decisões, visitas, pendências, condições especiais..." style="min-height:140px;resize:vertical"></textarea>
+  </div>
+
   <button class="btn btn-primary" onclick="salvarDiarioDia(true)" style="margin-top:8px">💾 Salvar Diário no Histórico</button>
 </main>
 
@@ -2078,7 +2085,7 @@ function voltarParaHoje() {
 }
 
 function preencherCampos() {
-  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra'].forEach(k => {
+  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','observacoesDia'].forEach(k => {
     const el = document.getElementById(k);
     if (el) el.value = currentDay[k] || '';
   });
@@ -2102,12 +2109,11 @@ function preencherCampos() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra'].forEach(k => {
+  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','observacoesDia'].forEach(k => {
     const el = document.getElementById(k);
     if (el) el.addEventListener('input', () => {
       currentDay[k] = el.value;
-      if (k === 'dssHorario' || k === 'dssTema') salvarDiarioDia(false);
-      else salvarDiarioDia(false);
+      salvarDiarioDia(false);
     });
   });
   // DSS ministrou
@@ -2211,7 +2217,7 @@ async function gerarRelatorioGoogle(data) {
 
 function salvarDiarioDia(notificar) {
   if (!currentDay || !currentDay.data) return;
-  const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.tempo ||
+  const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.observacoesDia || currentDay.tempo ||
     Object.keys(currentDay.efetivo).length > 0 ||
     Object.keys(currentDay.atividadesMarcadas).length > 0 ||
     Object.keys(currentDay.atividadesQtd || {}).length > 0 ||
