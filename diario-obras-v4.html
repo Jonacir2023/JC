@@ -2354,10 +2354,9 @@ function renderEfetivoDia() {
     totalC += cat.itens.length;
 
     if (presentes.length > 0) {
-      const nomes = presentes.map(c => c.nome).join(', ');
-      html += `<div style="margin-bottom:12px">
-        <div style="font-weight:600;color:var(--ink);margin-bottom:4px">${cat.icon} ${escapeHtml(cat.nome)}</div>
-        <div style="color:var(--ink-faint);font-size:13px">${escapeHtml(nomes)}</div>
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
+        <div style="font-weight:600;color:var(--ink)">${cat.icon} ${escapeHtml(cat.nome)}</div>
+        <div style="font-size:15px;font-weight:700;color:var(--accent)">${presentes.length}</div>
       </div>`;
     }
   });
