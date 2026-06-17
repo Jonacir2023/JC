@@ -1599,12 +1599,13 @@
 <div class="modal-overlay" id="modalVeiculoFrota">
   <div class="modal">
     <div class="modal-title" id="modalVeiculoFrotaTitle">Novo Veículo Leve</div>
+    <label>Número / Frota</label>
+    <input type="text" id="modalVFNumero" placeholder="Ex.: VL-001">
     <label>Descrição / Modelo</label>
-    <input type="text" id="modalVFDesc" placeholder="Ex.: Toyota Hilux 2023">
+    <input type="text" id="modalVFDesc" list="vlDescSugestoes" placeholder="Ex.: Toyota Hilux 2023" autocomplete="off">
+    <datalist id="vlDescSugestoes"></datalist>
     <label>Placa</label>
     <input type="text" id="modalVFPlaca" placeholder="Ex.: SCR-2E45">
-    <label>Tipo (opcional)</label>
-    <input type="text" id="modalVFTipo" placeholder="Ex.: Pickup, Van, SUV">
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-ghost" onclick="fecharModal('modalVeiculoFrota')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarVeiculoFrota()">Salvar</button>
@@ -2578,11 +2579,20 @@ function renderVeiculosLevesDia() {
     cont.innerHTML = '<div class="empty">Nenhum veículo selecionado para hoje</div>';
     return;
   }
-  let html = '<div style="padding:8px 0">';
+  // Agrupar por descrição (tipo de veículo) e contar
+  const grupos = {};
   selecionados.forEach(v => {
-    html += `<div style="margin-bottom:8px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg-card)">
-      <div style="font-weight:600">🚗 ${escapeHtml(v.desc)}</div>
-      <div style="color:var(--ink-faint);font-size:12px">${v.tipo ? escapeHtml(v.tipo) + ' · ' : ''}${v.placa ? escapeHtml(v.placa) : ''}</div>
+    const key = v.desc.trim();
+    if (!grupos[key]) grupos[key] = { desc: key, count: 0 };
+    grupos[key].count++;
+  });
+  const ordenados = Object.values(grupos).sort((a, b) => a.desc.localeCompare(b.desc, 'pt-BR'));
+
+  let html = '<div style="padding:4px 0">';
+  ordenados.forEach(g => {
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
+      <div style="font-weight:600">🚗 ${escapeHtml(g.desc)}</div>
+      <div style="font-size:15px;font-weight:700;color:var(--accent);white-space:nowrap;margin-left:8px">${g.count} un.</div>
     </div>`;
   });
   html += '</div>';
@@ -3418,34 +3428,42 @@ function renderConfigVL() {
     cont.appendChild(row);
   });
 }
+function _atualizarVLDescDatalist() {
+  const dl = document.getElementById('vlDescSugestoes');
+  if (!dl) return;
+  const nomes = [...new Set((state.veiculosFrota || []).map(v => v.desc.trim()))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  dl.innerHTML = nomes.map(n => `<option value="${escapeHtml(n)}">`).join('');
+}
 function abrirModalVeiculoFrota() {
   editingItem = { type: 'vl', id: null };
   document.getElementById('modalVeiculoFrotaTitle').textContent = 'Novo Veículo Leve';
+  document.getElementById('modalVFNumero').value = '';
   document.getElementById('modalVFDesc').value = '';
   document.getElementById('modalVFPlaca').value = '';
-  document.getElementById('modalVFTipo').value = '';
+  _atualizarVLDescDatalist();
   abrirModal('modalVeiculoFrota');
 }
 function editarVeiculoFrota(id) {
   const v = (state.veiculosFrota || []).find(x => x.id === id);
   editingItem = { type: 'vl', id };
   document.getElementById('modalVeiculoFrotaTitle').textContent = 'Editar Veículo Leve';
+  document.getElementById('modalVFNumero').value = v.numero || '';
   document.getElementById('modalVFDesc').value = v.desc;
   document.getElementById('modalVFPlaca').value = v.placa;
-  document.getElementById('modalVFTipo').value = v.tipo || '';
+  _atualizarVLDescDatalist();
   abrirModal('modalVeiculoFrota');
 }
 function salvarVeiculoFrota() {
+  const numero = document.getElementById('modalVFNumero').value.trim();
   const desc = document.getElementById('modalVFDesc').value.trim();
   const placa = document.getElementById('modalVFPlaca').value.trim();
-  const tipo = document.getElementById('modalVFTipo').value.trim();
   if (!desc || !placa) { toast('Descrição e placa obrigatórios'); return; }
   if (!state.veiculosFrota) state.veiculosFrota = [];
   if (editingItem.id) {
     const v = state.veiculosFrota.find(x => x.id === editingItem.id);
-    v.desc = desc; v.placa = placa; v.tipo = tipo;
+    v.numero = numero; v.desc = desc; v.placa = placa;
   } else {
-    state.veiculosFrota.push({ id: uid('vf'), desc, placa, tipo });
+    state.veiculosFrota.push({ id: uid('vf'), numero, desc, placa });
   }
   saveState(); fecharModal('modalVeiculoFrota'); renderConfigVL(); renderConfigVLDia(); toast('Salvo');
 }
