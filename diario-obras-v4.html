@@ -2157,61 +2157,107 @@ document.addEventListener('DOMContentLoaded', () => {
 // INTEGRAÇÃO COM GOOGLE SHEETS
 // ============================================================
 
+function buildPayloadGoogle(diarioData) {
+  const day = diarioData;
+
+  // Jornada
+  const jornada = `Café: ${day.cafeInicio||'--'}–${day.cafeFim||'--'} | Almoço: ${day.almocoInicio||'--'}–${day.almocoFim||'--'} | Enc.: ${day.encerramento||'--'}`;
+
+  // DSS
+  const dssMin = day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '';
+
+  // Atividades
+  const ativsTexto = [
+    ...state.atividades.filter(a => day.atividadesMarcadas[a.id]).map(a => {
+      const qtd = day.atividadesQtd && day.atividadesQtd[a.id];
+      return `${a.desc}${a.local ? ' – ' + a.local : ''}${qtd ? ' (' + qtd + ' ' + (a.unidade||'') + ')' : ''}`;
+    }),
+    ...(day.atividadesAvulsas || []).map(a => `${a.desc}${a.local ? ' – ' + a.local : ''}`),
+    ...(day.atividadesExtra ? day.atividadesExtra.split('\n').filter(x => x.trim()) : [])
+  ].join('\n');
+
+  // Efetivo — resolver IDs para nomes
+  const efetivoPorFuncao = [];
+  const colaboradoresPresentes = [];
+  let totalEfetivo = 0;
+  state.colaboradores.categorias.forEach(cat => {
+    const presentes = cat.itens.filter(c => day.efetivo[c.id]);
+    if (presentes.length === 0) return;
+    totalEfetivo += presentes.length;
+    efetivoPorFuncao.push(`${cat.nome}: ${presentes.length}`);
+    presentes.forEach(c => colaboradoresPresentes.push(`${c.mat} – ${c.nome} (${cat.nome})`));
+  });
+
+  // Equipamentos — novo sistema localStorage
+  const savedEquip = S.get(`equipDia_${day.data}`) || {};
+  const equipsAtivos = state.equipamentos.filter(e => savedEquip[e.id]);
+  const gruposEquip = {};
+  equipsAtivos.forEach(e => {
+    const k = e.desc.trim();
+    if (!gruposEquip[k]) gruposEquip[k] = 0;
+    gruposEquip[k]++;
+  });
+  const equipamentosTexto = Object.entries(gruposEquip)
+    .sort(([a],[b]) => a.localeCompare(b,'pt-BR'))
+    .map(([desc, n]) => `${desc}: ${n} un.`).join('\n');
+
+  // Veículos Leves — novo sistema localStorage
+  const savedVL = S.get(`vlDia_${day.data}`) || {};
+  const vlAtivos = (state.veiculosFrota || []).filter(v => savedVL[v.id]);
+  const gruposVL = {};
+  vlAtivos.forEach(v => {
+    const k = v.desc.trim();
+    if (!gruposVL[k]) gruposVL[k] = 0;
+    gruposVL[k]++;
+  });
+  const veiculosTexto = Object.entries(gruposVL)
+    .sort(([a],[b]) => a.localeCompare(b,'pt-BR'))
+    .map(([desc, n]) => `${desc}: ${n} un.`).join('\n');
+
+  // Eventos
+  const segTexto = (day.eventosSeguranca||[]).map(ev =>
+    `${ev.tipo} (${ev.gravidade})${ev.desc ? ': ' + ev.desc : ''}${ev.acao ? ' | Ação: ' + ev.acao : ''}`
+  ).join('\n');
+  const ambTexto = (day.eventosAmbiente||[]).map(ev =>
+    `${ev.tipo} (${ev.gravidade})${ev.desc ? ': ' + ev.desc : ''}${ev.acao ? ' | Ação: ' + ev.acao : ''}`
+  ).join('\n');
+
+  return {
+    data:                 day.data,
+    diaSemana:            diaDaSemana(day.data),
+    obra:                 state.obra.nome || '',
+    empresa:              state.obra.empresa || '',
+    local:                state.obra.local || '',
+    tempo:                tempoLabel(day.tempo, day.tempoVento),
+    jornada,
+    dssHorario:           day.dssHorario || '',
+    dssMinistrou:         dssMin,
+    dssTema:              day.dssTema || '',
+    atividades:           ativsTexto,
+    efetivoTotal:         totalEfetivo,
+    efetivoPorFuncao:     efetivoPorFuncao.join('\n'),
+    colaboradoresPresentes: colaboradoresPresentes.join('\n'),
+    equipamentos:         equipamentosTexto,
+    veiculosLeves:        veiculosTexto,
+    eventosSeguranca:     segTexto,
+    eventosMeioAmbiente:  ambTexto,
+    observacoes:          day.observacoesDia || ''
+  };
+}
+
 async function salvarDiarioGoogle(diarioData) {
   if (!APPS_SCRIPT_URL_DIARIO) return;
   try {
-    // Mostra indicador de salvamento
-    const headerDate = document.querySelector('.header-date');
-    if (headerDate) {
-      const originalText = headerDate.textContent;
-      headerDate.textContent = '💾 Salvando...';
-
-      const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=salvar', {
-        method: 'POST',
-        body: JSON.stringify(diarioData)
-      });
-      const data = await resp.json();
-
-      if (data.ok) {
-        // Volta ao texto original
-        setTimeout(() => {
-          headerDate.textContent = originalText;
-        }, 2000);
-        console.log('✅ Diário sincronizado com Google Sheets');
-      }
-    }
+    const payload = buildPayloadGoogle(diarioData);
+    const resp = await fetch(APPS_SCRIPT_URL_DIARIO, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const result = await resp.json();
+    if (result.ok) console.log('✅ Diário sincronizado com Google Sheets');
+    else console.warn('⚠️ Google Sheets:', result.erro || result);
   } catch (err) {
     console.error('Erro salvar diário no Google Sheets:', err);
-  }
-}
-
-async function carregarDiarioGoogle(data) {
-  if (!APPS_SCRIPT_URL_DIARIO) return;
-  try {
-    const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=carregar&data=' + data);
-    const result = await resp.json();
-    if (result.ok && result.diario) {
-      history[data] = result.diario;
-      saveHistory();
-      currentDay = JSON.parse(JSON.stringify(result.diario));
-      renderDiario();
-      toast('✅ Diário carregado do Google Sheets');
-    }
-  } catch (err) {
-    console.error('Erro carregar diário:', err);
-  }
-}
-
-async function gerarRelatorioGoogle(data) {
-  if (!APPS_SCRIPT_URL_DIARIO) return;
-  try {
-    const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=relatorio&data=' + data);
-    const result = await resp.json();
-    if (result.ok && result.relatorio) {
-      return result.relatorio;
-    }
-  } catch (err) {
-    console.error('Erro gerar relatório:', err);
   }
 }
 
