@@ -1160,21 +1160,17 @@
   </div>
   
   <div class="section">
-    <div class="section-title"><div class="section-title-text">🚜 Equipamentos Utilizados</div></div>
-    <div class="quick-actions">
-      <button class="quick-btn" onclick="marcarTodosTipo('equipamentos', true)">✓ Todos</button>
-      <button class="quick-btn" onclick="marcarTodosTipo('equipamentos', false)">✗ Limpar</button>
+    <div class="section-title">
+      <div class="section-title-text">🚜 Equipamentos Utilizados</div>
+      <button class="icon-btn" onclick="abrirAbaEquipamentos()" title="Selecionar equipamentos">➕</button>
     </div>
     <div id="equipList"></div>
   </div>
-  
+
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">🚗 Veículos Leves Utilizados</div>
-    </div>
-    <div class="quick-actions">
-      <button class="quick-btn" onclick="marcarTodosVL(true)">✓ Todos</button>
-      <button class="quick-btn" onclick="marcarTodosVL(false)">✗ Limpar</button>
+      <button class="icon-btn" onclick="abrirAbaVeiculosLeves()" title="Selecionar veículos">➕</button>
     </div>
     <div id="veiculosLevesList"></div>
   </div>
@@ -1381,7 +1377,17 @@
   <!-- EQUIPAMENTOS -->
   <div class="config-pane" id="pane-equipamentos">
     <div class="section">
-      <div class="section-title"><div class="section-title-text">🚜 Equipamentos Pesados</div></div>
+      <div class="section-title"><div class="section-title-text">🚜 Equipamentos Utilizados Hoje</div></div>
+      <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
+        Marque os equipamentos utilizados neste dia. Eles aparecerão resumidos na aba Diário.
+      </p>
+      <div id="configEquipDiaList"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarEquipDia()">💾 Salvar Equipamentos do Dia</button>
+      <hr class="divider" style="margin-top:20px;margin-bottom:20px">
+    </div>
+
+    <div class="section">
+      <div class="section-title"><div class="section-title-text">⚙️ Equipamentos Cadastrados</div></div>
       <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
         Marque "É caminhão / motorista?" para que o app sugira da lista de Motoristas ao selecionar operador no diário.
       </p>
@@ -1389,8 +1395,19 @@
       <hr class="divider">
       <div id="configEquipList"></div>
     </div>
+
     <div class="section">
-      <div class="section-title"><div class="section-title-text">🚗 Veículos Leves (Frota)</div></div>
+      <div class="section-title"><div class="section-title-text">🚗 Veículos Leves Utilizados Hoje</div></div>
+      <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
+        Marque os veículos leves utilizados neste dia. Eles aparecerão resumidos na aba Diário.
+      </p>
+      <div id="configVLDiaList"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarVLDia()">💾 Salvar Veículos do Dia</button>
+      <hr class="divider" style="margin-top:20px;margin-bottom:20px">
+    </div>
+
+    <div class="section">
+      <div class="section-title"><div class="section-title-text">📋 Frota de Veículos Leves</div></div>
       <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
         Cadastre veículos leves da frota (pickups, vans, utilitários). O uso diário é registrado na aba Diário.
       </p>
@@ -2360,62 +2377,27 @@ function renderEfetivoDia() {
 function renderEquipDia() {
   const cont = document.getElementById('equipList');
   cont.innerHTML = '';
+  const hoje = new Date().toISOString().slice(0, 10);
+  const savedEquip = S.get(`equipDia_${hoje}`) || {};
+  const selecionados = state.equipamentos.filter(eq => savedEquip[eq.id]);
+
   if (state.equipamentos.length === 0) {
     cont.innerHTML = '<div class="empty">Cadastre equipamentos em ⚙️ Cadastro</div>';
     return;
   }
-  state.equipamentos.forEach(eq => {
-    const dado = currentDay.equipamentos[eq.id];
-    const ativo = !!(dado && dado.ativo);
-    const status = (dado && dado.status) || 'Operando';
-    const opNome = (dado && dado.operadorNome) || '';
-    const opMat = (dado && dado.operadorMat) || '';
-    
-    const row = document.createElement('div');
-    row.className = 'item-row ' + (ativo ? 'checked' : '');
-    const horimetro = (dado && dado.horimetro) || '';
-    row.innerHTML = `
-      <div class="checkbox" data-toggle="${eq.id}"></div>
-      <div class="item-info" data-edit="${eq.id}" style="cursor:pointer;flex:1">
-        <div class="item-name">${escapeHtml(eq.desc)} ${eq.isMotorista ? '🚛' : ''}</div>
-        <div class="item-meta"><span class="num">${escapeHtml(eq.numero)}</span>${opNome ? ' · ' + (opMat ? '<span class="mat">' + escapeHtml(opMat) + '</span> ' : '') + escapeHtml(opNome) : ''}</div>
-        ${ativo ? `<div class="item-extra">${status === 'Operando' ? '<span class="badge badge-op">Operando</span>' : '<span class="badge badge-pa">'+status+'</span>'}${!opNome ? ' <span style="color:var(--red)">⚠ sem operador</span>' : ''}</div>` : ''}
-      </div>
-      ${ativo ? `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:68px" onclick="event.stopPropagation()">
-        <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-faint)">⏱ Horímetro</span>
-        <input type="number" step="0.1" min="0" value="${escapeHtml(horimetro)}"
-          placeholder="h"
-          data-hor="${eq.id}"
-          style="width:64px;padding:5px 6px;font-size:13px;text-align:center;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)">
-      </div>` : ''}
-    `;
-    if (ativo) {
-      const horInput = row.querySelector('[data-hor]');
-      if (horInput) {
-        horInput.addEventListener('input', () => {
-          if (currentDay.equipamentos[eq.id]) {
-            currentDay.equipamentos[eq.id].horimetro = horInput.value;
-            salvarDiarioDia(false);
-          }
-        });
-      }
-    }
-    row.querySelector('[data-toggle]').onclick = (e) => {
-      e.stopPropagation();
-      if (ativo) {
-        delete currentDay.equipamentos[eq.id];
-        salvarDiarioDia(false);
-        renderEquipDia();
-      } else {
-        // ao ativar, abre direto o seletor de operador
-        currentDay.equipamentos[eq.id] = { ativo: true, operadorMat: '', operadorNome: '', status: 'Operando' };
-        abrirSeletorEquip(eq.id);
-      }
-    };
-    row.querySelector('[data-edit]').onclick = () => abrirSeletorEquip(eq.id);
-    cont.appendChild(row);
+  if (selecionados.length === 0) {
+    cont.innerHTML = '<div class="empty">Nenhum equipamento selecionado para hoje</div>';
+    return;
+  }
+  let html = '<div style="padding:8px 0">';
+  selecionados.forEach(eq => {
+    html += `<div style="margin-bottom:8px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg-card)">
+      <div style="font-weight:600">${escapeHtml(eq.desc)} ${eq.isMotorista ? '🚛' : '🚜'}</div>
+      <div style="color:var(--ink-faint);font-size:12px"><span class="num">${escapeHtml(eq.numero)}</span></div>
+    </div>`;
   });
+  html += '</div>';
+  cont.innerHTML = html;
 }
 
 function abrirSeletorEquip(equipId) {
@@ -2575,41 +2557,27 @@ function renderVeiculosLevesDia() {
   if (!cont) return;
   cont.innerHTML = '';
   const frota = state.veiculosFrota || [];
+  const hoje = new Date().toISOString().slice(0, 10);
+  const savedVL = S.get(`vlDia_${hoje}`) || {};
+  const selecionados = frota.filter(v => savedVL[v.id]);
+
   if (frota.length === 0) {
     cont.innerHTML = '<div class="empty">Cadastre veículos leves em ⚙️ Cadastro > Equip.</div>';
     return;
   }
-  const usados = currentDay.veiculosLeves || [];
-  frota.forEach(v => {
-    const dado = usados.find(x => x.frotaId === v.id);
-    const ativo = !!dado;
-    const motNome = dado ? dado.motoristaNome : '';
-    const motMat = dado ? dado.motoristaMat : '';
-    const row = document.createElement('div');
-    row.className = 'item-row ' + (ativo ? 'checked' : '');
-    row.innerHTML = `
-      <div class="checkbox" data-vl-toggle="${v.id}"></div>
-      <div class="item-info" data-vl-edit="${v.id}" style="cursor:pointer">
-        <div class="item-name">🚗 ${escapeHtml(v.desc)} ${v.placa ? '· <span class="num">'+escapeHtml(v.placa)+'</span>' : ''}</div>
-        <div class="item-meta">${v.tipo ? escapeHtml(v.tipo)+' · ' : ''}${motNome ? '<span class="mat">'+(motMat||'')+'</span> '+escapeHtml(motNome) : ''}</div>
-        ${ativo ? `<div class="item-extra">${!motNome ? '<span style="color:var(--red)">⚠ sem motorista</span>' : '<span class="badge badge-op">Em uso</span>'}</div>` : ''}
-      </div>
-    `;
-    row.querySelector('[data-vl-toggle]').onclick = (e) => {
-      e.stopPropagation();
-      if (ativo) {
-        currentDay.veiculosLeves = (currentDay.veiculosLeves||[]).filter(x => x.frotaId !== v.id);
-        salvarDiarioDia(false);
-        renderVeiculosLevesDia();
-      } else {
-        if (!currentDay.veiculosLeves) currentDay.veiculosLeves = [];
-        currentDay.veiculosLeves.push({ frotaId: v.id, motoristaNome: '', motoristaMat: '' });
-        abrirSeletorVL(v.id);
-      }
-    };
-    row.querySelector('[data-vl-edit]').onclick = () => { if (ativo) abrirSeletorVL(v.id); };
-    cont.appendChild(row);
+  if (selecionados.length === 0) {
+    cont.innerHTML = '<div class="empty">Nenhum veículo selecionado para hoje</div>';
+    return;
+  }
+  let html = '<div style="padding:8px 0">';
+  selecionados.forEach(v => {
+    html += `<div style="margin-bottom:8px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg-card)">
+      <div style="font-weight:600">🚗 ${escapeHtml(v.desc)}</div>
+      <div style="color:var(--ink-faint);font-size:12px">${v.tipo ? escapeHtml(v.tipo) + ' · ' : ''}${v.placa ? escapeHtml(v.placa) : ''}</div>
+    </div>`;
   });
+  html += '</div>';
+  cont.innerHTML = html;
 }
 
 function abrirSeletorVL(vlId) {
@@ -2911,7 +2879,9 @@ function renderConfig() {
   renderConfigColab();
   renderConfigEfetivoDia();
   renderConfigEquip();
+  renderConfigEquipDia();
   renderConfigVL();
+  renderConfigVLDia();
   renderConfigAtiv();
   renderAtividadesDodiaCadastro();
   renderConfigEventos('seguranca');
@@ -3017,6 +2987,83 @@ function renderConfigColab() {
     block.appendChild(header);
     block.appendChild(body);
     cont.appendChild(block);
+  });
+}
+
+function renderConfigEquipDia() {
+  const cont = document.getElementById('configEquipDiaList');
+  if (!cont) return;
+  cont.innerHTML = '';
+  const hoje = new Date().toISOString().slice(0, 10);
+  const savedEquip = S.get(`equipDia_${hoje}`) || {};
+
+  if (state.equipamentos.length === 0) {
+    cont.innerHTML = '<div class="empty">Nenhum equipamento cadastrado</div>';
+    return;
+  }
+  state.equipamentos.forEach(eq => {
+    const checked = !!savedEquip[eq.id];
+    const row = document.createElement('div');
+    row.className = 'item-row' + (checked ? ' checked' : '');
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = checked;
+    checkbox.style.marginRight = '10px';
+    checkbox.style.cursor = 'pointer';
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) savedEquip[eq.id] = true;
+      else delete savedEquip[eq.id];
+      S.set(`equipDia_${hoje}`, savedEquip);
+      renderConfigEquipDia();
+    });
+
+    const info = document.createElement('div');
+    info.className = 'item-info';
+    info.innerHTML = `<div class="item-name">${escapeHtml(eq.desc)} ${eq.isMotorista ? '🚛' : '🚜'}</div><div class="item-meta"><span class="num">${escapeHtml(eq.numero)}</span></div>`;
+
+    row.appendChild(checkbox);
+    row.appendChild(info);
+    cont.appendChild(row);
+  });
+}
+
+function renderConfigVLDia() {
+  const cont = document.getElementById('configVLDiaList');
+  if (!cont) return;
+  cont.innerHTML = '';
+  const hoje = new Date().toISOString().slice(0, 10);
+  const savedVL = S.get(`vlDia_${hoje}`) || {};
+  const frota = state.veiculosFrota || [];
+
+  if (frota.length === 0) {
+    cont.innerHTML = '<div class="empty">Nenhum veículo leve cadastrado</div>';
+    return;
+  }
+  frota.forEach(v => {
+    const checked = !!savedVL[v.id];
+    const row = document.createElement('div');
+    row.className = 'item-row' + (checked ? ' checked' : '');
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = checked;
+    checkbox.style.marginRight = '10px';
+    checkbox.style.cursor = 'pointer';
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) savedVL[v.id] = true;
+      else delete savedVL[v.id];
+      S.set(`vlDia_${hoje}`, savedVL);
+      renderConfigVLDia();
+    });
+
+    const info = document.createElement('div');
+    info.className = 'item-info';
+    info.innerHTML = `<div class="item-name">🚗 ${escapeHtml(v.desc)}</div><div class="item-meta">${v.tipo ? escapeHtml(v.tipo) + ' · ' : ''}${v.placa ? escapeHtml(v.placa) : ''}</div>`;
+
+    row.appendChild(checkbox);
+    row.appendChild(info);
+    cont.appendChild(row);
   });
 }
 
@@ -3391,12 +3438,12 @@ function salvarVeiculoFrota() {
   } else {
     state.veiculosFrota.push({ id: uid('vf'), desc, placa, tipo });
   }
-  saveState(); fecharModal('modalVeiculoFrota'); renderConfigVL(); toast('Salvo');
+  saveState(); fecharModal('modalVeiculoFrota'); renderConfigVL(); renderConfigVLDia(); toast('Salvo');
 }
 function removerVeiculoFrota(id) {
   confirmar('Remover este veículo da frota?', () => {
     state.veiculosFrota = (state.veiculosFrota || []).filter(v => v.id !== id);
-    saveState(); renderConfigVL(); toast('Removido');
+    saveState(); renderConfigVL(); renderConfigVLDia(); toast('Removido');
   });
 }
 
@@ -3431,6 +3478,7 @@ function salvarEquipamento() {
   saveState();
   fecharModal('modalEquip');
   renderConfigEquip();
+  renderConfigEquipDia();
   toast('Salvo');
 }
 function removerEquipamento(id) {
@@ -3438,6 +3486,7 @@ function removerEquipamento(id) {
     state.equipamentos = state.equipamentos.filter(e => e.id !== id);
     saveState();
     renderConfigEquip();
+    renderConfigEquipDia();
     toast('Removido');
   });
 }
@@ -3574,6 +3623,56 @@ function salvarEfetivoDia(){
       setTimeout(() => {
         initCurrentDay(dataDiario);
       }, 200);
+    }
+  }, 300);
+}
+
+function abrirAbaEquipamentos(){
+  const t = document.querySelector('.tab[data-view="config"]');
+  if (t) t.click();
+  setTimeout(() => {
+    const st = document.querySelector('.subtab[data-pane="equipamentos"]');
+    if (st) st.click();
+  }, 200);
+}
+
+function salvarEquipDia(){
+  const hoje = new Date().toISOString().slice(0, 10);
+  if (!currentDay || !currentDay.data) initCurrentDay(hoje);
+  const dataDiario = currentDay.data || hoje;
+  salvarDiarioDia();
+  renderEquipDia();
+  toast('✓ Equipamentos do dia salvos!');
+  setTimeout(() => {
+    const t = document.querySelector('.tab[data-view="diario"]');
+    if (t) {
+      t.click();
+      setTimeout(() => initCurrentDay(dataDiario), 200);
+    }
+  }, 300);
+}
+
+function abrirAbaVeiculosLeves(){
+  const t = document.querySelector('.tab[data-view="config"]');
+  if (t) t.click();
+  setTimeout(() => {
+    const st = document.querySelector('.subtab[data-pane="equipamentos"]');
+    if (st) st.click();
+  }, 200);
+}
+
+function salvarVLDia(){
+  const hoje = new Date().toISOString().slice(0, 10);
+  if (!currentDay || !currentDay.data) initCurrentDay(hoje);
+  const dataDiario = currentDay.data || hoje;
+  salvarDiarioDia();
+  renderVeiculosLevesDia();
+  toast('✓ Veículos do dia salvos!');
+  setTimeout(() => {
+    const t = document.querySelector('.tab[data-view="diario"]');
+    if (t) {
+      t.click();
+      setTimeout(() => initCurrentDay(dataDiario), 200);
     }
   }, 300);
 }
