@@ -2249,7 +2249,7 @@ async function salvarDiarioGoogle(diarioData) {
   if (!APPS_SCRIPT_URL_DIARIO) return;
   try {
     const payload = buildPayloadGoogle(diarioData);
-    const resp = await fetch(APPS_SCRIPT_URL_DIARIO, {
+    const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=salvar', {
       method: 'POST',
       body: JSON.stringify(payload)
     });
