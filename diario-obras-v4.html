@@ -1147,15 +1147,14 @@
   </div>
   
   <div class="section">
-    <div class="section-title"><div class="section-title-text">👷 Efetivo</div></div>
+    <div class="section-title">
+      <div class="section-title-text">👷 Efetivo</div>
+      <button class="icon-btn" onclick="abrirAbaEfetivo()" title="Selecionar presentes">➕</button>
+    </div>
     <div class="stats-row cols-3">
       <div class="stat"><div class="stat-num" id="statPresentes">0</div><div class="stat-label">Presentes</div></div>
       <div class="stat"><div class="stat-num" id="statAusentes">0</div><div class="stat-label">Ausentes</div></div>
       <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Cadastro</div></div>
-    </div>
-    <div class="quick-actions">
-      <button class="quick-btn" onclick="marcarTodosTipo('efetivo', true)">✓ Todos</button>
-      <button class="quick-btn" onclick="marcarTodosTipo('efetivo', false)">✗ Limpar</button>
     </div>
     <div id="efetivoList"></div>
   </div>
@@ -1362,6 +1361,17 @@
   <!-- COLABORADORES -->
   <div class="config-pane" id="pane-colaboradores">
     <div class="section">
+      <div class="section-title"><div class="section-title-text">👷 Colaboradores Presentes Hoje</div></div>
+      <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
+        Marque os colaboradores presentes neste dia. Eles aparecerão resumidos na aba Diário.
+      </p>
+      <div id="configEfetivoDiaList"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarEfetivoDia()">💾 Salvar Efetivo do Dia</button>
+      <hr class="divider" style="margin-top:20px;margin-bottom:20px">
+    </div>
+
+    <div class="section">
+      <div class="section-title"><div class="section-title-text">⚙️ Gerenciar Colaboradores</div></div>
       <button class="add-btn-full" onclick="abrirModalCategoria()">+ Adicionar Categoria</button>
       <hr class="divider">
       <div id="configColabList"></div>
@@ -2315,49 +2325,33 @@ function salvarAtivExtra() {
 function renderEfetivoDia() {
   const cont = document.getElementById('efetivoList');
   cont.innerHTML = '';
+  const hoje = new Date().toISOString().slice(0, 10);
+  const savedEfetivo = S.get(`efetivoDia_${hoje}`) || {};
+
   let totalP = 0, totalC = 0;
+  let html = '<div style="padding:12px 0">';
+
   state.colaboradores.categorias.forEach(cat => {
-    const presentes = cat.itens.filter(c => currentDay.efetivo[c.id]);
+    const presentes = cat.itens.filter(c => savedEfetivo[c.id]);
     totalP += presentes.length;
     totalC += cat.itens.length;
-    const block = document.createElement('div');
-    block.className = 'cat-block';
-    block.innerHTML = `
-      <div class="cat-header">
-        <div class="cat-header-left">
-          <span class="cat-icon">${cat.icon || '📁'}</span>
-          <span class="cat-name">${escapeHtml(cat.nome)}</span>
-        </div>
-        <span class="cat-count">${presentes.length}/${cat.itens.length}</span>
-        <span class="cat-toggle">▼</span>
-      </div>
-      <div class="cat-body">
-        ${cat.itens.length === 0 ? '<div class="empty">Sem colaboradores</div>' :
-          cat.itens.map(c => `
-            <div class="item-row clickable ${currentDay.efetivo[c.id] ? 'checked' : ''}" data-colab="${c.id}">
-              <div class="checkbox"></div>
-              <div class="item-info">
-                <div class="item-name">${escapeHtml(c.nome)}</div>
-                <div class="item-meta"><span class="mat">${escapeHtml(c.mat)}</span> · ${escapeHtml(c.funcao)}</div>
-              </div>
-            </div>
-          `).join('')
-        }
-      </div>
-    `;
-    block.querySelector('.cat-header').onclick = () => block.classList.toggle('collapsed');
-    block.querySelectorAll('.item-row').forEach(r => {
-      const id = r.dataset.colab;
-      r.onclick = (e) => {
-        e.stopPropagation();
-        if (currentDay.efetivo[id]) delete currentDay.efetivo[id];
-        else currentDay.efetivo[id] = true;
-        salvarDiarioDia(false);
-        renderEfetivoDia();
-      };
-    });
-    cont.appendChild(block);
+
+    if (presentes.length > 0) {
+      const nomes = presentes.map(c => c.nome).join(', ');
+      html += `<div style="margin-bottom:12px">
+        <div style="font-weight:600;color:var(--ink);margin-bottom:4px">${cat.icon} ${escapeHtml(cat.nome)}</div>
+        <div style="color:var(--ink-faint);font-size:13px">${escapeHtml(nomes)}</div>
+      </div>`;
+    }
   });
+
+  if (totalP === 0) {
+    html += '<p style="color:var(--ink-faint);text-align:center;padding:20px">Nenhum colaborador selecionado</p>';
+  }
+
+  html += '</div>';
+  cont.innerHTML = html;
+
   document.getElementById('statPresentes').textContent = totalP;
   document.getElementById('statAusentes').textContent = totalC - totalP;
   document.getElementById('statTotal').textContent = totalC;
@@ -2915,6 +2909,7 @@ function renderConfig() {
   renderLogoPreview();
   
   renderConfigColab();
+  renderConfigEfetivoDia();
   renderConfigEquip();
   renderConfigVL();
   renderConfigAtiv();
@@ -3140,6 +3135,64 @@ function renderConfigAtiv() {
   });
 }
 
+function renderConfigEfetivoDia() {
+  const cont = document.getElementById('configEfetivoDiaList');
+  const hoje = new Date().toISOString().slice(0, 10);
+  const savedEfetivo = S.get(`efetivoDia_${hoje}`) || {};
+
+  cont.innerHTML = '';
+
+  state.colaboradores.categorias.forEach(cat => {
+    const block = document.createElement('div');
+    block.className = 'cat-block';
+
+    const header = document.createElement('div');
+    header.className = 'cat-header';
+    header.innerHTML = `<span class="cat-icon">${cat.icon || '📁'}</span><span class="cat-name">${escapeHtml(cat.nome)}</span>`;
+    header.onclick = () => block.classList.toggle('collapsed');
+
+    const body = document.createElement('div');
+    body.className = 'cat-body';
+
+    if (cat.itens.length === 0) {
+      body.innerHTML = '<div class="empty">Sem colaboradores</div>';
+    } else {
+      cat.itens.forEach(c => {
+        const checked = !!savedEfetivo[c.id];
+        const row = document.createElement('div');
+        row.className = 'item-row' + (checked ? ' checked' : '');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = checked;
+        checkbox.style.marginRight = '10px';
+        checkbox.style.cursor = 'pointer';
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            savedEfetivo[c.id] = true;
+          } else {
+            delete savedEfetivo[c.id];
+          }
+          S.set(`efetivoDia_${hoje}`, savedEfetivo);
+          renderConfigEfetivoDia();
+        });
+
+        const info = document.createElement('div');
+        info.className = 'item-info';
+        info.innerHTML = `<div class="item-name">${escapeHtml(c.nome)}</div><div class="item-meta"><span class="mat">${escapeHtml(c.mat)}</span> · ${escapeHtml(c.funcao)}</div>`;
+
+        row.appendChild(checkbox);
+        row.appendChild(info);
+        body.appendChild(row);
+      });
+    }
+
+    block.appendChild(header);
+    block.appendChild(body);
+    cont.appendChild(block);
+  });
+}
+
 function renderConfigEventos(tipo) {
   const cont = document.getElementById(tipo === 'seguranca' ? 'configSegList' : 'configAmbList');
   cont.innerHTML = '';
@@ -3206,6 +3259,7 @@ function salvarCategoria() {
   saveState();
   fecharModal('modalCategoria');
   renderConfigColab();
+  renderConfigEfetivoDia();
   toast('Salvo');
 }
 function removerCategoria(id) {
@@ -3213,6 +3267,7 @@ function removerCategoria(id) {
     state.colaboradores.categorias = state.colaboradores.categorias.filter(c => c.id !== id);
     saveState();
     renderConfigColab();
+    renderConfigEfetivoDia();
     toast('Removido');
   });
 }
@@ -3249,6 +3304,7 @@ function salvarColaborador() {
   saveState();
   fecharModal('modalColab');
   renderConfigColab();
+  renderConfigEfetivoDia();
   toast('Salvo');
 }
 function removerColaborador(catId, id) {
@@ -3257,6 +3313,7 @@ function removerColaborador(catId, id) {
     cat.itens = cat.itens.filter(c => c.id !== id);
     saveState();
     renderConfigColab();
+    renderConfigEfetivoDia();
     toast('Removido');
   });
 }
@@ -3473,6 +3530,43 @@ function salvarAtividadesDodia(){
   toast('✓ Atividades salvas e adicionadas ao Diário!');
 
   // Redirecionar para Diário
+  setTimeout(() => {
+    const t = document.querySelector('.tab[data-view="diario"]');
+    if (t) {
+      t.click();
+      setTimeout(() => {
+        initCurrentDay(dataDiario);
+      }, 200);
+    }
+  }, 300);
+}
+
+function abrirAbaEfetivo(){
+  const t = document.querySelector('.tab[data-view="config"]');
+  if (t) t.click();
+  setTimeout(() => {
+    const st = document.querySelector('.subtab[data-pane="colaboradores"]');
+    if (st) st.click();
+  }, 200);
+}
+
+function salvarEfetivoDia(){
+  const hoje = new Date().toISOString().slice(0, 10);
+
+  if (!currentDay || !currentDay.data) {
+    initCurrentDay(hoje);
+  }
+
+  const dataDiario = currentDay.data || hoje;
+  const savedEfetivo = S.get(`efetivoDia_${hoje}`) || {};
+
+  currentDay.efetivo = { ...savedEfetivo };
+  salvarDiarioDia();
+  renderDiario();
+  renderEfetivoDia();
+
+  toast('✓ Efetivo do dia salvo!');
+
   setTimeout(() => {
     const t = document.querySelector('.tab[data-view="diario"]');
     if (t) {
