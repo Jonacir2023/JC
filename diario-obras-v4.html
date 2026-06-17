@@ -1543,7 +1543,8 @@
     <label>Número / Frota</label>
     <input type="text" id="modalEquipNum" placeholder="Ex.: ESC-001">
     <label>Descrição</label>
-    <input type="text" id="modalEquipDesc" placeholder="Ex.: Escavadeira Hidráulica CAT 320">
+    <input type="text" id="modalEquipDesc" list="equipDescSugestoes" placeholder="Ex.: Escavadeira Hidráulica CAT 320" autocomplete="off">
+    <datalist id="equipDescSugestoes"></datalist>
     <div class="tempo-vento" style="margin-top:14px;background:var(--bg-card);border:1px solid var(--line)">
       <input type="checkbox" id="modalEquipMotorista">
       <label for="modalEquipMotorista">🚛 É caminhão / requer motorista?</label>
@@ -2388,11 +2389,20 @@ function renderEquipDia() {
     cont.innerHTML = '<div class="empty">Nenhum equipamento selecionado para hoje</div>';
     return;
   }
-  let html = '<div style="padding:8px 0">';
+  // Agrupar por descrição e contar
+  const grupos = {};
   selecionados.forEach(eq => {
-    html += `<div style="margin-bottom:8px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg-card)">
-      <div style="font-weight:600">${escapeHtml(eq.desc)} ${eq.isMotorista ? '🚛' : '🚜'}</div>
-      <div style="color:var(--ink-faint);font-size:12px"><span class="num">${escapeHtml(eq.numero)}</span></div>
+    const key = eq.desc.trim();
+    if (!grupos[key]) grupos[key] = { desc: key, isMotorista: eq.isMotorista, count: 0 };
+    grupos[key].count++;
+  });
+  const ordenados = Object.values(grupos).sort((a, b) => a.desc.localeCompare(b.desc, 'pt-BR'));
+
+  let html = '<div style="padding:4px 0">';
+  ordenados.forEach(g => {
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
+      <div style="font-weight:600">${g.isMotorista ? '🚛' : '🚜'} ${escapeHtml(g.desc)}</div>
+      <div style="font-size:15px;font-weight:700;color:var(--accent);white-space:nowrap;margin-left:8px">${g.count} un.</div>
     </div>`;
   });
   html += '</div>';
@@ -3452,7 +3462,14 @@ function abrirModalEquipamento() {
   document.getElementById('modalEquipNum').value = '';
   document.getElementById('modalEquipDesc').value = '';
   document.getElementById('modalEquipMotorista').checked = false;
+  _atualizarEquipDescDatalist();
   abrirModal('modalEquip');
+}
+function _atualizarEquipDescDatalist() {
+  const dl = document.getElementById('equipDescSugestoes');
+  if (!dl) return;
+  const nomes = [...new Set(state.equipamentos.map(e => e.desc.trim()))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  dl.innerHTML = nomes.map(n => `<option value="${escapeHtml(n)}">`).join('');
 }
 function editarEquipamento(id) {
   const eq = state.equipamentos.find(e => e.id === id);
@@ -3461,6 +3478,7 @@ function editarEquipamento(id) {
   document.getElementById('modalEquipNum').value = eq.numero;
   document.getElementById('modalEquipDesc').value = eq.desc;
   document.getElementById('modalEquipMotorista').checked = !!eq.isMotorista;
+  _atualizarEquipDescDatalist();
   abrirModal('modalEquip');
 }
 function salvarEquipamento() {
