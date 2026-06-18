@@ -1058,6 +1058,7 @@
       <div class="header-empresa" id="hdrEmpresa">EMPRESA</div>
       <h1>Diário de Obras</h1>
       <div class="header-obra" id="hdrObra">—</div>
+      <div id="hdrCidade" style="font-size:12px;color:var(--accent);opacity:0.8;margin-top:2px;display:none"></div>
     </div>
     <div class="header-logo" id="hdrLogo">LOGO</div>
   </div>
@@ -1080,11 +1081,6 @@
       <strong>Editando diário passado:</strong> <span id="editingDate"></span>
     </div>
     <button class="icon-btn" onclick="voltarParaHoje()" title="Voltar para hoje">🔙</button>
-  </div>
-
-  <!-- Cidade da obra — exibida no topo, abaixo do nome da obra -->
-  <div id="cidadeResumo" style="display:none;padding:6px 16px 2px;font-size:13px;color:var(--ink-secondary)">
-    📍 <span id="cidadeResumoText"></span>
   </div>
 
   <div class="section">
@@ -3645,15 +3641,14 @@ function abrirModalEquipamento() {
   abrirModal('modalEquip');
 }
 function _atualizarResumoObraNosDiario() {
-  const wrapper = document.getElementById('cidadeResumo');
-  const span    = document.getElementById('cidadeResumoText');
-  if (!wrapper) return;
+  const el = document.getElementById('hdrCidade');
+  if (!el) return;
   const cidade = state.obra.local || '';
   if (cidade) {
-    if (span) span.textContent = cidade;
-    wrapper.style.display = '';
+    el.textContent = cidade;
+    el.style.display = '';
   } else {
-    wrapper.style.display = 'none';
+    el.style.display = 'none';
   }
 }
 
