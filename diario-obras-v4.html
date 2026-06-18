@@ -1223,10 +1223,10 @@
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">✍️ Apontador Responsável</div>
-      <button class="add-btn" onclick="selecionarApontador()">＋</button>
     </div>
-    <div id="apontadorDisplay" style="font-size:14px;color:var(--ink-secondary);padding:6px 0;min-height:28px"></div>
-    <datalist id="apontadorSugestoes"></datalist>
+    <select id="apontadorSelect" style="width:100%;padding:10px 8px;border:2px solid var(--line);border-radius:6px;background:var(--bg-card);font-family:var(--sans);font-size:14px;color:var(--ink);margin-top:4px" onchange="selecionarApontadorDireto(this.value)">
+      <option value="">— Selecionar Apontador —</option>
+    </select>
   </div>
 
   <button class="btn btn-primary" onclick="salvarDiarioDia(true)" style="margin-top:8px">💾 Salvar Diário no Histórico</button>
@@ -2338,7 +2338,8 @@ function salvarDiarioDia(notificar) {
   if (!currentDay || !currentDay.data) return;
   if (notificar && !(currentDay.apontador || '').trim()) {
     toast('❌ Selecione o Apontador Responsável antes de salvar');
-    selecionarApontador();
+    const sel = document.getElementById('apontadorSelect');
+    if (sel) { sel.scrollIntoView({ behavior: 'smooth', block: 'center' }); sel.focus(); }
     return;
   }
   const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.observacoesDia || currentDay.tempo ||
@@ -2906,13 +2907,11 @@ function _apontadoresFiltrados() {
 }
 
 function renderApontadorDia() {
-  const el = document.getElementById('apontadorDisplay');
-  if (el) el.textContent = currentDay.apontador || '—';
-  // atualiza select no modal
-  const sel = document.getElementById('modalApontadorInput');
+  // Atualiza o select inline na aba Diário
+  const sel = document.getElementById('apontadorSelect');
   if (sel) {
-    const current = sel.value || currentDay.apontador || '';
-    sel.innerHTML = '<option value="">— Selecionar —</option>';
+    const current = currentDay.apontador || '';
+    sel.innerHTML = '<option value="">— Selecionar Apontador —</option>';
     _apontadoresFiltrados().forEach(s => {
       const opt = document.createElement('option');
       opt.value = s;
@@ -2920,15 +2919,23 @@ function renderApontadorDia() {
       if (s === current) opt.selected = true;
       sel.appendChild(opt);
     });
+    // Atualiza select do modal também (se ainda existir)
+    const selModal = document.getElementById('modalApontadorInput');
+    if (selModal) {
+      selModal.innerHTML = sel.innerHTML;
+      selModal.value = current;
+    }
   }
 }
 
+function selecionarApontadorDireto(val) {
+  currentDay.apontador = val;
+  salvarDiarioDia(false);
+}
+
 function selecionarApontador() {
-  const sel = document.getElementById('modalApontadorInput');
-  renderApontadorDia(); // atualiza opções do select
-  if (sel) sel.value = currentDay.apontador || '';
+  renderApontadorDia();
   abrirModal('modalApontador');
-  setTimeout(() => { if (sel) sel.focus(); }, 150);
 }
 
 function confirmarApontador() {
