@@ -1089,6 +1089,10 @@
       <span>📆</span>
       <span class="dia-semana" id="diaSemana">—</span>
     </div>
+    <div id="obraResumoLocal" style="margin-top:8px;font-size:13px;color:var(--ink-secondary);line-height:1.6;display:none">
+      <div>📍 <span id="obraResumoLocalCidade"></span></div>
+      <div>🏗️ <span id="obraResumoLocalDesc"></span></div>
+    </div>
   </div>
   
   <div class="section">
@@ -1334,8 +1338,11 @@
       <input type="text" id="cfgObra" placeholder="Ex.: Obra Beira-Mar Norte">
       <label>Empresa</label>
       <input type="text" id="cfgEmpresa" placeholder="Ex.: Construtora XYZ">
-      <label>Local (opcional)</label>
+      <label>Cidade - UN</label>
       <input type="text" id="cfgLocal" placeholder="Ex.: Florianópolis - SC">
+      <label>Descrição da Obra</label>
+      <input type="text" id="cfgDescricao" list="descricaoObraSugestoes" placeholder="Ex.: Construção de galpão industrial">
+      <datalist id="descricaoObraSugestoes"></datalist>
       <label>Contrato / Código (opcional)</label>
       <input type="text" id="cfgContrato" placeholder="Ex.: CT-2026-001">
     </div>
@@ -2071,6 +2078,7 @@ function initCurrentDay(data) {
   atualizarHeaderEdicao();
   preencherCampos();
   renderDiario();
+  _atualizarResumoObraNosDiario();
 }
 
 function atualizarHeaderEdicao() {
@@ -2252,6 +2260,7 @@ function buildPayloadGoogle(diarioData) {
     obra:                 state.obra.nome || '',
     empresa:              state.obra.empresa || '',
     local:                state.obra.local || '',
+    descricaoObra:        state.obra.descricao || '',
     tempo:                tempoLabel(day.tempo, day.tempoVento),
     jornada,
     dssHorario:           day.dssHorario || '',
@@ -2931,6 +2940,13 @@ function salvarConfigObra() {
   state.obra.nome = document.getElementById('cfgObra').value.trim();
   state.obra.empresa = document.getElementById('cfgEmpresa').value.trim();
   state.obra.local = document.getElementById('cfgLocal').value.trim();
+  state.obra.descricao = document.getElementById('cfgDescricao').value.trim();
+  // guarda descrições anteriores como sugestões
+  if (state.obra.descricao) {
+    const hist = state.obra.descricaoHistorico || [];
+    if (!hist.includes(state.obra.descricao)) hist.unshift(state.obra.descricao);
+    state.obra.descricaoHistorico = hist.slice(0, 20);
+  }
   state.obra.contrato = document.getElementById('cfgContrato').value.trim();
   state.obra.encerramentoNormal = document.getElementById('cfgEncerramentoNormal').value || '17:00';
   state.obra.encerramentoSexta = document.getElementById('cfgEncerramentoSexta').value || '16:00';
@@ -2938,6 +2954,7 @@ function salvarConfigObra() {
   saveState();
   atualizarHeader();
   atualizarHeaderEdicao();
+  _atualizarResumoObraNosDiario();
   toast('Configurações salvas');
 }
 
@@ -3002,7 +3019,15 @@ function renderConfig() {
   document.getElementById('cfgObra').value = state.obra.nome || '';
   document.getElementById('cfgEmpresa').value = state.obra.empresa || '';
   document.getElementById('cfgLocal').value = state.obra.local || '';
+  document.getElementById('cfgDescricao').value = state.obra.descricao || '';
+  // atualiza datalist de descrições anteriores
+  const dlDesc = document.getElementById('descricaoObraSugestoes');
+  if (dlDesc) {
+    dlDesc.innerHTML = (state.obra.descricaoHistorico || []).map(d => `<option value="${escapeHtml(d)}">`).join('');
+  }
   document.getElementById('cfgContrato').value = state.obra.contrato || '';
+  // exibe resumo na aba Diário
+  _atualizarResumoObraNosDiario();
   document.getElementById('cfgEncerramentoNormal').value = state.obra.encerramentoNormal || '17:00';
   document.getElementById('cfgEncerramentoSexta').value = state.obra.encerramentoSexta || '16:00';
   document.getElementById('cfgEncerramentoSabado').value = state.obra.encerramentoSabado || '16:00';
@@ -3596,6 +3621,22 @@ function abrirModalEquipamento() {
   _atualizarEquipDescDatalist();
   abrirModal('modalEquip');
 }
+function _atualizarResumoObraNosDiario() {
+  const wrapper = document.getElementById('obraResumoLocal');
+  const cidade = document.getElementById('obraResumoLocalCidade');
+  const desc = document.getElementById('obraResumoLocalDesc');
+  if (!wrapper) return;
+  const c = state.obra.local || '';
+  const d = state.obra.descricao || '';
+  if (c || d) {
+    if (cidade) cidade.textContent = c || '—';
+    if (desc) desc.textContent = d || '—';
+    wrapper.style.display = '';
+  } else {
+    wrapper.style.display = 'none';
+  }
+}
+
 function _atualizarEquipDescDatalist() {
   const dl = document.getElementById('equipDescSugestoes');
   if (!dl) return;

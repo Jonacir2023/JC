@@ -22,7 +22,8 @@ const COLUNAS_DIARIO = [
   'Dia da Semana',
   'Obra',
   'Empresa',
-  'Local',
+  'Cidade da Obra',
+  'Descrição da Obra',
   'Tempo / Clima',
   'Jornada',
   'DSS — Horário',
@@ -186,7 +187,7 @@ function salvarDiario(payload) {
     hr.setFontColor('#f5b334');
     hr.setFontWeight('bold');
     sheet.setFrozenRows(1);
-    const larguras = [100,110,160,160,130,140,230,80,160,230,280,80,200,300,220,180,240,240,320,180];
+    const larguras = [100,110,160,160,130,220,130,230,80,160,230,280,80,200,300,220,180,240,240,320,180];
     larguras.forEach((w, i) => sheet.setColumnWidth(i+1, w));
   }
 
@@ -196,6 +197,7 @@ function salvarDiario(payload) {
     payload.obra                   || '',
     payload.empresa                || '',
     payload.local                  || '',
+    payload.descricaoObra          || '',
     payload.tempo                  || '',
     payload.jornada                || '',
     payload.dssHorario             || '',
@@ -213,12 +215,25 @@ function salvarDiario(payload) {
     payload.apontador              || ''
   ];
 
-  // Upsert: atualiza linha existente com a mesma data, ou adiciona nova
+  // Upsert por data + apontador: mantém apenas o registro mais recente da combinação
+  // Coluna Apontador = última coluna (index COLUNAS_DIARIO.length - 1)
+  const apontadorCol = COLUNAS_DIARIO.length - 1; // índice 0-based
   const dados = sheet.getDataRange().getValues();
+  const rowsParaDeletar = [];
   let linhaIdx = -1;
   for (let i = 1; i < dados.length; i++) {
-    if (dados[i][0] === payload.data) { linhaIdx = i + 1; break; }
+    const mesmaData = dados[i][0] === payload.data;
+    const mesmoApontador = String(dados[i][apontadorCol]).trim() === String(payload.apontador || '').trim();
+    if (mesmaData && mesmoApontador) {
+      if (linhaIdx === -1) {
+        linhaIdx = i + 1; // primeira ocorrência: vai atualizar
+      } else {
+        rowsParaDeletar.push(i + 1); // duplicatas: apagar
+      }
+    }
   }
+  // Deletar duplicatas antigas (de baixo para cima para não deslocar índices)
+  rowsParaDeletar.reverse().forEach(r => sheet.deleteRow(r));
 
   if (linhaIdx > 0) {
     sheet.getRange(linhaIdx, 1, 1, linha.length).setValues([linha]);
