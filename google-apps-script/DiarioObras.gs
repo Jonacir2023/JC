@@ -16,29 +16,30 @@ const SHEET_NAME_PAUTA   = 'Pauta';
 const SHEET_NAME_CHECKIN = 'CheckIn';
 const SHEET_NAME_DIARIO  = 'Diário';
 
-// Colunas da aba Diário (nova estrutura legível)
+// 22 colunas
 const COLUNAS_DIARIO = [
-  'Data',
-  'Dia da Semana',
-  'Obra',
-  'Empresa',
-  'Cidade da Obra',
-  'Descrição da Obra',
-  'Tempo / Clima',
-  'Jornada',
-  'DSS — Horário',
-  'DSS — Ministrado Por',
-  'DSS — Tema',
-  'Atividades do Dia',
-  'Efetivo Total',
-  'Efetivo por Função',
-  'Colaboradores Presentes',
-  'Equipamentos Utilizados',
-  'Veículos Leves',
-  'Eventos de Segurança',
-  'Eventos de Meio Ambiente',
-  'Observações do Dia',
-  'Apontador'
+  'Data',                    // A
+  'Dia da Semana',           // B
+  'Obra',                    // C
+  'Empresa',                 // D
+  'Cidade',                  // E
+  'Local da Obra',           // F  ← local diário onde os trabalhos foram executados
+  'Descrição do Local',      // G  ← descrição do local
+  'Tempo / Clima',           // H
+  'Jornada',                 // I
+  'DSS — Horário',           // J
+  'DSS — Ministrado Por',    // K
+  'DSS — Tema',              // L
+  'Atividades do Dia',       // M
+  'Efetivo Total',           // N
+  'Efetivo por Função',      // O
+  'Colaboradores Presentes', // P
+  'Equipamentos Utilizados', // Q
+  'Veículos Leves',          // R
+  'Eventos de Segurança',    // S
+  'Eventos de Meio Ambiente',// T
+  'Observações do Dia',      // U
+  'Apontador'                // V
 ];
 
 // ============================================================
@@ -167,17 +168,15 @@ function listarCheckIns() {
 }
 
 // ============================================================
-// DIÁRIO — novo formato legível (payload enriquecido)
+// DIÁRIO
 // ============================================================
 
 function salvarDiario(payload) {
   const ss  = SpreadsheetApp.openById(SHEET_ID);
   let sheet = ss.getSheetByName(SHEET_NAME_DIARIO);
-
-  // Criar aba se não existir
   if (!sheet) sheet = ss.insertSheet(SHEET_NAME_DIARIO);
 
-  // Se cabeçalho está no formato antigo (col A = "id") ou vazio, reescreve
+  // Reescreve cabeçalho se necessário
   const colA = sheet.getRange(1, 1).getValue();
   if (colA !== 'Data') {
     sheet.clearContents();
@@ -187,52 +186,48 @@ function salvarDiario(payload) {
     hr.setFontColor('#f5b334');
     hr.setFontWeight('bold');
     sheet.setFrozenRows(1);
-    const larguras = [100,110,160,160,130,220,130,230,80,160,230,280,80,200,300,220,180,240,240,320,180];
+    const larguras = [100,110,160,160,120,180,220,130,230,80,160,230,280,80,200,300,220,180,240,240,320,180];
     larguras.forEach((w, i) => sheet.setColumnWidth(i+1, w));
   }
 
   const linha = [
-    payload.data                   || '',
-    payload.diaSemana              || '',
-    payload.obra                   || '',
-    payload.empresa                || '',
-    payload.local                  || '',
-    payload.descricaoObra          || '',
-    payload.tempo                  || '',
-    payload.jornada                || '',
-    payload.dssHorario             || '',
-    payload.dssMinistrou           || '',
-    payload.dssTema                || '',
-    payload.atividades             || '',
-    payload.efetivoTotal           || 0,
-    payload.efetivoPorFuncao       || '',
-    payload.colaboradoresPresentes || '',
-    payload.equipamentos           || '',
-    payload.veiculosLeves          || '',
-    payload.eventosSeguranca       || '',
-    payload.eventosMeioAmbiente    || '',
-    payload.observacoes            || '',
-    payload.apontador              || ''
+    payload.data                   || '',  // A Data
+    payload.diaSemana              || '',  // B Dia da Semana
+    payload.obra                   || '',  // C Obra
+    payload.empresa                || '',  // D Empresa
+    payload.local                  || '',  // E Cidade
+    payload.localObra              || '',  // F Local da Obra
+    payload.descricaoLocal         || '',  // G Descrição do Local
+    payload.tempo                  || '',  // H Tempo / Clima
+    payload.jornada                || '',  // I Jornada
+    payload.dssHorario             || '',  // J DSS — Horário
+    payload.dssMinistrou           || '',  // K DSS — Ministrado Por
+    payload.dssTema                || '',  // L DSS — Tema
+    payload.atividades             || '',  // M Atividades do Dia
+    payload.efetivoTotal           || 0,   // N Efetivo Total
+    payload.efetivoPorFuncao       || '',  // O Efetivo por Função
+    payload.colaboradoresPresentes || '',  // P Colaboradores Presentes
+    payload.equipamentos           || '',  // Q Equipamentos Utilizados
+    payload.veiculosLeves          || '',  // R Veículos Leves
+    payload.eventosSeguranca       || '',  // S Eventos de Segurança
+    payload.eventosMeioAmbiente    || '',  // T Eventos de Meio Ambiente
+    payload.observacoes            || '',  // U Observações do Dia
+    payload.apontador              || ''   // V Apontador
   ];
 
-  // Upsert por data + apontador: mantém apenas o registro mais recente da combinação
-  // Coluna Apontador = última coluna (index COLUNAS_DIARIO.length - 1)
-  const apontadorCol = COLUNAS_DIARIO.length - 1; // índice 0-based
+  // Upsert por data + apontador (mantém apenas o mais recente)
+  const apontadorCol = COLUNAS_DIARIO.length - 1; // índice 0-based = col V
   const dados = sheet.getDataRange().getValues();
   const rowsParaDeletar = [];
   let linhaIdx = -1;
   for (let i = 1; i < dados.length; i++) {
-    const mesmaData = dados[i][0] === payload.data;
+    const mesmaData      = dados[i][0] === payload.data;
     const mesmoApontador = String(dados[i][apontadorCol]).trim() === String(payload.apontador || '').trim();
     if (mesmaData && mesmoApontador) {
-      if (linhaIdx === -1) {
-        linhaIdx = i + 1; // primeira ocorrência: vai atualizar
-      } else {
-        rowsParaDeletar.push(i + 1); // duplicatas: apagar
-      }
+      if (linhaIdx === -1) { linhaIdx = i + 1; }
+      else { rowsParaDeletar.push(i + 1); }
     }
   }
-  // Deletar duplicatas antigas (de baixo para cima para não deslocar índices)
   rowsParaDeletar.reverse().forEach(r => sheet.deleteRow(r));
 
   if (linhaIdx > 0) {
@@ -243,7 +238,7 @@ function salvarDiario(payload) {
     sheet.getRange(nr, 1, 1, linha.length).setWrap(true);
   }
 
-  // Ordenar por data decrescente (mais recente no topo)
+  // Ordenar por data decrescente
   const lastRow = sheet.getLastRow();
   if (lastRow > 2) {
     sheet.getRange(2, 1, lastRow - 1, COLUNAS_DIARIO.length)

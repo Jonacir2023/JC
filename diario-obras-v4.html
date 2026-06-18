@@ -1081,7 +1081,12 @@
     </div>
     <button class="icon-btn" onclick="voltarParaHoje()" title="Voltar para hoje">🔙</button>
   </div>
-  
+
+  <!-- Cidade da obra — exibida no topo, abaixo do nome da obra -->
+  <div id="cidadeResumo" style="display:none;padding:6px 16px 2px;font-size:13px;color:var(--ink-secondary)">
+    📍 <span id="cidadeResumoText"></span>
+  </div>
+
   <div class="section">
     <div class="section-title"><div class="section-title-text">📅 Data do Diário</div></div>
     <input type="date" id="dataDiario">
@@ -1089,10 +1094,15 @@
       <span>📆</span>
       <span class="dia-semana" id="diaSemana">—</span>
     </div>
-    <div id="obraResumoLocal" style="margin-top:8px;font-size:13px;color:var(--ink-secondary);line-height:1.6;display:none">
-      <div>📍 <span id="obraResumoLocalCidade"></span></div>
-      <div>🏗️ <span id="obraResumoLocalDesc"></span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-text">📍 Local da Obra</div>
     </div>
+    <input type="text" id="localObra" list="localObraList" placeholder="Ex.: Bloco A — 2º Pavimento" style="margin-bottom:8px">
+    <datalist id="localObraList"></datalist>
+    <textarea id="descricaoLocal" placeholder="Descrição do local onde os trabalhos foram executados..." style="min-height:72px;resize:vertical"></textarea>
   </div>
   
   <div class="section">
@@ -1910,7 +1920,9 @@ const EMPTY_DAY = () => ({
   veiculosLeves: [],  // [{id, desc, placa, motorista}]
   eventosSeguranca: [],
   eventosAmbiente: [],
-  apontador: ''
+  apontador: '',
+  localObra: '',
+  descricaoLocal: ''
 });
 
 let state = loadState();
@@ -2116,11 +2128,12 @@ function voltarParaHoje() {
 }
 
 function preencherCampos() {
-  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','observacoesDia'].forEach(k => {
+  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','observacoesDia','localObra','descricaoLocal'].forEach(k => {
     const el = document.getElementById(k);
     if (el) el.value = currentDay[k] || '';
   });
   renderApontadorDia();
+  _atualizarLocalObraDatalist();
   // DSS Ministrou
   const dssMin = document.getElementById('dssMinistrou');
   if (dssMin) {
@@ -2141,7 +2154,7 @@ function preencherCampos() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','observacoesDia'].forEach(k => {
+  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','observacoesDia','localObra','descricaoLocal'].forEach(k => {
     const el = document.getElementById(k);
     if (el) el.addEventListener('input', () => {
       currentDay[k] = el.value;
@@ -2275,7 +2288,9 @@ function buildPayloadGoogle(diarioData) {
     eventosSeguranca:     segTexto,
     eventosMeioAmbiente:  ambTexto,
     observacoes:          day.observacoesDia || '',
-  apontador:            day.apontador || ''
+    apontador:            day.apontador || '',
+    localObra:            day.localObra || '',
+    descricaoLocal:       day.descricaoLocal || ''
   };
 }
 
@@ -2311,6 +2326,14 @@ function salvarDiarioDia(notificar) {
     saveHistory();
   }
   if (notificar) {
+    // Guardar local da obra no histórico de sugestões
+    const loc = (currentDay.localObra || '').trim();
+    if (loc) {
+      const hist = state.localObraHistorico || [];
+      if (!hist.includes(loc)) hist.unshift(loc);
+      state.localObraHistorico = hist.slice(0, 30);
+      saveState();
+    }
     salvarDiarioGoogle(currentDay);
     toast('Diário salvo no histórico');
     backupAutomatico();
@@ -3622,19 +3645,23 @@ function abrirModalEquipamento() {
   abrirModal('modalEquip');
 }
 function _atualizarResumoObraNosDiario() {
-  const wrapper = document.getElementById('obraResumoLocal');
-  const cidade = document.getElementById('obraResumoLocalCidade');
-  const desc = document.getElementById('obraResumoLocalDesc');
+  const wrapper = document.getElementById('cidadeResumo');
+  const span    = document.getElementById('cidadeResumoText');
   if (!wrapper) return;
-  const c = state.obra.local || '';
-  const d = state.obra.descricao || '';
-  if (c || d) {
-    if (cidade) cidade.textContent = c || '—';
-    if (desc) desc.textContent = d || '—';
+  const cidade = state.obra.local || '';
+  if (cidade) {
+    if (span) span.textContent = cidade;
     wrapper.style.display = '';
   } else {
     wrapper.style.display = 'none';
   }
+}
+
+function _atualizarLocalObraDatalist() {
+  const dl = document.getElementById('localObraList');
+  if (!dl) return;
+  const hist = state.localObraHistorico || [];
+  dl.innerHTML = hist.map(l => `<option value="${escapeHtml(l)}">`).join('');
 }
 
 function _atualizarEquipDescDatalist() {
