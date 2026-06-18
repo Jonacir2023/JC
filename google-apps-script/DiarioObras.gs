@@ -53,6 +53,9 @@ function doGet(e) {
     if (path === 'checkin' && action === 'historico')   return listarCheckIns();
     if (path === 'diario'  && action === 'carregar' && data) return carregarDiario(data);
     if (path === 'diario'  && action === 'lista-mes' && mes) return listarDiariosMes(mes);
+    if (path === 'diario'  && action === 'salvar'   && e.parameter.dados) {
+      return salvarDiario(JSON.parse(e.parameter.dados));
+    }
     return successResponse({ ok: true, msg: 'API Diário de Obras ativa' });
   } catch (err) { return errorResponse(err.message); }
 }
