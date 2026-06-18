@@ -36,7 +36,8 @@ const COLUNAS_DIARIO = [
   'Veículos Leves',
   'Eventos de Segurança',
   'Eventos de Meio Ambiente',
-  'Observações do Dia'
+  'Observações do Dia',
+  'Apontador'
 ];
 
 // ============================================================
@@ -185,7 +186,7 @@ function salvarDiario(payload) {
     hr.setFontColor('#f5b334');
     hr.setFontWeight('bold');
     sheet.setFrozenRows(1);
-    const larguras = [100,110,160,160,130,140,230,80,160,230,280,80,200,300,220,180,240,240,320];
+    const larguras = [100,110,160,160,130,140,230,80,160,230,280,80,200,300,220,180,240,240,320,180];
     larguras.forEach((w, i) => sheet.setColumnWidth(i+1, w));
   }
 
@@ -208,7 +209,8 @@ function salvarDiario(payload) {
     payload.veiculosLeves          || '',
     payload.eventosSeguranca       || '',
     payload.eventosMeioAmbiente    || '',
-    payload.observacoes            || ''
+    payload.observacoes            || '',
+    payload.apontador              || ''
   ];
 
   // Upsert: atualiza linha existente com a mesma data, ou adiciona nova

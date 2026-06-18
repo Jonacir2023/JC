@@ -1200,6 +1200,15 @@
     <textarea id="observacoesDia" placeholder="Registre aqui informações importantes do dia: ocorrências, decisões, visitas, pendências, condições especiais..." style="min-height:140px;resize:vertical"></textarea>
   </div>
 
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-text">✍️ Apontador Responsável</div>
+      <button class="add-btn" onclick="selecionarApontador()">＋</button>
+    </div>
+    <div id="apontadorDisplay" style="font-size:14px;color:var(--ink-secondary);padding:6px 0;min-height:28px"></div>
+    <datalist id="apontadorSugestoes"></datalist>
+  </div>
+
   <button class="btn btn-primary" onclick="salvarDiarioDia(true)" style="margin-top:8px">💾 Salvar Diário no Histórico</button>
 </main>
 
@@ -1637,6 +1646,19 @@
   </div>
 </div>
 
+<!-- Apontador Responsável -->
+<div class="modal-overlay" id="modalApontador">
+  <div class="modal">
+    <div class="modal-title">✍️ Apontador Responsável</div>
+    <label>Nome / Matrícula</label>
+    <input type="text" id="modalApontadorInput" list="apontadorSugestoes" placeholder="Digite ou selecione...">
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-ghost" onclick="fecharModal('modalApontador')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarApontador()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Atividade avulsa -->
 <div class="modal-overlay" id="modalAtivExtra">
   <div class="modal">
@@ -1880,7 +1902,8 @@ const EMPTY_DAY = () => ({
   equipamentos: {},  // id -> {ativo, operadorMat, operadorNome, status, horimetro}
   veiculosLeves: [],  // [{id, desc, placa, motorista}]
   eventosSeguranca: [],
-  eventosAmbiente: []
+  eventosAmbiente: [],
+  apontador: ''
 });
 
 let state = loadState();
@@ -2089,6 +2112,7 @@ function preencherCampos() {
     const el = document.getElementById(k);
     if (el) el.value = currentDay[k] || '';
   });
+  renderApontadorDia();
   // DSS Ministrou
   const dssMin = document.getElementById('dssMinistrou');
   if (dssMin) {
@@ -2241,7 +2265,8 @@ function buildPayloadGoogle(diarioData) {
     veiculosLeves:        veiculosTexto,
     eventosSeguranca:     segTexto,
     eventosMeioAmbiente:  ambTexto,
-    observacoes:          day.observacoesDia || ''
+    observacoes:          day.observacoesDia || '',
+  apontador:            day.apontador || ''
   };
 }
 
@@ -2293,6 +2318,7 @@ function renderDiario() {
   renderVeiculosLevesDia();
   renderEventosDia('seguranca');
   renderEventosDia('meio_ambiente');
+  renderApontadorDia();
 }
 
 function marcarTodosTipo(tipo, valor) {
@@ -2727,6 +2753,44 @@ function removerVeiculoLeve(idx) {
     salvarDiarioDia(false);
     renderVeiculosLevesDia();
   });
+}
+
+// APONTADOR
+function _todosColaboradores() {
+  const lista = [];
+  (state.colaboradores.categorias || []).forEach(cat => {
+    (cat.itens || []).forEach(c => lista.push(`${c.mat} – ${c.nome} (${cat.nome})`));
+  });
+  return lista;
+}
+
+function renderApontadorDia() {
+  const el = document.getElementById('apontadorDisplay');
+  if (el) el.textContent = currentDay.apontador || '—';
+  // atualiza datalist
+  const dl = document.getElementById('apontadorSugestoes');
+  if (dl) {
+    dl.innerHTML = '';
+    _todosColaboradores().forEach(s => {
+      const opt = document.createElement('option'); opt.value = s; dl.appendChild(opt);
+    });
+  }
+}
+
+function selecionarApontador() {
+  const inp = document.getElementById('modalApontadorInput');
+  if (inp) inp.value = currentDay.apontador || '';
+  renderApontadorDia(); // atualiza datalist
+  abrirModal('modalApontador');
+  setTimeout(() => { if (inp) inp.focus(); }, 150);
+}
+
+function confirmarApontador() {
+  const val = (document.getElementById('modalApontadorInput').value || '').trim();
+  currentDay.apontador = val;
+  renderApontadorDia();
+  salvarDiarioDia();
+  fecharModal('modalApontador');
 }
 
 // EVENTOS
