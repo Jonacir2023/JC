@@ -1674,7 +1674,9 @@
   <div class="modal">
     <div class="modal-title">✍️ Apontador Responsável</div>
     <label>Nome / Matrícula</label>
-    <input type="text" id="modalApontadorInput" list="apontadorSugestoes" placeholder="Digite ou selecione...">
+    <select id="modalApontadorInput">
+      <option value="">— Selecionar —</option>
+    </select>
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-ghost" onclick="fecharModal('modalApontador')">Cancelar</button>
       <button class="btn btn-primary" onclick="confirmarApontador()">Confirmar</button>
@@ -2316,6 +2318,9 @@ function buildPayloadGoogle(diarioData) {
   };
 }
 
+// IMPORTANTE: O Apps Script implantado deve ser a versão de 23 colunas
+// (com coluna S = Veículos/Equip. Parados). Reimplantar DiarioObras.gs se houver
+// descasamento de colunas na planilha.
 async function salvarDiarioGoogle(diarioData) {
   if (!APPS_SCRIPT_URL_DIARIO) return;
   try {
@@ -2331,6 +2336,11 @@ async function salvarDiarioGoogle(diarioData) {
 
 function salvarDiarioDia(notificar) {
   if (!currentDay || !currentDay.data) return;
+  if (notificar && !(currentDay.apontador || '').trim()) {
+    toast('❌ Selecione o Apontador Responsável antes de salvar');
+    selecionarApontador();
+    return;
+  }
   const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.observacoesDia || currentDay.tempo ||
     Object.keys(currentDay.efetivo).length > 0 ||
     Object.keys(currentDay.atividadesMarcadas).length > 0 ||
@@ -2356,6 +2366,10 @@ function salvarDiarioDia(notificar) {
       state.localObraHistorico = hist.slice(0, 30);
       saveState();
     }
+    const localEl = document.getElementById('localObra');
+    const descEl  = document.getElementById('descricaoLocal');
+    if (localEl) currentDay.localObra    = localEl.value;
+    if (descEl)  currentDay.descricaoLocal = descEl.value;
     salvarDiarioGoogle(currentDay);
     toast('Diário salvo no histórico');
     backupAutomatico();
@@ -2878,25 +2892,43 @@ function _todosColaboradores() {
   return lista;
 }
 
+function _apontadoresFiltrados() {
+  const lista = [];
+  (state.colaboradores.categorias || []).forEach(cat => {
+    const catIsApontador = cat.nome.toLowerCase().includes('apontador');
+    (cat.itens || []).forEach(c => {
+      if (catIsApontador || (c.funcao || '').toLowerCase().includes('apontador')) {
+        lista.push(`${c.mat} – ${c.nome} (${cat.nome})`);
+      }
+    });
+  });
+  return lista;
+}
+
 function renderApontadorDia() {
   const el = document.getElementById('apontadorDisplay');
   if (el) el.textContent = currentDay.apontador || '—';
-  // atualiza datalist
-  const dl = document.getElementById('apontadorSugestoes');
-  if (dl) {
-    dl.innerHTML = '';
-    _todosColaboradores().forEach(s => {
-      const opt = document.createElement('option'); opt.value = s; dl.appendChild(opt);
+  // atualiza select no modal
+  const sel = document.getElementById('modalApontadorInput');
+  if (sel) {
+    const current = sel.value || currentDay.apontador || '';
+    sel.innerHTML = '<option value="">— Selecionar —</option>';
+    _apontadoresFiltrados().forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      if (s === current) opt.selected = true;
+      sel.appendChild(opt);
     });
   }
 }
 
 function selecionarApontador() {
-  const inp = document.getElementById('modalApontadorInput');
-  if (inp) inp.value = currentDay.apontador || '';
-  renderApontadorDia(); // atualiza datalist
+  const sel = document.getElementById('modalApontadorInput');
+  renderApontadorDia(); // atualiza opções do select
+  if (sel) sel.value = currentDay.apontador || '';
   abrirModal('modalApontador');
-  setTimeout(() => { if (inp) inp.focus(); }, 150);
+  setTimeout(() => { if (sel) sel.focus(); }, 150);
 }
 
 function confirmarApontador() {
@@ -3156,7 +3188,8 @@ function renderConfigColab() {
   const cont = document.getElementById('configColabList');
   cont.innerHTML = '';
 
-  state.colaboradores.categorias.forEach(cat => {
+  const categoriasColab = [...state.colaboradores.categorias].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  categoriasColab.forEach(cat => {
     // — bloco da categoria —
     const block = document.createElement('div');
     block.className = 'cat-block';
@@ -3207,7 +3240,8 @@ function renderConfigColab() {
     if (cat.itens.length === 0) {
       body.innerHTML = '<div class="empty">Sem colaboradores</div>';
     } else {
-      cat.itens.forEach(c => {
+      const itensColab = [...cat.itens].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+      itensColab.forEach(c => {
         const row = document.createElement('div');
         row.className = 'item-row';
 
@@ -3451,7 +3485,8 @@ function renderConfigEfetivoDia() {
 
   cont.innerHTML = '';
 
-  state.colaboradores.categorias.forEach(cat => {
+  const categorias = [...state.colaboradores.categorias].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  categorias.forEach(cat => {
     const block = document.createElement('div');
     block.className = 'cat-block';
 
@@ -3466,7 +3501,8 @@ function renderConfigEfetivoDia() {
     if (cat.itens.length === 0) {
       body.innerHTML = '<div class="empty">Sem colaboradores</div>';
     } else {
-      cat.itens.forEach(c => {
+      const itens = [...cat.itens].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+      itens.forEach(c => {
         const checked = !!savedEfetivo[c.id];
         const row = document.createElement('div');
         row.className = 'item-row' + (checked ? ' checked' : '');
