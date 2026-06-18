@@ -2249,13 +2249,14 @@ async function salvarDiarioGoogle(diarioData) {
   if (!APPS_SCRIPT_URL_DIARIO) return;
   try {
     const payload = buildPayloadGoogle(diarioData);
-    const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=salvar', {
+    // Content-Type text/plain evita preflight CORS e preserva o body no redirect do Apps Script
+    await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=salvar', {
       method: 'POST',
-      body: JSON.stringify(payload)
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+      redirect: 'follow'
     });
-    const result = await resp.json();
-    if (result.ok) console.log('✅ Diário sincronizado com Google Sheets');
-    else console.warn('⚠️ Google Sheets:', result.erro || result);
+    console.log('✅ Diário enviado ao Google Sheets');
   } catch (err) {
     console.error('Erro salvar diário no Google Sheets:', err);
   }

@@ -58,10 +58,11 @@ function doGet(e) {
 }
 
 function doPost(e) {
-  const body   = JSON.parse(e.postData.contents);
-  const path   = e.parameter.path   || '';
-  const action = e.parameter.action || '';
   try {
+    const raw  = (e && e.postData && e.postData.contents) ? e.postData.contents : '{}';
+    const body = JSON.parse(raw);
+    const path   = (e && e.parameter && e.parameter.path)   || '';
+    const action = (e && e.parameter && e.parameter.action) || '';
     if (path === 'pauta'   && action === 'criar')            return criarPauta(body);
     if (path === 'pauta'   && action === 'atualizar-status') return atualizarStatusPauta(body);
     if (path === 'checkin' && action === 'salvar')           return salvarCheckIn(body);
