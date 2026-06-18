@@ -16,7 +16,7 @@ const SHEET_NAME_PAUTA   = 'Pauta';
 const SHEET_NAME_CHECKIN = 'CheckIn';
 const SHEET_NAME_DIARIO  = 'Diário';
 
-// 22 colunas
+// 23 colunas
 const COLUNAS_DIARIO = [
   'Data',                    // A
   'Dia da Semana',           // B
@@ -36,10 +36,11 @@ const COLUNAS_DIARIO = [
   'Colaboradores Presentes', // P
   'Equipamentos Utilizados', // Q
   'Veículos Leves',          // R
-  'Eventos de Segurança',    // S
-  'Eventos de Meio Ambiente',// T
-  'Observações do Dia',      // U
-  'Apontador'                // V
+  'Veículos/Equip. Parados', // S
+  'Eventos de Segurança',    // T
+  'Eventos de Meio Ambiente',// U
+  'Observações do Dia',      // V
+  'Apontador'                // W
 ];
 
 // ============================================================
@@ -186,7 +187,7 @@ function salvarDiario(payload) {
     hr.setFontColor('#f5b334');
     hr.setFontWeight('bold');
     sheet.setFrozenRows(1);
-    const larguras = [100,110,160,160,120,180,220,130,230,80,160,230,280,80,200,300,220,180,240,240,320,180];
+    const larguras = [100,110,160,160,120,180,220,130,230,80,160,230,280,80,200,300,220,180,260,240,240,320,180];
     larguras.forEach((w, i) => sheet.setColumnWidth(i+1, w));
   }
 
@@ -209,10 +210,11 @@ function salvarDiario(payload) {
     payload.colaboradoresPresentes || '',  // P Colaboradores Presentes
     payload.equipamentos           || '',  // Q Equipamentos Utilizados
     payload.veiculosLeves          || '',  // R Veículos Leves
-    payload.eventosSeguranca       || '',  // S Eventos de Segurança
-    payload.eventosMeioAmbiente    || '',  // T Eventos de Meio Ambiente
-    payload.observacoes            || '',  // U Observações do Dia
-    payload.apontador              || ''   // V Apontador
+    payload.veiculosParados        || '',  // S Veículos/Equip. Parados
+    payload.eventosSeguranca       || '',  // T Eventos de Segurança
+    payload.eventosMeioAmbiente    || '',  // U Eventos de Meio Ambiente
+    payload.observacoes            || '',  // V Observações do Dia
+    payload.apontador              || ''   // W Apontador
   ];
 
   // Upsert por data + apontador (mantém apenas o mais recente)

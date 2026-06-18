@@ -1187,6 +1187,16 @@
 
   <div class="section">
     <div class="section-title">
+      <div class="section-title-text">🔴 Veículos/Equipamentos Parados</div>
+    </div>
+    <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
+      Equipamentos e veículos leves cadastrados que não foram selecionados para uso hoje. Informe a justificativa de cada um.
+    </p>
+    <div id="veiculosParadosList"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
       <div class="section-title-text">🦺 Eventos de Segurança</div>
       <button class="icon-btn" onclick="abrirModalEventoDia('seguranca')" title="Adicionar">➕</button>
     </div>
@@ -1918,7 +1928,8 @@ const EMPTY_DAY = () => ({
   eventosAmbiente: [],
   apontador: '',
   localObra: '',
-  descricaoLocal: ''
+  descricaoLocal: '',
+  veiculosParados: {}  // id -> justificativa (para equips e VLs não selecionados)
 });
 
 let state = loadState();
@@ -2245,6 +2256,20 @@ function buildPayloadGoogle(diarioData) {
   // Veículos Leves — novo sistema localStorage
   const savedVL = S.get(`vlDia_${day.data}`) || {};
   const vlAtivos = (state.veiculosFrota || []).filter(v => savedVL[v.id]);
+  const savedEquipBP = S.get(`equipDia_${day.data}`) || {};
+  const equipsParadosBP = state.equipamentos.filter(e => !savedEquipBP[e.id]);
+  const vlParadosBP = (state.veiculosFrota || []).filter(v => !savedVL[v.id]);
+  const parados = day.veiculosParados || {};
+  const paradosTexto = [
+    ...equipsParadosBP.map(e => {
+      const just = parados[e.id] ? `: ${parados[e.id]}` : '';
+      return `${e.isMotorista ? '🚛' : '🚜'} ${e.numero} — ${e.desc}${just}`;
+    }),
+    ...vlParadosBP.map(v => {
+      const just = parados[v.id] ? `: ${parados[v.id]}` : '';
+      return `🚗 ${v.desc}${v.placa ? ' ('+v.placa+')' : ''}${just}`;
+    })
+  ].join('\n');
   const gruposVL = {};
   vlAtivos.forEach(v => {
     const k = v.desc.trim();
@@ -2281,6 +2306,7 @@ function buildPayloadGoogle(diarioData) {
     colaboradoresPresentes: colaboradoresPresentes.join('\n'),
     equipamentos:         equipamentosTexto,
     veiculosLeves:        veiculosTexto,
+    veiculosParados:      paradosTexto,
     eventosSeguranca:     segTexto,
     eventosMeioAmbiente:  ambTexto,
     observacoes:          day.observacoesDia || '',
@@ -2344,6 +2370,7 @@ function renderDiario() {
   renderEfetivoDia();
   renderEquipDia();
   renderVeiculosLevesDia();
+  renderVeiculosParados();
   renderEventosDia('seguranca');
   renderEventosDia('meio_ambiente');
   renderApontadorDia();
@@ -2511,6 +2538,7 @@ function renderEquipDia() {
   });
   html += '</div>';
   cont.innerHTML = html;
+  renderVeiculosParados();
 }
 
 function abrirSeletorEquip(equipId) {
@@ -2700,6 +2728,64 @@ function renderVeiculosLevesDia() {
   });
   html += '</div>';
   cont.innerHTML = html;
+  renderVeiculosParados();
+}
+
+function renderVeiculosParados() {
+  const cont = document.getElementById('veiculosParadosList');
+  if (!cont) return;
+  const data = currentDay ? currentDay.data : '';
+  const savedEquip = S.get(`equipDia_${data}`) || {};
+  const savedVL    = S.get(`vlDia_${data}`) || {};
+
+  // Equipamentos não selecionados
+  const equipsParados = state.equipamentos.filter(e => !savedEquip[e.id]);
+  // Veículos leves não selecionados
+  const vlParados = (state.veiculosFrota || []).filter(v => !savedVL[v.id]);
+
+  if (equipsParados.length === 0 && vlParados.length === 0) {
+    cont.innerHTML = '<div class="empty">Todos os equipamentos e veículos estão em uso hoje</div>';
+    return;
+  }
+
+  const parados = currentDay.veiculosParados || {};
+  let html = '<div style="display:flex;flex-direction:column;gap:10px">';
+
+  equipsParados.forEach(eq => {
+    const just = parados[eq.id] || '';
+    html += `<div style="border:1px solid var(--line-soft);border-radius:8px;padding:10px">
+      <div style="font-weight:600;margin-bottom:6px">${eq.isMotorista ? '🚛' : '🚜'} ${escapeHtml(eq.numero)} — ${escapeHtml(eq.desc)}</div>
+      <input type="text" placeholder="Justificativa (manutenção, aguardando peça, parado por efetivo...)"
+        value="${escapeHtml(just)}"
+        style="width:100%;box-sizing:border-box"
+        oninput="salvarJustParado('${eq.id}', this.value)">
+    </div>`;
+  });
+
+  vlParados.forEach(v => {
+    const just = parados[v.id] || '';
+    const placa = v.placa ? ` (${v.placa})` : '';
+    html += `<div style="border:1px solid var(--line-soft);border-radius:8px;padding:10px">
+      <div style="font-weight:600;margin-bottom:6px">🚗 ${escapeHtml(v.desc)}${escapeHtml(placa)}</div>
+      <input type="text" placeholder="Justificativa (manutenção, aguardando peça, parado por efetivo...)"
+        value="${escapeHtml(just)}"
+        style="width:100%;box-sizing:border-box"
+        oninput="salvarJustParado('${v.id}', this.value)">
+    </div>`;
+  });
+
+  html += '</div>';
+  cont.innerHTML = html;
+}
+
+function salvarJustParado(id, valor) {
+  if (!currentDay.veiculosParados) currentDay.veiculosParados = {};
+  if (valor.trim()) {
+    currentDay.veiculosParados[id] = valor;
+  } else {
+    delete currentDay.veiculosParados[id];
+  }
+  salvarDiarioDia(false);
 }
 
 function abrirSeletorVL(vlId) {
@@ -4104,6 +4190,24 @@ function buildRelatorio(day) {
     txt += `\n${divisor}\n\n`;
   }
   
+  // Veículos/Equipamentos Parados
+  const savedEquipWA = S.get(`equipDia_${day.data}`) || {};
+  const equipsParadosWA = state.equipamentos.filter(e => !savedEquipWA[e.id]);
+  const vlParadosWA = (state.veiculosFrota || []).filter(v => !savedVL[v.id]);
+  if (equipsParadosWA.length > 0 || vlParadosWA.length > 0) {
+    const paradosDay = day.veiculosParados || {};
+    txt += `*🔴 Veículos/Equipamentos Parados*\n`;
+    equipsParadosWA.forEach(e => {
+      const just = paradosDay[e.id] ? ` — ${paradosDay[e.id]}` : ' — (sem justificativa)';
+      txt += `• ${e.isMotorista ? '🚛' : '🚜'} ${e.numero} – ${e.desc}${just}\n`;
+    });
+    vlParadosWA.forEach(v => {
+      const just = paradosDay[v.id] ? ` — ${paradosDay[v.id]}` : ' — (sem justificativa)';
+      txt += `• 🚗 ${v.desc}${v.placa ? ' ('+v.placa+')' : ''}${just}\n`;
+    });
+    txt += `\n${divisor}\n\n`;
+  }
+
   // Efetivo
   txt += `*📋 Efetivo – ${dataBR}*\n\n`;
   let total = 0;
