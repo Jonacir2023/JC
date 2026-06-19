@@ -60,6 +60,10 @@ function doGet(e) {
     if (path === 'diario'  && action === 'salvar'   && e.parameter.dados) {
       return salvarDiario(JSON.parse(e.parameter.dados));
     }
+    if (path === 'diario'  && action === 'limpar-duplicatas') {
+      const resultado = limparDuplicatasDiario();
+      return successResponse({ ok: true, ...resultado });
+    }
     return successResponse({ ok: true, msg: 'API Diário de Obras ativa' });
   } catch (err) { return errorResponse(err.message); }
 }
@@ -279,6 +283,75 @@ function listarDiariosMes(mes) {
     }
   }
   return successResponse({ ok: true, mes, diarios });
+}
+
+// ============================================================
+// LIMPEZA DE DUPLICATAS
+// ============================================================
+
+/**
+ * Remove duplicatas da aba Diário, mantendo apenas o registro mais recente
+ * por combinação de Data + Apontador.
+ *
+ * Como usar:
+ *   - No editor do Apps Script: selecione esta função e clique em ▶ Executar
+ *   - Via API: GET ?path=diario&action=limpar-duplicatas
+ *
+ * Retorna um resumo de quantas linhas foram removidas.
+ */
+function limparDuplicatasDiario() {
+  const sheet = getSheet(SHEET_NAME_DIARIO);
+  if (!sheet) {
+    Logger.log('Aba Diário não encontrada');
+    return;
+  }
+
+  const dados = sheet.getDataRange().getValues();
+  if (dados.length <= 1) {
+    Logger.log('Nenhum dado para limpar.');
+    return { removidas: 0 };
+  }
+
+  const headers    = dados[0];
+  const idxData    = 0;                          // coluna A = Data
+  const idxApon    = COLUNAS_DIARIO.length - 1;  // coluna W = Apontador
+
+  // Agrupa linhas por chave "data|apontador"
+  // Mantém apenas o ÚLTIMO índice encontrado para cada chave (mais recente no sheet)
+  const mapaUltimo = {}; // chave → índice da linha (1-based, excluindo header)
+  for (let i = 1; i < dados.length; i++) {
+    const data  = String(dados[i][idxData]  || '').trim();
+    const apon  = String(dados[i][idxApon]  || '').trim();
+    if (!data) continue; // linha vazia, ignora
+    const chave = `${data}|${apon}`;
+    mapaUltimo[chave] = i; // sobrescreve → fica o último
+  }
+
+  // Linhas a deletar = todas que NÃO são o último de sua chave
+  const linhasParaDeletar = [];
+  for (let i = 1; i < dados.length; i++) {
+    const data  = String(dados[i][idxData] || '').trim();
+    const apon  = String(dados[i][idxApon] || '').trim();
+    if (!data) continue;
+    const chave = `${data}|${apon}`;
+    if (mapaUltimo[chave] !== i) {
+      linhasParaDeletar.push(i + 1); // +1 porque sheet é 1-based
+    }
+  }
+
+  // Deletar de baixo para cima para não deslocar índices
+  linhasParaDeletar.sort((a, b) => b - a).forEach(r => sheet.deleteRow(r));
+
+  // Reordenar por data decrescente
+  const lastRow = sheet.getLastRow();
+  if (lastRow > 2) {
+    sheet.getRange(2, 1, lastRow - 1, COLUNAS_DIARIO.length)
+         .sort({ column: 1, ascending: false });
+  }
+
+  const msg = `Limpeza concluída: ${linhasParaDeletar.length} linha(s) duplicada(s) removida(s).`;
+  Logger.log(msg);
+  return { removidas: linhasParaDeletar.length, msg };
 }
 
 // ============================================================
