@@ -3308,7 +3308,7 @@ function renderConfigEquipDia() {
   const cont = document.getElementById('configEquipDiaList');
   if (!cont) return;
   cont.innerHTML = '';
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = currentDay ? currentDay.data : new Date().toISOString().slice(0, 10);
   const savedEquip = S.get(`equipDia_${hoje}`) || {};
 
   if (state.equipamentos.length === 0) {
@@ -3330,6 +3330,7 @@ function renderConfigEquipDia() {
       else delete savedEquip[eq.id];
       S.set(`equipDia_${hoje}`, savedEquip);
       renderConfigEquipDia();
+      renderVeiculosParados();
     });
 
     const info = document.createElement('div');
@@ -3346,7 +3347,7 @@ function renderConfigVLDia() {
   const cont = document.getElementById('configVLDiaList');
   if (!cont) return;
   cont.innerHTML = '';
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = currentDay ? currentDay.data : new Date().toISOString().slice(0, 10);
   const savedVL = S.get(`vlDia_${hoje}`) || {};
   const frota = state.veiculosFrota || [];
 
@@ -3369,6 +3370,7 @@ function renderConfigVLDia() {
       else delete savedVL[v.id];
       S.set(`vlDia_${hoje}`, savedVL);
       renderConfigVLDia();
+      renderVeiculosParados();
     });
 
     const info = document.createElement('div');
