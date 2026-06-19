@@ -251,6 +251,9 @@ function salvarDiario(payload) {
          .sort({ column: 1, ascending: false });
   }
 
+  // Garante que não sobram duplicatas após cada salvamento
+  limparDuplicatasDiario();
+
   return successResponse({ ok: true, msg: 'Diário salvo' });
 }
 
