@@ -222,12 +222,12 @@ function salvarDiario(payload) {
   ];
 
   // Upsert por data + apontador (mantém apenas o mais recente)
-  const apontadorCol = COLUNAS_DIARIO.length - 1; // índice 0-based = col V
+  const apontadorCol = COLUNAS_DIARIO.length - 1; // índice 0-based = col W
   const dados = sheet.getDataRange().getValues();
   const rowsParaDeletar = [];
   let linhaIdx = -1;
   for (let i = 1; i < dados.length; i++) {
-    const mesmaData      = dados[i][0] === payload.data;
+    const mesmaData      = normDate(dados[i][0]) === String(payload.data || '').trim();
     const mesmoApontador = String(dados[i][apontadorCol]).trim() === String(payload.apontador || '').trim();
     if (mesmaData && mesmoApontador) {
       if (linhaIdx === -1) { linhaIdx = i + 1; }
@@ -263,7 +263,7 @@ function carregarDiario(data) {
   const valores = sheet.getDataRange().getValues();
   const headers = valores[0];
   for (let i = 1; i < valores.length; i++) {
-    if (valores[i][0] === data) {
+    if (normDate(valores[i][0]) === String(data).trim()) {
       const diario = {};
       headers.forEach((h, j) => diario[h] = valores[i][j]);
       return successResponse({ ok: true, diario });
@@ -279,7 +279,7 @@ function listarDiariosMes(mes) {
   const headers  = valores[0];
   const diarios  = [];
   for (let i = 1; i < valores.length; i++) {
-    if (valores[i][0] && String(valores[i][0]).startsWith(mes)) {
+    if (valores[i][0] && normDate(valores[i][0]).startsWith(mes)) {
       const d = {};
       headers.forEach((h, j) => d[h] = valores[i][j]);
       diarios.push(d);
@@ -323,7 +323,7 @@ function limparDuplicatasDiario() {
   // Mantém apenas o ÚLTIMO índice encontrado para cada chave (mais recente no sheet)
   const mapaUltimo = {}; // chave → índice da linha (1-based, excluindo header)
   for (let i = 1; i < dados.length; i++) {
-    const data  = String(dados[i][idxData]  || '').trim();
+    const data  = normDate(dados[i][idxData]);
     const apon  = String(dados[i][idxApon]  || '').trim();
     if (!data) continue; // linha vazia, ignora
     const chave = `${data}|${apon}`;
@@ -333,7 +333,7 @@ function limparDuplicatasDiario() {
   // Linhas a deletar = todas que NÃO são o último de sua chave
   const linhasParaDeletar = [];
   for (let i = 1; i < dados.length; i++) {
-    const data  = String(dados[i][idxData] || '').trim();
+    const data  = normDate(dados[i][idxData]);
     const apon  = String(dados[i][idxApon] || '').trim();
     if (!data) continue;
     const chave = `${data}|${apon}`;
@@ -363,6 +363,16 @@ function limparDuplicatasDiario() {
 
 function getSheet(name) {
   return SpreadsheetApp.openById(SHEET_ID).getSheetByName(name);
+}
+
+// Normaliza valor de célula de data para string "yyyy-MM-dd"
+// (Sheets pode retornar Date object ou string dependendo da formatação)
+function normDate(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    return Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  return String(val).trim().slice(0, 10);
 }
 
 function successResponse(data) {
