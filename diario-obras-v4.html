@@ -470,30 +470,6 @@
     border-bottom-color: rgba(0,0,0,0.2);
     box-shadow: 0 2px 8px rgba(212,84,26,0.3);
   }
-  .tempo-vento {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-    padding: 8px 12px;
-    background: var(--bg);
-    border-radius: 6px;
-  }
-  .tempo-vento input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--accent);
-  }
-  .tempo-vento label {
-    margin: 0;
-    text-transform: none;
-    letter-spacing: normal;
-    font-size: 14px;
-    color: var(--ink);
-    cursor: pointer;
-    flex: 1;
-    font-weight: 500;
-  }
   
   /* CAT BLOCKS / LIST */
   .cat-block {
@@ -1103,15 +1079,27 @@
   
   <div class="section">
     <div class="section-title"><div class="section-title-text">🌤️ Condições do Tempo</div></div>
-    <div class="tempo-chips" id="tempoChips">
-      <div class="tempo-chip" data-tempo="sol">☀️ Sol</div>
-      <div class="tempo-chip" data-tempo="nublado">⛅ Nublado</div>
-      <div class="tempo-chip" data-tempo="chuva">🌧️ Chuva</div>
-      <div class="tempo-chip" data-tempo="chuva_forte">⛈️ Chuva Forte</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-soft);margin-bottom:6px">🌅 Manhã</div>
+      <div class="tempo-chips" id="tempoChipsManha">
+        <div class="tempo-chip" data-periodo="manha" data-tempo="sol">☀️ Sol</div>
+        <div class="tempo-chip" data-periodo="manha" data-tempo="nublado">⛅ Nublado</div>
+        <div class="tempo-chip" data-periodo="manha" data-tempo="chuva">🌧️ Chuva</div>
+      </div>
+      <div id="chuvaManhaBox" style="display:none;margin-top:8px">
+        <input type="number" id="chuvaManhaQtd" placeholder="Quantidade de chuva (mm)" min="0" step="0.1" style="width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg-card);font-family:var(--sans);font-size:14px;color:var(--ink)">
+      </div>
     </div>
-    <div class="tempo-vento">
-      <input type="checkbox" id="tempoVento">
-      <label for="tempoVento">💨 Com vento</label>
+    <div>
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-soft);margin-bottom:6px">🌇 Tarde</div>
+      <div class="tempo-chips" id="tempoChipsTarde">
+        <div class="tempo-chip" data-periodo="tarde" data-tempo="sol">☀️ Sol</div>
+        <div class="tempo-chip" data-periodo="tarde" data-tempo="nublado">⛅ Nublado</div>
+        <div class="tempo-chip" data-periodo="tarde" data-tempo="chuva">🌧️ Chuva</div>
+      </div>
+      <div id="chuvaTardeBox" style="display:none;margin-top:8px">
+        <input type="number" id="chuvaTardeQtd" placeholder="Quantidade de chuva (mm)" min="0" step="0.1" style="width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg-card);font-family:var(--sans);font-size:14px;color:var(--ink)">
+      </div>
     </div>
   </div>
   
@@ -1584,9 +1572,9 @@
     <label>Descrição</label>
     <input type="text" id="modalEquipDesc" list="equipDescSugestoes" placeholder="Ex.: Escavadeira Hidráulica CAT 320" autocomplete="off">
     <datalist id="equipDescSugestoes"></datalist>
-    <div class="tempo-vento" style="margin-top:14px;background:var(--bg-card);border:1px solid var(--line)">
-      <input type="checkbox" id="modalEquipMotorista">
-      <label for="modalEquipMotorista">🚛 É caminhão / requer motorista?</label>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--line);border-radius:6px">
+      <input type="checkbox" id="modalEquipMotorista" style="width:18px;height:18px;accent-color:var(--accent)">
+      <label for="modalEquipMotorista" style="margin:0;text-transform:none;letter-spacing:normal;font-size:14px;color:var(--ink);cursor:pointer;flex:1;font-weight:500">🚛 É caminhão / requer motorista?</label>
     </div>
     <p style="font-size:11px;color:var(--ink-faint);margin-top:6px;font-style:italic">
       Marcado: lista de motoristas será sugerida.<br>
@@ -1911,8 +1899,10 @@ const DEFAULT_DATA = {
 
 const EMPTY_DAY = () => ({
   data: '',
-  tempo: '',           // sol | nublado | chuva | chuva_forte
-  tempoVento: false,
+  tempoManha: '',
+  chuvaManhaQtd: '',
+  tempoTarde: '',
+  chuvaTardeQtd: '',
   cafeInicio: '06:30', cafeFim: '07:00',
   almocoInicio: '12:00', almocoFim: '13:00',
   encerramento: '17:00',
@@ -2019,10 +2009,13 @@ function gravBadge(g) {
   return '';
 }
 
-function tempoLabel(t, v) {
-  const map = { sol: '☀️ Sol', nublado: '⛅ Nublado', chuva: '🌧️ Chuva', chuva_forte: '⛈️ Chuva Forte' };
-  if (!t) return v ? '💨 Com vento' : '—';
-  return (map[t] || '—') + (v ? ' 💨 c/ vento' : '');
+function tempoLabel(day) {
+  const map = { sol: '☀️ Sol', nublado: '⛅ Nublado', chuva: '🌧️ Chuva' };
+  const manha = map[day.tempoManha] || '—';
+  const manhaChuva = (day.tempoManha === 'chuva' && day.chuvaManhaQtd) ? ` (${day.chuvaManhaQtd}mm)` : '';
+  const tarde = map[day.tempoTarde] || '—';
+  const tardeChuva = (day.tempoTarde === 'chuva' && day.chuvaTardeQtd) ? ` (${day.chuvaTardeQtd}mm)` : '';
+  return `Manhã: ${manha}${manhaChuva} | Tarde: ${tarde}${tardeChuva}`;
 }
 
 function jornadaPadraoPorDia(iso) {
@@ -2154,12 +2147,20 @@ function preencherCampos() {
     dssMin.innerHTML = opts.join('');
   }
   document.getElementById('dataDiario').value = currentDay.data;
-  // tempo chips
-  document.querySelectorAll('.tempo-chip').forEach(c => {
-    if (c.dataset.tempo === currentDay.tempo) c.classList.add('active');
-    else c.classList.remove('active');
+  // tempo — manhã
+  document.querySelectorAll('#tempoChipsManha .tempo-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.tempo === currentDay.tempoManha);
   });
-  document.getElementById('tempoVento').checked = !!currentDay.tempoVento;
+  document.getElementById('chuvaManhaBox').style.display = currentDay.tempoManha === 'chuva' ? 'block' : 'none';
+  const chuvaManhaEl = document.getElementById('chuvaManhaQtd');
+  if (chuvaManhaEl) chuvaManhaEl.value = currentDay.chuvaManhaQtd || '';
+  // tempo — tarde
+  document.querySelectorAll('#tempoChipsTarde .tempo-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.tempo === currentDay.tempoTarde);
+  });
+  document.getElementById('chuvaTardeBox').style.display = currentDay.tempoTarde === 'chuva' ? 'block' : 'none';
+  const chuvaTardeEl = document.getElementById('chuvaTardeQtd');
+  if (chuvaTardeEl) chuvaTardeEl.value = currentDay.chuvaTardeQtd || '';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2181,20 +2182,30 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.querySelectorAll('.tempo-chip').forEach(c => {
     c.addEventListener('click', () => {
-      if (c.classList.contains('active')) {
-        c.classList.remove('active');
-        currentDay.tempo = '';
-      } else {
-        document.querySelectorAll('.tempo-chip').forEach(x => x.classList.remove('active'));
+      const periodo = c.dataset.periodo; // 'manha' ou 'tarde'
+      const val = c.dataset.tempo;
+      const chipsId = periodo === 'manha' ? '#tempoChipsManha .tempo-chip' : '#tempoChipsTarde .tempo-chip';
+      const boxId   = periodo === 'manha' ? 'chuvaManhaBox' : 'chuvaTardeBox';
+      const field   = periodo === 'manha' ? 'tempoManha' : 'tempoTarde';
+      const already = currentDay[field] === val;
+      document.querySelectorAll(chipsId).forEach(x => x.classList.remove('active'));
+      if (!already) {
         c.classList.add('active');
-        currentDay.tempo = c.dataset.tempo;
+        currentDay[field] = val;
+      } else {
+        currentDay[field] = '';
       }
+      document.getElementById(boxId).style.display = currentDay[field] === 'chuva' ? 'block' : 'none';
       salvarDiarioDia(false);
     });
   });
-  document.getElementById('tempoVento').addEventListener('change', e => {
-    currentDay.tempoVento = e.target.checked;
-    salvarDiarioDia(false);
+  // quantidade de chuva
+  ['chuvaManhaQtd', 'chuvaTardeQtd'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => {
+      currentDay[id] = el.value;
+      salvarDiarioDia(false);
+    });
   });
   // op tabs no modal de equipamento
   document.querySelectorAll('.op-tab').forEach(t => {
@@ -2297,7 +2308,7 @@ function buildPayloadGoogle(diarioData) {
     empresa:              state.obra.empresa || '',
     local:                state.obra.local || '',
     descricaoObra:        state.obra.descricao || '',
-    tempo:                tempoLabel(day.tempo, day.tempoVento),
+    tempo:                tempoLabel(day),
     jornada,
     dssHorario:           day.dssHorario || '',
     dssMinistrou:         dssMin,
@@ -2342,7 +2353,7 @@ function salvarDiarioDia(notificar) {
     if (sel) { sel.scrollIntoView({ behavior: 'smooth', block: 'center' }); sel.focus(); }
     return;
   }
-  const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.observacoesDia || currentDay.tempo ||
+  const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.observacoesDia || currentDay.tempoManha || currentDay.tempoTarde ||
     Object.keys(currentDay.efetivo).length > 0 ||
     Object.keys(currentDay.atividadesMarcadas).length > 0 ||
     Object.keys(currentDay.atividadesQtd || {}).length > 0 ||
@@ -4155,8 +4166,8 @@ function buildRelatorio(day) {
   txt += '\n\n';
   
   // Tempo
-  if (day.tempo || day.tempoVento) {
-    txt += `*🌤️ Condições do Tempo*\n• ${tempoLabel(day.tempo, day.tempoVento)}\n\n`;
+  if (day.tempoManha || day.tempoTarde) {
+    txt += `*🌤️ Condições do Tempo*\n• ${tempoLabel(day)}\n\n`;
     txt += `${divisor}\n\n`;
   }
   
