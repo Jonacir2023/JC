@@ -192,6 +192,10 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   @page{margin:1cm;size:A4}
 }
 .print-header{display:none}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#2c2c2c;border-top:2px solid var(--accent,#d4541a);display:flex;z-index:200}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 10px;color:#8a8178;font-size:9px;font-family:var(--serif,'Arial Narrow',sans-serif);font-weight:700;letter-spacing:.5px;text-transform:uppercase;text-decoration:none;gap:3px;border:none;background:none;cursor:pointer}
+.bnav-btn .ni{font-size:20px;line-height:1}
+.bnav-btn.active{color:#e8a030}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -1115,5 +1119,12 @@ initData();
 renderCheckin();
 carregarDaPlanilha();
 </script>
+
+<nav class="bottom-nav">
+  <a class="bnav-btn active"><span class="ni">✅</span>Check-in</a>
+  <a class="bnav-btn" href="pauta.html"><span class="ni">📋</span>Pauta</a>
+  <a class="bnav-btn" href="dashboard.html"><span class="ni">📊</span>Dashboard</a>
+  <a class="bnav-btn" href="diario-obras-v4.html"><span class="ni">📓</span>Diário</a>
+</nav>
 </body>
 </html>

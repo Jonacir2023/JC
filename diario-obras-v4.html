@@ -1024,6 +1024,10 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
+  .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--bg-dark);border-top:2px solid var(--accent);display:flex;z-index:200}
+  .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 10px;color:var(--ink-faint);font-size:9px;font-family:var(--serif);font-weight:700;letter-spacing:.5px;text-transform:uppercase;text-decoration:none;gap:3px;border:none;background:none;cursor:pointer}
+  .bnav-btn .ni{font-size:20px;line-height:1}
+  .bnav-btn.active{color:var(--accent-soft)}
 </style>
 </head>
 <body>
@@ -2307,7 +2311,6 @@ function buildPayloadGoogle(diarioData) {
     obra:                 state.obra.nome || '',
     empresa:              state.obra.empresa || '',
     local:                state.obra.local || '',
-    descricaoObra:        state.obra.descricao || '',
     tempo:                tempoLabel(day),
     jornada,
     dssHorario:           day.dssHorario || '',
@@ -2336,9 +2339,10 @@ async function salvarDiarioGoogle(diarioData) {
   if (!APPS_SCRIPT_URL_DIARIO) return;
   try {
     const payload = buildPayloadGoogle(diarioData);
-    // Usa GET com dados na URL para evitar o problema de redirect POST→GET do Apps Script
-    const dados = encodeURIComponent(JSON.stringify(payload));
-    await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=diario&action=salvar&dados=${dados}`);
+    await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=diario&action=salvar`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
     console.log('✅ Diário enviado ao Google Sheets');
   } catch (err) {
     console.error('Erro salvar diário no Google Sheets:', err);
@@ -4978,5 +4982,12 @@ window.addEventListener('DOMContentLoaded', () => {
   setInterval(() => salvarDiarioDia(false), 10000);
 });
 </script>
+
+<nav class="bottom-nav">
+  <a class="bnav-btn" href="Checkin3.html"><span class="ni">✅</span>Check-in</a>
+  <a class="bnav-btn" href="pauta.html"><span class="ni">📋</span>Pauta</a>
+  <a class="bnav-btn" href="dashboard.html"><span class="ni">📊</span>Dashboard</a>
+  <a class="bnav-btn active"><span class="ni">📓</span>Diário</a>
+</nav>
 </body>
 </html>

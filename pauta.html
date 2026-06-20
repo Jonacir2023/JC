@@ -118,6 +118,10 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
 
 .notif{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 20px;border-radius:8px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;z-index:400;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none}
 .notif.show{opacity:1}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#2c2c2c;border-top:2px solid var(--accent,#d4541a);display:flex;z-index:200}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 10px;color:#8a8178;font-size:9px;font-family:var(--serif,'Arial Narrow',sans-serif);font-weight:700;letter-spacing:.5px;text-transform:uppercase;text-decoration:none;gap:3px;border:none;background:none;cursor:pointer}
+.bnav-btn .ni{font-size:20px;line-height:1}
+.bnav-btn.active{color:#e8a030}
 </style>
 </head>
 <body>
@@ -138,7 +142,6 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   <nav class="tabs">
     <div class="tab active" onclick="goTab('envio',this)">📤 Envio</div>
     <div class="tab" onclick="goTab('listar',this)">📋 Listar</div>
-    <div class="tab" onclick="goTab('exportar',this)">🚀 Exportar</div>
   </nav>
 </header>
 
@@ -234,24 +237,6 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   </div>
 </div>
 
-<!-- ===== EXPORTAR ===== -->
-<div class="page" id="page-exportar">
-  <div class="sec">
-    <div class="sec-title">🚀 Exportar para n8n</div>
-    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">Envia todos os assuntos registrados para o workflow de integração.</p>
-    <div id="export-status"></div>
-    <button class="btn btn-green btn-full" onclick="exportarParaN8n()">📤 EXPORTAR PARA N8N</button>
-    <button class="btn btn-outline btn-full" onclick="limparAssuntos()" style="margin-top:6px;margin-bottom:0;border-color:var(--red);color:var(--red)">🗑️ LIMPAR TODOS OS ASSUNTOS</button>
-  </div>
-  <div class="sec">
-    <div class="sec-title">⚙️ Configuração</div>
-    <div class="frow">
-      <label>URL do Webhook n8n</label>
-      <input type="text" id="cfg-webhook" placeholder="https://jonacircazelli.app.n8n.cloud/webhook/..."/>
-    </div>
-    <button class="btn btn-secondary btn-full" onclick="salvarConfig()">💾 SALVAR CONFIGURAÇÃO</button>
-  </div>
-</div>
 
 <!-- MODAL ADMIN -->
 <div class="modal-overlay" id="modal-admin">
@@ -333,8 +318,6 @@ function init(){
     agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 
   document.getElementById('f-data-lanc').value = agora.toISOString().slice(0,10);
-  document.getElementById('cfg-webhook').value = config.webhook || '';
-
   popularSelects();
 }
 
@@ -566,67 +549,7 @@ async function atualizarStatusPautaGoogle(id, novoStatus) {
   }
 }
 
-// ── EXPORTAR
-function salvarConfig(){
-  config.webhook = document.getElementById('cfg-webhook').value.trim();
-  S.set('config', config);
-  notify('Configuração salva!');
-}
 
-function exportarParaN8n(){
-  if(!assuntos.length){ notify('Nenhum assunto para exportar','var(--yellow)'); return; }
-  if(!config.webhook){ notify('Configure a URL do webhook antes','var(--yellow)'); return; }
-
-  // Mapear para o formato do Chekin/n8n
-  const payload = {
-    assuntos: assuntos.map(a=>({
-      id: a.id,
-      assunto: a.assunto,
-      desc: a.desc || '',
-      criador: a.criador || '',
-      resp: a.resp || '',
-      setor: a.setor || '',
-      prioridade: a.prioridade || 'media',
-      status: a.status || 'afazer',
-      dataLanc: a.dataLanc || '',
-      dataTerm: a.dataTerm || '',
-      criadoEm: a.criadoEm || Date.now()
-    })),
-    exportado_em: new Date().toISOString(),
-    total: assuntos.length
-  };
-
-  const statusEl = document.getElementById('export-status');
-  statusEl.className = '';
-  statusEl.innerHTML = '⏳ Enviando...';
-  statusEl.style.display = 'block';
-  statusEl.style.background = '#fef3dc';
-  statusEl.style.border = '1px solid var(--yellow)';
-  statusEl.style.color = 'var(--yellow)';
-  statusEl.style.padding = '12px';
-  statusEl.style.borderRadius = '8px';
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', config.webhook, true);
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.onload = function(){
-    if(xhr.status >= 200 && xhr.status < 300){
-      statusEl.className = 'export-status ok';
-      statusEl.innerHTML = '✅ <strong>Exportado com sucesso!</strong><br>'+assuntos.length+' assunto(s) enviado(s) para o n8n.';
-      notify('Enviado com sucesso!');
-    } else {
-      statusEl.className = 'export-status err';
-      statusEl.innerHTML = '❌ <strong>Erro na exportação</strong><br>Status: '+xhr.status;
-      notify('Erro ao enviar','var(--red)');
-    }
-  };
-  xhr.onerror = function(){
-    statusEl.className = 'export-status err';
-    statusEl.innerHTML = '❌ <strong>Erro de conexão</strong><br>Verifique se o workflow do n8n está ativo.';
-    notify('Erro de conexão','var(--red)');
-  };
-  xhr.send(JSON.stringify(payload));
-}
 
 // ── ADMIN
 function abrirAdmin(){
@@ -760,5 +683,12 @@ document.getElementById('modal-admin').addEventListener('click', function(e){
 
 init();
 </script>
+
+<nav class="bottom-nav">
+  <a class="bnav-btn" href="Checkin3.html"><span class="ni">✅</span>Check-in</a>
+  <a class="bnav-btn active"><span class="ni">📋</span>Pauta</a>
+  <a class="bnav-btn" href="dashboard.html"><span class="ni">📊</span>Dashboard</a>
+  <a class="bnav-btn" href="diario-obras-v4.html"><span class="ni">📓</span>Diário</a>
+</nav>
 </body>
 </html>
