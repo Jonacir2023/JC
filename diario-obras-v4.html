@@ -470,30 +470,6 @@
     border-bottom-color: rgba(0,0,0,0.2);
     box-shadow: 0 2px 8px rgba(212,84,26,0.3);
   }
-  .tempo-vento {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-    padding: 8px 12px;
-    background: var(--bg);
-    border-radius: 6px;
-  }
-  .tempo-vento input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--accent);
-  }
-  .tempo-vento label {
-    margin: 0;
-    text-transform: none;
-    letter-spacing: normal;
-    font-size: 14px;
-    color: var(--ink);
-    cursor: pointer;
-    flex: 1;
-    font-weight: 500;
-  }
   
   /* CAT BLOCKS / LIST */
   .cat-block {
@@ -1048,6 +1024,10 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
+  .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--bg-dark);border-top:2px solid var(--accent);display:flex;z-index:200}
+  .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 10px;color:var(--ink-faint);font-size:9px;font-family:var(--serif);font-weight:700;letter-spacing:.5px;text-transform:uppercase;text-decoration:none;gap:3px;border:none;background:none;cursor:pointer}
+  .bnav-btn .ni{font-size:20px;line-height:1}
+  .bnav-btn.active{color:var(--accent-soft)}
 </style>
 </head>
 <body>
@@ -1058,6 +1038,7 @@
       <div class="header-empresa" id="hdrEmpresa">EMPRESA</div>
       <h1>Diário de Obras</h1>
       <div class="header-obra" id="hdrObra">—</div>
+      <div id="hdrCidade" style="font-size:12px;color:var(--accent);opacity:0.8;margin-top:2px;display:none"></div>
     </div>
     <div class="header-logo" id="hdrLogo">LOGO</div>
   </div>
@@ -1081,7 +1062,7 @@
     </div>
     <button class="icon-btn" onclick="voltarParaHoje()" title="Voltar para hoje">🔙</button>
   </div>
-  
+
   <div class="section">
     <div class="section-title"><div class="section-title-text">📅 Data do Diário</div></div>
     <input type="date" id="dataDiario">
@@ -1090,18 +1071,39 @@
       <span class="dia-semana" id="diaSemana">—</span>
     </div>
   </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-text">📍 Local da Obra</div>
+    </div>
+    <input type="text" id="localObra" list="localObraList" placeholder="Ex.: Bloco A — 2º Pavimento" style="margin-bottom:8px">
+    <datalist id="localObraList"></datalist>
+    <textarea id="descricaoLocal" placeholder="Descrição do local onde os trabalhos foram executados..." style="min-height:72px;resize:vertical"></textarea>
+  </div>
   
   <div class="section">
     <div class="section-title"><div class="section-title-text">🌤️ Condições do Tempo</div></div>
-    <div class="tempo-chips" id="tempoChips">
-      <div class="tempo-chip" data-tempo="sol">☀️ Sol</div>
-      <div class="tempo-chip" data-tempo="nublado">⛅ Nublado</div>
-      <div class="tempo-chip" data-tempo="chuva">🌧️ Chuva</div>
-      <div class="tempo-chip" data-tempo="chuva_forte">⛈️ Chuva Forte</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-soft);margin-bottom:6px">🌅 Manhã</div>
+      <div class="tempo-chips" id="tempoChipsManha">
+        <div class="tempo-chip" data-periodo="manha" data-tempo="sol">☀️ Sol</div>
+        <div class="tempo-chip" data-periodo="manha" data-tempo="nublado">⛅ Nublado</div>
+        <div class="tempo-chip" data-periodo="manha" data-tempo="chuva">🌧️ Chuva</div>
+      </div>
+      <div id="chuvaManhaBox" style="display:none;margin-top:8px">
+        <input type="number" id="chuvaManhaQtd" placeholder="Quantidade de chuva (mm)" min="0" step="0.1" style="width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg-card);font-family:var(--sans);font-size:14px;color:var(--ink)">
+      </div>
     </div>
-    <div class="tempo-vento">
-      <input type="checkbox" id="tempoVento">
-      <label for="tempoVento">💨 Com vento</label>
+    <div>
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-soft);margin-bottom:6px">🌇 Tarde</div>
+      <div class="tempo-chips" id="tempoChipsTarde">
+        <div class="tempo-chip" data-periodo="tarde" data-tempo="sol">☀️ Sol</div>
+        <div class="tempo-chip" data-periodo="tarde" data-tempo="nublado">⛅ Nublado</div>
+        <div class="tempo-chip" data-periodo="tarde" data-tempo="chuva">🌧️ Chuva</div>
+      </div>
+      <div id="chuvaTardeBox" style="display:none;margin-top:8px">
+        <input type="number" id="chuvaTardeQtd" placeholder="Quantidade de chuva (mm)" min="0" step="0.1" style="width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg-card);font-family:var(--sans);font-size:14px;color:var(--ink)">
+      </div>
     </div>
   </div>
   
@@ -1177,6 +1179,16 @@
 
   <div class="section">
     <div class="section-title">
+      <div class="section-title-text">🔴 Veículos/Equipamentos Parados</div>
+    </div>
+    <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
+      Equipamentos e veículos leves cadastrados que não foram selecionados para uso hoje. Informe a justificativa de cada um.
+    </p>
+    <div id="veiculosParadosList"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
       <div class="section-title-text">🦺 Eventos de Segurança</div>
       <button class="icon-btn" onclick="abrirModalEventoDia('seguranca')" title="Adicionar">➕</button>
     </div>
@@ -1192,7 +1204,23 @@
     <div id="evAmbList"></div>
     <button class="add-btn-full" onclick="abrirModalEventoAvulso('meio_ambiente')">+ Registrar evento avulso</button>
   </div>
-  
+
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-text">📝 Observações do Dia</div>
+    </div>
+    <textarea id="observacoesDia" placeholder="Registre aqui informações importantes do dia: ocorrências, decisões, visitas, pendências, condições especiais..." style="min-height:140px;resize:vertical"></textarea>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-text">✍️ Apontador Responsável</div>
+    </div>
+    <select id="apontadorSelect" style="width:100%;padding:10px 8px;border:2px solid var(--line);border-radius:6px;background:var(--bg-card);font-family:var(--sans);font-size:14px;color:var(--ink);margin-top:4px" onchange="selecionarApontadorDireto(this.value)">
+      <option value="">— Selecionar Apontador —</option>
+    </select>
+  </div>
+
   <button class="btn btn-primary" onclick="salvarDiarioDia(true)" style="margin-top:8px">💾 Salvar Diário no Histórico</button>
 </main>
 
@@ -1318,8 +1346,11 @@
       <input type="text" id="cfgObra" placeholder="Ex.: Obra Beira-Mar Norte">
       <label>Empresa</label>
       <input type="text" id="cfgEmpresa" placeholder="Ex.: Construtora XYZ">
-      <label>Local (opcional)</label>
+      <label>Cidade - UN</label>
       <input type="text" id="cfgLocal" placeholder="Ex.: Florianópolis - SC">
+      <label>Descrição da Obra</label>
+      <input type="text" id="cfgDescricao" list="descricaoObraSugestoes" placeholder="Ex.: Construção de galpão industrial">
+      <datalist id="descricaoObraSugestoes"></datalist>
       <label>Contrato / Código (opcional)</label>
       <input type="text" id="cfgContrato" placeholder="Ex.: CT-2026-001">
     </div>
@@ -1543,10 +1574,11 @@
     <label>Número / Frota</label>
     <input type="text" id="modalEquipNum" placeholder="Ex.: ESC-001">
     <label>Descrição</label>
-    <input type="text" id="modalEquipDesc" placeholder="Ex.: Escavadeira Hidráulica CAT 320">
-    <div class="tempo-vento" style="margin-top:14px;background:var(--bg-card);border:1px solid var(--line)">
-      <input type="checkbox" id="modalEquipMotorista">
-      <label for="modalEquipMotorista">🚛 É caminhão / requer motorista?</label>
+    <input type="text" id="modalEquipDesc" list="equipDescSugestoes" placeholder="Ex.: Escavadeira Hidráulica CAT 320" autocomplete="off">
+    <datalist id="equipDescSugestoes"></datalist>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--line);border-radius:6px">
+      <input type="checkbox" id="modalEquipMotorista" style="width:18px;height:18px;accent-color:var(--accent)">
+      <label for="modalEquipMotorista" style="margin:0;text-transform:none;letter-spacing:normal;font-size:14px;color:var(--ink);cursor:pointer;flex:1;font-weight:500">🚛 É caminhão / requer motorista?</label>
     </div>
     <p style="font-size:11px;color:var(--ink-faint);margin-top:6px;font-style:italic">
       Marcado: lista de motoristas será sugerida.<br>
@@ -1598,12 +1630,13 @@
 <div class="modal-overlay" id="modalVeiculoFrota">
   <div class="modal">
     <div class="modal-title" id="modalVeiculoFrotaTitle">Novo Veículo Leve</div>
+    <label>Número / Frota</label>
+    <input type="text" id="modalVFNumero" placeholder="Ex.: VL-001">
     <label>Descrição / Modelo</label>
-    <input type="text" id="modalVFDesc" placeholder="Ex.: Toyota Hilux 2023">
+    <input type="text" id="modalVFDesc" list="vlDescSugestoes" placeholder="Ex.: Toyota Hilux 2023" autocomplete="off">
+    <datalist id="vlDescSugestoes"></datalist>
     <label>Placa</label>
     <input type="text" id="modalVFPlaca" placeholder="Ex.: SCR-2E45">
-    <label>Tipo (opcional)</label>
-    <input type="text" id="modalVFTipo" placeholder="Ex.: Pickup, Van, SUV">
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-ghost" onclick="fecharModal('modalVeiculoFrota')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarVeiculoFrota()">Salvar</button>
@@ -1624,6 +1657,21 @@
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-ghost" onclick="fecharModal('modalAtividade')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarAtividade()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Apontador Responsável -->
+<div class="modal-overlay" id="modalApontador">
+  <div class="modal">
+    <div class="modal-title">✍️ Apontador Responsável</div>
+    <label>Nome / Matrícula</label>
+    <select id="modalApontadorInput">
+      <option value="">— Selecionar —</option>
+    </select>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-ghost" onclick="fecharModal('modalApontador')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarApontador()">Confirmar</button>
     </div>
   </div>
 </div>
@@ -1855,8 +1903,10 @@ const DEFAULT_DATA = {
 
 const EMPTY_DAY = () => ({
   data: '',
-  tempo: '',           // sol | nublado | chuva | chuva_forte
-  tempoVento: false,
+  tempoManha: '',
+  chuvaManhaQtd: '',
+  tempoTarde: '',
+  chuvaTardeQtd: '',
   cafeInicio: '06:30', cafeFim: '07:00',
   almocoInicio: '12:00', almocoFim: '13:00',
   encerramento: '17:00',
@@ -1871,7 +1921,11 @@ const EMPTY_DAY = () => ({
   equipamentos: {},  // id -> {ativo, operadorMat, operadorNome, status, horimetro}
   veiculosLeves: [],  // [{id, desc, placa, motorista}]
   eventosSeguranca: [],
-  eventosAmbiente: []
+  eventosAmbiente: [],
+  apontador: '',
+  localObra: '',
+  descricaoLocal: '',
+  veiculosParados: {}  // id -> justificativa (para equips e VLs não selecionados)
 });
 
 let state = loadState();
@@ -1959,10 +2013,13 @@ function gravBadge(g) {
   return '';
 }
 
-function tempoLabel(t, v) {
-  const map = { sol: '☀️ Sol', nublado: '⛅ Nublado', chuva: '🌧️ Chuva', chuva_forte: '⛈️ Chuva Forte' };
-  if (!t) return v ? '💨 Com vento' : '—';
-  return (map[t] || '—') + (v ? ' 💨 c/ vento' : '');
+function tempoLabel(day) {
+  const map = { sol: '☀️ Sol', nublado: '⛅ Nublado', chuva: '🌧️ Chuva' };
+  const manha = map[day.tempoManha] || '—';
+  const manhaChuva = (day.tempoManha === 'chuva' && day.chuvaManhaQtd) ? ` (${day.chuvaManhaQtd}mm)` : '';
+  const tarde = map[day.tempoTarde] || '—';
+  const tardeChuva = (day.tempoTarde === 'chuva' && day.chuvaTardeQtd) ? ` (${day.chuvaTardeQtd}mm)` : '';
+  return `Manhã: ${manha}${manhaChuva} | Tarde: ${tarde}${tardeChuva}`;
 }
 
 function jornadaPadraoPorDia(iso) {
@@ -2039,6 +2096,7 @@ function initCurrentDay(data) {
   atualizarHeaderEdicao();
   preencherCampos();
   renderDiario();
+  _atualizarResumoObraNosDiario();
 }
 
 function atualizarHeaderEdicao() {
@@ -2076,10 +2134,12 @@ function voltarParaHoje() {
 }
 
 function preencherCampos() {
-  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra'].forEach(k => {
+  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','observacoesDia','localObra','descricaoLocal'].forEach(k => {
     const el = document.getElementById(k);
     if (el) el.value = currentDay[k] || '';
   });
+  renderApontadorDia();
+  _atualizarLocalObraDatalist();
   // DSS Ministrou
   const dssMin = document.getElementById('dssMinistrou');
   if (dssMin) {
@@ -2091,21 +2151,28 @@ function preencherCampos() {
     dssMin.innerHTML = opts.join('');
   }
   document.getElementById('dataDiario').value = currentDay.data;
-  // tempo chips
-  document.querySelectorAll('.tempo-chip').forEach(c => {
-    if (c.dataset.tempo === currentDay.tempo) c.classList.add('active');
-    else c.classList.remove('active');
+  // tempo — manhã
+  document.querySelectorAll('#tempoChipsManha .tempo-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.tempo === currentDay.tempoManha);
   });
-  document.getElementById('tempoVento').checked = !!currentDay.tempoVento;
+  document.getElementById('chuvaManhaBox').style.display = currentDay.tempoManha === 'chuva' ? 'block' : 'none';
+  const chuvaManhaEl = document.getElementById('chuvaManhaQtd');
+  if (chuvaManhaEl) chuvaManhaEl.value = currentDay.chuvaManhaQtd || '';
+  // tempo — tarde
+  document.querySelectorAll('#tempoChipsTarde .tempo-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.tempo === currentDay.tempoTarde);
+  });
+  document.getElementById('chuvaTardeBox').style.display = currentDay.tempoTarde === 'chuva' ? 'block' : 'none';
+  const chuvaTardeEl = document.getElementById('chuvaTardeQtd');
+  if (chuvaTardeEl) chuvaTardeEl.value = currentDay.chuvaTardeQtd || '';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra'].forEach(k => {
+  ['cafeInicio','cafeFim','almocoInicio','almocoFim','encerramento','dssTema','dssHorario','atividadesExtra','observacoesDia','localObra','descricaoLocal'].forEach(k => {
     const el = document.getElementById(k);
     if (el) el.addEventListener('input', () => {
       currentDay[k] = el.value;
-      if (k === 'dssHorario' || k === 'dssTema') salvarDiarioDia(false);
-      else salvarDiarioDia(false);
+      salvarDiarioDia(false);
     });
   });
   // DSS ministrou
@@ -2119,20 +2186,30 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.querySelectorAll('.tempo-chip').forEach(c => {
     c.addEventListener('click', () => {
-      if (c.classList.contains('active')) {
-        c.classList.remove('active');
-        currentDay.tempo = '';
-      } else {
-        document.querySelectorAll('.tempo-chip').forEach(x => x.classList.remove('active'));
+      const periodo = c.dataset.periodo; // 'manha' ou 'tarde'
+      const val = c.dataset.tempo;
+      const chipsId = periodo === 'manha' ? '#tempoChipsManha .tempo-chip' : '#tempoChipsTarde .tempo-chip';
+      const boxId   = periodo === 'manha' ? 'chuvaManhaBox' : 'chuvaTardeBox';
+      const field   = periodo === 'manha' ? 'tempoManha' : 'tempoTarde';
+      const already = currentDay[field] === val;
+      document.querySelectorAll(chipsId).forEach(x => x.classList.remove('active'));
+      if (!already) {
         c.classList.add('active');
-        currentDay.tempo = c.dataset.tempo;
+        currentDay[field] = val;
+      } else {
+        currentDay[field] = '';
       }
+      document.getElementById(boxId).style.display = currentDay[field] === 'chuva' ? 'block' : 'none';
       salvarDiarioDia(false);
     });
   });
-  document.getElementById('tempoVento').addEventListener('change', e => {
-    currentDay.tempoVento = e.target.checked;
-    salvarDiarioDia(false);
+  // quantidade de chuva
+  ['chuvaManhaQtd', 'chuvaTardeQtd'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => {
+      currentDay[id] = el.value;
+      salvarDiarioDia(false);
+    });
   });
   // op tabs no modal de equipamento
   document.querySelectorAll('.op-tab').forEach(t => {
@@ -2149,67 +2226,138 @@ document.addEventListener('DOMContentLoaded', () => {
 // INTEGRAÇÃO COM GOOGLE SHEETS
 // ============================================================
 
+function buildPayloadGoogle(diarioData) {
+  const day = diarioData;
+
+  // Jornada
+  const jornada = `Café: ${day.cafeInicio||'--'}–${day.cafeFim||'--'} | Almoço: ${day.almocoInicio||'--'}–${day.almocoFim||'--'} | Enc.: ${day.encerramento||'--'}`;
+
+  // DSS
+  const dssMin = day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '';
+
+  // Atividades
+  const ativsTexto = [
+    ...state.atividades.filter(a => day.atividadesMarcadas[a.id]).map(a => {
+      const qtd = day.atividadesQtd && day.atividadesQtd[a.id];
+      return `${a.desc}${a.local ? ' – ' + a.local : ''}${qtd ? ' (' + qtd + ' ' + (a.unidade||'') + ')' : ''}`;
+    }),
+    ...(day.atividadesAvulsas || []).map(a => `${a.desc}${a.local ? ' – ' + a.local : ''}`),
+    ...(day.atividadesExtra ? day.atividadesExtra.split('\n').filter(x => x.trim()) : [])
+  ].join('\n');
+
+  // Efetivo — resolver IDs para nomes
+  const efetivoPorFuncao = [];
+  const colaboradoresPresentes = [];
+  let totalEfetivo = 0;
+  state.colaboradores.categorias.forEach(cat => {
+    const presentes = cat.itens.filter(c => day.efetivo[c.id]);
+    if (presentes.length === 0) return;
+    totalEfetivo += presentes.length;
+    efetivoPorFuncao.push(`${cat.nome}: ${presentes.length}`);
+    presentes.forEach(c => colaboradoresPresentes.push(`${c.mat} – ${c.nome} (${cat.nome})`));
+  });
+
+  // Equipamentos — novo sistema localStorage
+  const savedEquip = S.get(`equipDia_${day.data}`) || {};
+  const equipsAtivos = state.equipamentos.filter(e => savedEquip[e.id]);
+  const gruposEquip = {};
+  equipsAtivos.forEach(e => {
+    const k = e.desc.trim();
+    if (!gruposEquip[k]) gruposEquip[k] = 0;
+    gruposEquip[k]++;
+  });
+  const equipamentosTexto = Object.entries(gruposEquip)
+    .sort(([a],[b]) => a.localeCompare(b,'pt-BR'))
+    .map(([desc, n]) => `${desc}: ${n} un.`).join('\n');
+
+  // Veículos Leves — novo sistema localStorage
+  const savedVL = S.get(`vlDia_${day.data}`) || {};
+  const vlAtivos = (state.veiculosFrota || []).filter(v => savedVL[v.id]);
+  const savedEquipBP = S.get(`equipDia_${day.data}`) || {};
+  const equipsParadosBP = state.equipamentos.filter(e => !savedEquipBP[e.id]);
+  const vlParadosBP = (state.veiculosFrota || []).filter(v => !savedVL[v.id]);
+  const parados = day.veiculosParados || {};
+  const paradosTexto = [
+    ...equipsParadosBP.map(e => {
+      const just = parados[e.id] ? `: ${parados[e.id]}` : '';
+      return `${e.isMotorista ? '🚛' : '🚜'} ${e.numero} — ${e.desc}${just}`;
+    }),
+    ...vlParadosBP.map(v => {
+      const just = parados[v.id] ? `: ${parados[v.id]}` : '';
+      return `🚗 ${v.desc}${v.placa ? ' ('+v.placa+')' : ''}${just}`;
+    })
+  ].join('\n');
+  const gruposVL = {};
+  vlAtivos.forEach(v => {
+    const k = v.desc.trim();
+    if (!gruposVL[k]) gruposVL[k] = 0;
+    gruposVL[k]++;
+  });
+  const veiculosTexto = Object.entries(gruposVL)
+    .sort(([a],[b]) => a.localeCompare(b,'pt-BR'))
+    .map(([desc, n]) => `${desc}: ${n} un.`).join('\n');
+
+  // Eventos
+  const segTexto = (day.eventosSeguranca||[]).map(ev =>
+    `${ev.tipo} (${ev.gravidade})${ev.desc ? ': ' + ev.desc : ''}${ev.acao ? ' | Ação: ' + ev.acao : ''}`
+  ).join('\n');
+  const ambTexto = (day.eventosAmbiente||[]).map(ev =>
+    `${ev.tipo} (${ev.gravidade})${ev.desc ? ': ' + ev.desc : ''}${ev.acao ? ' | Ação: ' + ev.acao : ''}`
+  ).join('\n');
+
+  return {
+    data:                 day.data,
+    diaSemana:            diaDaSemana(day.data),
+    obra:                 state.obra.nome || '',
+    empresa:              state.obra.empresa || '',
+    local:                state.obra.local || '',
+    tempo:                tempoLabel(day),
+    jornada,
+    dssHorario:           day.dssHorario || '',
+    dssMinistrou:         dssMin,
+    dssTema:              day.dssTema || '',
+    atividades:           ativsTexto,
+    efetivoTotal:         totalEfetivo,
+    efetivoPorFuncao:     efetivoPorFuncao.join('\n'),
+    colaboradoresPresentes: colaboradoresPresentes.join('\n'),
+    equipamentos:         equipamentosTexto,
+    veiculosLeves:        veiculosTexto,
+    veiculosParados:      paradosTexto,
+    eventosSeguranca:     segTexto,
+    eventosMeioAmbiente:  ambTexto,
+    observacoes:          day.observacoesDia || '',
+    apontador:            day.apontador || '',
+    localObra:            day.localObra || '',
+    descricaoLocal:       day.descricaoLocal || ''
+  };
+}
+
+// IMPORTANTE: O Apps Script implantado deve ser a versão de 23 colunas
+// (com coluna S = Veículos/Equip. Parados). Reimplantar DiarioObras.gs se houver
+// descasamento de colunas na planilha.
 async function salvarDiarioGoogle(diarioData) {
   if (!APPS_SCRIPT_URL_DIARIO) return;
   try {
-    // Mostra indicador de salvamento
-    const headerDate = document.querySelector('.header-date');
-    if (headerDate) {
-      const originalText = headerDate.textContent;
-      headerDate.textContent = '💾 Salvando...';
-
-      const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=salvar', {
-        method: 'POST',
-        body: JSON.stringify(diarioData)
-      });
-      const data = await resp.json();
-
-      if (data.ok) {
-        // Volta ao texto original
-        setTimeout(() => {
-          headerDate.textContent = originalText;
-        }, 2000);
-        console.log('✅ Diário sincronizado com Google Sheets');
-      }
-    }
+    const payload = buildPayloadGoogle(diarioData);
+    await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=diario&action=salvar`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    console.log('✅ Diário enviado ao Google Sheets');
   } catch (err) {
     console.error('Erro salvar diário no Google Sheets:', err);
   }
 }
 
-async function carregarDiarioGoogle(data) {
-  if (!APPS_SCRIPT_URL_DIARIO) return;
-  try {
-    const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=carregar&data=' + data);
-    const result = await resp.json();
-    if (result.ok && result.diario) {
-      history[data] = result.diario;
-      saveHistory();
-      currentDay = JSON.parse(JSON.stringify(result.diario));
-      renderDiario();
-      toast('✅ Diário carregado do Google Sheets');
-    }
-  } catch (err) {
-    console.error('Erro carregar diário:', err);
-  }
-}
-
-async function gerarRelatorioGoogle(data) {
-  if (!APPS_SCRIPT_URL_DIARIO) return;
-  try {
-    const resp = await fetch(APPS_SCRIPT_URL_DIARIO + '?path=diario&action=relatorio&data=' + data);
-    const result = await resp.json();
-    if (result.ok && result.relatorio) {
-      return result.relatorio;
-    }
-  } catch (err) {
-    console.error('Erro gerar relatório:', err);
-  }
-}
-
 function salvarDiarioDia(notificar) {
   if (!currentDay || !currentDay.data) return;
-  const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.tempo ||
+  if (notificar && !(currentDay.apontador || '').trim()) {
+    toast('❌ Selecione o Apontador Responsável antes de salvar');
+    const sel = document.getElementById('apontadorSelect');
+    if (sel) { sel.scrollIntoView({ behavior: 'smooth', block: 'center' }); sel.focus(); }
+    return;
+  }
+  const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.observacoesDia || currentDay.tempoManha || currentDay.tempoTarde ||
     Object.keys(currentDay.efetivo).length > 0 ||
     Object.keys(currentDay.atividadesMarcadas).length > 0 ||
     Object.keys(currentDay.atividadesQtd || {}).length > 0 ||
@@ -2221,12 +2369,24 @@ function salvarDiarioDia(notificar) {
   if (temDado) {
     history[currentDay.data] = JSON.parse(JSON.stringify(currentDay));
     saveHistory();
-    salvarDiarioGoogle(currentDay);
   } else if (history[currentDay.data]) {
     delete history[currentDay.data];
     saveHistory();
   }
   if (notificar) {
+    // Guardar local da obra no histórico de sugestões
+    const loc = (currentDay.localObra || '').trim();
+    if (loc) {
+      const hist = state.localObraHistorico || [];
+      if (!hist.includes(loc)) hist.unshift(loc);
+      state.localObraHistorico = hist.slice(0, 30);
+      saveState();
+    }
+    const localEl = document.getElementById('localObra');
+    const descEl  = document.getElementById('descricaoLocal');
+    if (localEl) currentDay.localObra    = localEl.value;
+    if (descEl)  currentDay.descricaoLocal = descEl.value;
+    salvarDiarioGoogle(currentDay);
     toast('Diário salvo no histórico');
     backupAutomatico();
   }
@@ -2240,8 +2400,10 @@ function renderDiario() {
   renderEfetivoDia();
   renderEquipDia();
   renderVeiculosLevesDia();
+  renderVeiculosParados();
   renderEventosDia('seguranca');
   renderEventosDia('meio_ambiente');
+  renderApontadorDia();
 }
 
 function marcarTodosTipo(tipo, valor) {
@@ -2354,10 +2516,9 @@ function renderEfetivoDia() {
     totalC += cat.itens.length;
 
     if (presentes.length > 0) {
-      const nomes = presentes.map(c => c.nome).join(', ');
-      html += `<div style="margin-bottom:12px">
-        <div style="font-weight:600;color:var(--ink);margin-bottom:4px">${cat.icon} ${escapeHtml(cat.nome)}</div>
-        <div style="color:var(--ink-faint);font-size:13px">${escapeHtml(nomes)}</div>
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
+        <div style="font-weight:600;color:var(--ink)">${cat.icon} ${escapeHtml(cat.nome)}</div>
+        <div style="font-size:15px;font-weight:700;color:var(--accent)">${presentes.length}</div>
       </div>`;
     }
   });
@@ -2389,15 +2550,25 @@ function renderEquipDia() {
     cont.innerHTML = '<div class="empty">Nenhum equipamento selecionado para hoje</div>';
     return;
   }
-  let html = '<div style="padding:8px 0">';
+  // Agrupar por descrição e contar
+  const grupos = {};
   selecionados.forEach(eq => {
-    html += `<div style="margin-bottom:8px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg-card)">
-      <div style="font-weight:600">${escapeHtml(eq.desc)} ${eq.isMotorista ? '🚛' : '🚜'}</div>
-      <div style="color:var(--ink-faint);font-size:12px"><span class="num">${escapeHtml(eq.numero)}</span></div>
+    const key = eq.desc.trim();
+    if (!grupos[key]) grupos[key] = { desc: key, isMotorista: eq.isMotorista, count: 0 };
+    grupos[key].count++;
+  });
+  const ordenados = Object.values(grupos).sort((a, b) => a.desc.localeCompare(b.desc, 'pt-BR'));
+
+  let html = '<div style="padding:4px 0">';
+  ordenados.forEach(g => {
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
+      <div style="font-weight:600">${g.isMotorista ? '🚛' : '🚜'} ${escapeHtml(g.desc)}</div>
+      <div style="font-size:15px;font-weight:700;color:var(--accent);white-space:nowrap;margin-left:8px">${g.count} un.</div>
     </div>`;
   });
   html += '</div>';
   cont.innerHTML = html;
+  renderVeiculosParados();
 }
 
 function abrirSeletorEquip(equipId) {
@@ -2569,15 +2740,82 @@ function renderVeiculosLevesDia() {
     cont.innerHTML = '<div class="empty">Nenhum veículo selecionado para hoje</div>';
     return;
   }
-  let html = '<div style="padding:8px 0">';
+  // Agrupar por descrição (tipo de veículo) e contar
+  const grupos = {};
   selecionados.forEach(v => {
-    html += `<div style="margin-bottom:8px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg-card)">
-      <div style="font-weight:600">🚗 ${escapeHtml(v.desc)}</div>
-      <div style="color:var(--ink-faint);font-size:12px">${v.tipo ? escapeHtml(v.tipo) + ' · ' : ''}${v.placa ? escapeHtml(v.placa) : ''}</div>
+    const key = v.desc.trim();
+    if (!grupos[key]) grupos[key] = { desc: key, count: 0 };
+    grupos[key].count++;
+  });
+  const ordenados = Object.values(grupos).sort((a, b) => a.desc.localeCompare(b.desc, 'pt-BR'));
+
+  let html = '<div style="padding:4px 0">';
+  ordenados.forEach(g => {
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)">
+      <div style="font-weight:600">🚗 ${escapeHtml(g.desc)}</div>
+      <div style="font-size:15px;font-weight:700;color:var(--accent);white-space:nowrap;margin-left:8px">${g.count} un.</div>
     </div>`;
   });
   html += '</div>';
   cont.innerHTML = html;
+  renderVeiculosParados();
+}
+
+function renderVeiculosParados() {
+  const cont = document.getElementById('veiculosParadosList');
+  if (!cont) return;
+  const data = currentDay ? currentDay.data : '';
+  const savedEquip = S.get(`equipDia_${data}`) || {};
+  const savedVL    = S.get(`vlDia_${data}`) || {};
+
+  // Equipamentos não selecionados
+  const equipsParados = state.equipamentos.filter(e => !savedEquip[e.id]);
+  // Veículos leves não selecionados
+  const vlParados = (state.veiculosFrota || []).filter(v => !savedVL[v.id]);
+
+  if (equipsParados.length === 0 && vlParados.length === 0) {
+    cont.innerHTML = '<div class="empty">Todos os equipamentos e veículos estão em uso hoje</div>';
+    return;
+  }
+
+  const parados = currentDay.veiculosParados || {};
+  let html = '<div style="display:flex;flex-direction:column;gap:10px">';
+
+  equipsParados.forEach(eq => {
+    const just = parados[eq.id] || '';
+    html += `<div style="border:1px solid var(--line-soft);border-radius:8px;padding:10px">
+      <div style="font-weight:600;margin-bottom:6px">${eq.isMotorista ? '🚛' : '🚜'} ${escapeHtml(eq.numero)} — ${escapeHtml(eq.desc)}</div>
+      <input type="text" placeholder="Justificativa (manutenção, aguardando peça, parado por efetivo...)"
+        value="${escapeHtml(just)}"
+        style="width:100%;box-sizing:border-box"
+        oninput="salvarJustParado('${eq.id}', this.value)">
+    </div>`;
+  });
+
+  vlParados.forEach(v => {
+    const just = parados[v.id] || '';
+    const placa = v.placa ? ` (${v.placa})` : '';
+    html += `<div style="border:1px solid var(--line-soft);border-radius:8px;padding:10px">
+      <div style="font-weight:600;margin-bottom:6px">🚗 ${escapeHtml(v.desc)}${escapeHtml(placa)}</div>
+      <input type="text" placeholder="Justificativa (manutenção, aguardando peça, parado por efetivo...)"
+        value="${escapeHtml(just)}"
+        style="width:100%;box-sizing:border-box"
+        oninput="salvarJustParado('${v.id}', this.value)">
+    </div>`;
+  });
+
+  html += '</div>';
+  cont.innerHTML = html;
+}
+
+function salvarJustParado(id, valor) {
+  if (!currentDay.veiculosParados) currentDay.veiculosParados = {};
+  if (valor.trim()) {
+    currentDay.veiculosParados[id] = valor;
+  } else {
+    delete currentDay.veiculosParados[id];
+  }
+  salvarDiarioDia(false);
 }
 
 function abrirSeletorVL(vlId) {
@@ -2659,6 +2897,68 @@ function removerVeiculoLeve(idx) {
     salvarDiarioDia(false);
     renderVeiculosLevesDia();
   });
+}
+
+// APONTADOR
+function _todosColaboradores() {
+  const lista = [];
+  (state.colaboradores.categorias || []).forEach(cat => {
+    (cat.itens || []).forEach(c => lista.push(`${c.mat} – ${c.nome} (${cat.nome})`));
+  });
+  return lista;
+}
+
+function _apontadoresFiltrados() {
+  const lista = [];
+  (state.colaboradores.categorias || []).forEach(cat => {
+    const catIsApontador = cat.nome.toLowerCase().includes('apontador');
+    (cat.itens || []).forEach(c => {
+      if (catIsApontador || (c.funcao || '').toLowerCase().includes('apontador')) {
+        lista.push(`${c.mat} – ${c.nome} (${cat.nome})`);
+      }
+    });
+  });
+  return lista;
+}
+
+function renderApontadorDia() {
+  // Atualiza o select inline na aba Diário
+  const sel = document.getElementById('apontadorSelect');
+  if (sel) {
+    const current = currentDay.apontador || '';
+    sel.innerHTML = '<option value="">— Selecionar Apontador —</option>';
+    _apontadoresFiltrados().forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      if (s === current) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    // Atualiza select do modal também (se ainda existir)
+    const selModal = document.getElementById('modalApontadorInput');
+    if (selModal) {
+      selModal.innerHTML = sel.innerHTML;
+      selModal.value = current;
+    }
+  }
+}
+
+function selecionarApontadorDireto(val) {
+  currentDay.apontador = val;
+  salvarDiarioDia(false);
+}
+
+function selecionarApontador() {
+  renderApontadorDia();
+  abrirModal('modalApontador');
+}
+
+function confirmarApontador() {
+  const val = (document.getElementById('modalApontadorInput').value || '').trim();
+  currentDay.apontador = val;
+  renderApontadorDia();
+  salvarDiarioDia();
+  fecharModal('modalApontador');
 }
 
 // EVENTOS
@@ -2799,6 +3099,13 @@ function salvarConfigObra() {
   state.obra.nome = document.getElementById('cfgObra').value.trim();
   state.obra.empresa = document.getElementById('cfgEmpresa').value.trim();
   state.obra.local = document.getElementById('cfgLocal').value.trim();
+  state.obra.descricao = document.getElementById('cfgDescricao').value.trim();
+  // guarda descrições anteriores como sugestões
+  if (state.obra.descricao) {
+    const hist = state.obra.descricaoHistorico || [];
+    if (!hist.includes(state.obra.descricao)) hist.unshift(state.obra.descricao);
+    state.obra.descricaoHistorico = hist.slice(0, 20);
+  }
   state.obra.contrato = document.getElementById('cfgContrato').value.trim();
   state.obra.encerramentoNormal = document.getElementById('cfgEncerramentoNormal').value || '17:00';
   state.obra.encerramentoSexta = document.getElementById('cfgEncerramentoSexta').value || '16:00';
@@ -2806,6 +3113,7 @@ function salvarConfigObra() {
   saveState();
   atualizarHeader();
   atualizarHeaderEdicao();
+  _atualizarResumoObraNosDiario();
   toast('Configurações salvas');
 }
 
@@ -2870,7 +3178,15 @@ function renderConfig() {
   document.getElementById('cfgObra').value = state.obra.nome || '';
   document.getElementById('cfgEmpresa').value = state.obra.empresa || '';
   document.getElementById('cfgLocal').value = state.obra.local || '';
+  document.getElementById('cfgDescricao').value = state.obra.descricao || '';
+  // atualiza datalist de descrições anteriores
+  const dlDesc = document.getElementById('descricaoObraSugestoes');
+  if (dlDesc) {
+    dlDesc.innerHTML = (state.obra.descricaoHistorico || []).map(d => `<option value="${escapeHtml(d)}">`).join('');
+  }
   document.getElementById('cfgContrato').value = state.obra.contrato || '';
+  // exibe resumo na aba Diário
+  _atualizarResumoObraNosDiario();
   document.getElementById('cfgEncerramentoNormal').value = state.obra.encerramentoNormal || '17:00';
   document.getElementById('cfgEncerramentoSexta').value = state.obra.encerramentoSexta || '16:00';
   document.getElementById('cfgEncerramentoSabado').value = state.obra.encerramentoSabado || '16:00';
@@ -2894,7 +3210,8 @@ function renderConfigColab() {
   const cont = document.getElementById('configColabList');
   cont.innerHTML = '';
 
-  state.colaboradores.categorias.forEach(cat => {
+  const categoriasColab = [...state.colaboradores.categorias].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  categoriasColab.forEach(cat => {
     // — bloco da categoria —
     const block = document.createElement('div');
     block.className = 'cat-block';
@@ -2945,7 +3262,8 @@ function renderConfigColab() {
     if (cat.itens.length === 0) {
       body.innerHTML = '<div class="empty">Sem colaboradores</div>';
     } else {
-      cat.itens.forEach(c => {
+      const itensColab = [...cat.itens].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+      itensColab.forEach(c => {
         const row = document.createElement('div');
         row.className = 'item-row';
 
@@ -2994,7 +3312,7 @@ function renderConfigEquipDia() {
   const cont = document.getElementById('configEquipDiaList');
   if (!cont) return;
   cont.innerHTML = '';
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = currentDay ? currentDay.data : new Date().toISOString().slice(0, 10);
   const savedEquip = S.get(`equipDia_${hoje}`) || {};
 
   if (state.equipamentos.length === 0) {
@@ -3016,6 +3334,7 @@ function renderConfigEquipDia() {
       else delete savedEquip[eq.id];
       S.set(`equipDia_${hoje}`, savedEquip);
       renderConfigEquipDia();
+      renderVeiculosParados();
     });
 
     const info = document.createElement('div');
@@ -3032,7 +3351,7 @@ function renderConfigVLDia() {
   const cont = document.getElementById('configVLDiaList');
   if (!cont) return;
   cont.innerHTML = '';
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = currentDay ? currentDay.data : new Date().toISOString().slice(0, 10);
   const savedVL = S.get(`vlDia_${hoje}`) || {};
   const frota = state.veiculosFrota || [];
 
@@ -3055,6 +3374,7 @@ function renderConfigVLDia() {
       else delete savedVL[v.id];
       S.set(`vlDia_${hoje}`, savedVL);
       renderConfigVLDia();
+      renderVeiculosParados();
     });
 
     const info = document.createElement('div');
@@ -3189,7 +3509,8 @@ function renderConfigEfetivoDia() {
 
   cont.innerHTML = '';
 
-  state.colaboradores.categorias.forEach(cat => {
+  const categorias = [...state.colaboradores.categorias].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  categorias.forEach(cat => {
     const block = document.createElement('div');
     block.className = 'cat-block';
 
@@ -3204,7 +3525,8 @@ function renderConfigEfetivoDia() {
     if (cat.itens.length === 0) {
       body.innerHTML = '<div class="empty">Sem colaboradores</div>';
     } else {
-      cat.itens.forEach(c => {
+      const itens = [...cat.itens].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+      itens.forEach(c => {
         const checked = !!savedEfetivo[c.id];
         const row = document.createElement('div');
         row.className = 'item-row' + (checked ? ' checked' : '');
@@ -3409,34 +3731,42 @@ function renderConfigVL() {
     cont.appendChild(row);
   });
 }
+function _atualizarVLDescDatalist() {
+  const dl = document.getElementById('vlDescSugestoes');
+  if (!dl) return;
+  const nomes = [...new Set((state.veiculosFrota || []).map(v => v.desc.trim()))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  dl.innerHTML = nomes.map(n => `<option value="${escapeHtml(n)}">`).join('');
+}
 function abrirModalVeiculoFrota() {
   editingItem = { type: 'vl', id: null };
   document.getElementById('modalVeiculoFrotaTitle').textContent = 'Novo Veículo Leve';
+  document.getElementById('modalVFNumero').value = '';
   document.getElementById('modalVFDesc').value = '';
   document.getElementById('modalVFPlaca').value = '';
-  document.getElementById('modalVFTipo').value = '';
+  _atualizarVLDescDatalist();
   abrirModal('modalVeiculoFrota');
 }
 function editarVeiculoFrota(id) {
   const v = (state.veiculosFrota || []).find(x => x.id === id);
   editingItem = { type: 'vl', id };
   document.getElementById('modalVeiculoFrotaTitle').textContent = 'Editar Veículo Leve';
+  document.getElementById('modalVFNumero').value = v.numero || '';
   document.getElementById('modalVFDesc').value = v.desc;
   document.getElementById('modalVFPlaca').value = v.placa;
-  document.getElementById('modalVFTipo').value = v.tipo || '';
+  _atualizarVLDescDatalist();
   abrirModal('modalVeiculoFrota');
 }
 function salvarVeiculoFrota() {
+  const numero = document.getElementById('modalVFNumero').value.trim();
   const desc = document.getElementById('modalVFDesc').value.trim();
   const placa = document.getElementById('modalVFPlaca').value.trim();
-  const tipo = document.getElementById('modalVFTipo').value.trim();
   if (!desc || !placa) { toast('Descrição e placa obrigatórios'); return; }
   if (!state.veiculosFrota) state.veiculosFrota = [];
   if (editingItem.id) {
     const v = state.veiculosFrota.find(x => x.id === editingItem.id);
-    v.desc = desc; v.placa = placa; v.tipo = tipo;
+    v.numero = numero; v.desc = desc; v.placa = placa;
   } else {
-    state.veiculosFrota.push({ id: uid('vf'), desc, placa, tipo });
+    state.veiculosFrota.push({ id: uid('vf'), numero, desc, placa });
   }
   saveState(); fecharModal('modalVeiculoFrota'); renderConfigVL(); renderConfigVLDia(); toast('Salvo');
 }
@@ -3453,7 +3783,33 @@ function abrirModalEquipamento() {
   document.getElementById('modalEquipNum').value = '';
   document.getElementById('modalEquipDesc').value = '';
   document.getElementById('modalEquipMotorista').checked = false;
+  _atualizarEquipDescDatalist();
   abrirModal('modalEquip');
+}
+function _atualizarResumoObraNosDiario() {
+  const el = document.getElementById('hdrCidade');
+  if (!el) return;
+  const cidade = state.obra.local || '';
+  if (cidade) {
+    el.textContent = cidade;
+    el.style.display = '';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function _atualizarLocalObraDatalist() {
+  const dl = document.getElementById('localObraList');
+  if (!dl) return;
+  const hist = state.localObraHistorico || [];
+  dl.innerHTML = hist.map(l => `<option value="${escapeHtml(l)}">`).join('');
+}
+
+function _atualizarEquipDescDatalist() {
+  const dl = document.getElementById('equipDescSugestoes');
+  if (!dl) return;
+  const nomes = [...new Set(state.equipamentos.map(e => e.desc.trim()))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  dl.innerHTML = nomes.map(n => `<option value="${escapeHtml(n)}">`).join('');
 }
 function editarEquipamento(id) {
   const eq = state.equipamentos.find(e => e.id === id);
@@ -3462,6 +3818,7 @@ function editarEquipamento(id) {
   document.getElementById('modalEquipNum').value = eq.numero;
   document.getElementById('modalEquipDesc').value = eq.desc;
   document.getElementById('modalEquipMotorista').checked = !!eq.isMotorista;
+  _atualizarEquipDescDatalist();
   abrirModal('modalEquip');
 }
 function salvarEquipamento() {
@@ -3815,8 +4172,8 @@ function buildRelatorio(day) {
   txt += '\n\n';
   
   // Tempo
-  if (day.tempo || day.tempoVento) {
-    txt += `*🌤️ Condições do Tempo*\n• ${tempoLabel(day.tempo, day.tempoVento)}\n\n`;
+  if (day.tempoManha || day.tempoTarde) {
+    txt += `*🌤️ Condições do Tempo*\n• ${tempoLabel(day)}\n\n`;
     txt += `${divisor}\n\n`;
   }
   
@@ -3857,37 +4214,60 @@ function buildRelatorio(day) {
   }
   txt += `\n${divisor}\n\n`;
   
-  // Equipamentos
-  const equipsAtivos = state.equipamentos.filter(e => day.equipamentos[e.id] && day.equipamentos[e.id].ativo);
+  // Equipamentos (novo sistema: localStorage equipDia_data)
+  const savedEquip = S.get(`equipDia_${day.data}`) || {};
+  const equipsAtivos = state.equipamentos.filter(e => savedEquip[e.id]);
   if (equipsAtivos.length > 0) {
-    txt += `*🚜 Equipamentos Utilizados — ${equipsAtivos.length}*\n`;
+    const gruposEquip = {};
     equipsAtivos.forEach(e => {
-      const d = day.equipamentos[e.id];
-      let linha = `• ${e.numero} – ${e.desc}`;
-      if (d.operadorNome) {
-        linha += ` – ${d.operadorMat ? d.operadorMat + ' ' : ''}${d.operadorNome}`;
-      }
-      if (d.status && d.status !== 'Operando') linha += ` (${d.status})`;
-      if (d.horimetro) linha += ` — Hor.: ${d.horimetro}h`;
-      txt += linha + '\n';
+      const k = e.desc.trim();
+      if (!gruposEquip[k]) gruposEquip[k] = { desc: k, isMotorista: e.isMotorista, count: 0 };
+      gruposEquip[k].count++;
     });
-    // Veículos Leves
-    const vlAtivos = (day.veiculosLeves || []).filter(v => v.frotaId);
-    if (vlAtivos.length > 0) {
-      txt += `\n*🚗 Veículos Leves — ${vlAtivos.length}*\n`;
-      vlAtivos.forEach(v => {
-        const frota = (state.veiculosFrota || []).find(f => f.id === v.frotaId);
-        const desc = frota ? frota.desc : '—';
-        const placa = frota ? frota.placa : '';
-        let lv = `• ${desc}`;
-        if (placa) lv += ` (${placa})`;
-        if (v.motoristaNome) lv += ` — ${v.motoristaNome}`;
-        txt += lv + '\n';
-      });
-    }
+    const ordenadosEquip = Object.values(gruposEquip).sort((a, b) => a.desc.localeCompare(b.desc, 'pt-BR'));
+    txt += `*🚜 Equipamentos Utilizados — ${equipsAtivos.length}*\n`;
+    ordenadosEquip.forEach(g => {
+      txt += `• ${g.isMotorista ? '🚛' : '🚜'} ${g.desc} — ${g.count} un.\n`;
+    });
+    txt += `\n${divisor}\n\n`;
+  }
+
+  // Veículos Leves (novo sistema: localStorage vlDia_data)
+  const savedVL = S.get(`vlDia_${day.data}`) || {};
+  const vlAtivos = (state.veiculosFrota || []).filter(v => savedVL[v.id]);
+  if (vlAtivos.length > 0) {
+    const gruposVL = {};
+    vlAtivos.forEach(v => {
+      const k = v.desc.trim();
+      if (!gruposVL[k]) gruposVL[k] = { desc: k, count: 0 };
+      gruposVL[k].count++;
+    });
+    const ordenadosVL = Object.values(gruposVL).sort((a, b) => a.desc.localeCompare(b.desc, 'pt-BR'));
+    txt += `*🚗 Veículos Leves — ${vlAtivos.length}*\n`;
+    ordenadosVL.forEach(g => {
+      txt += `• ${g.desc} — ${g.count} un.\n`;
+    });
     txt += `\n${divisor}\n\n`;
   }
   
+  // Veículos/Equipamentos Parados
+  const savedEquipWA = S.get(`equipDia_${day.data}`) || {};
+  const equipsParadosWA = state.equipamentos.filter(e => !savedEquipWA[e.id]);
+  const vlParadosWA = (state.veiculosFrota || []).filter(v => !savedVL[v.id]);
+  if (equipsParadosWA.length > 0 || vlParadosWA.length > 0) {
+    const paradosDay = day.veiculosParados || {};
+    txt += `*🔴 Veículos/Equipamentos Parados*\n`;
+    equipsParadosWA.forEach(e => {
+      const just = paradosDay[e.id] ? ` — ${paradosDay[e.id]}` : ' — (sem justificativa)';
+      txt += `• ${e.isMotorista ? '🚛' : '🚜'} ${e.numero} – ${e.desc}${just}\n`;
+    });
+    vlParadosWA.forEach(v => {
+      const just = paradosDay[v.id] ? ` — ${paradosDay[v.id]}` : ' — (sem justificativa)';
+      txt += `• 🚗 ${v.desc}${v.placa ? ' ('+v.placa+')' : ''}${just}\n`;
+    });
+    txt += `\n${divisor}\n\n`;
+  }
+
   // Efetivo
   txt += `*📋 Efetivo – ${dataBR}*\n\n`;
   let total = 0;
@@ -3922,7 +4302,13 @@ function buildRelatorio(day) {
       if (ev.acao) txt += `   Ação: ${ev.acao}\n`;
     });
   }
-  
+
+  // Observações do Dia
+  if (day.observacoesDia && day.observacoesDia.trim()) {
+    txt += `\n${divisor}\n\n`;
+    txt += `*📝 Observações do Dia*\n${day.observacoesDia.trim()}\n`;
+  }
+
   return txt;
 }
 
@@ -4594,14 +4980,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Autosave local a cada 10 segundos
   setInterval(() => salvarDiarioDia(false), 10000);
-
-  // Autosave no Google Sheets a cada 30 segundos
-  setInterval(() => {
-    if (currentDay && currentDay.data) {
-      salvarDiarioGoogle(currentDay);
-    }
-  }, 30000);
 });
 </script>
+
+<nav class="bottom-nav">
+  <a class="bnav-btn" href="Checkin3.html"><span class="ni">✅</span>Check-in</a>
+  <a class="bnav-btn" href="pauta.html"><span class="ni">📋</span>Pauta</a>
+  <a class="bnav-btn" href="dashboard.html"><span class="ni">📊</span>Dashboard</a>
+  <a class="bnav-btn active"><span class="ni">📓</span>Diário</a>
+</nav>
 </body>
 </html>

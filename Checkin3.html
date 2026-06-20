@@ -192,6 +192,10 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   @page{margin:1cm;size:A4}
 }
 .print-header{display:none}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#2c2c2c;border-top:2px solid var(--accent,#d4541a);display:flex;z-index:200}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 10px;color:#8a8178;font-size:9px;font-family:var(--serif,'Arial Narrow',sans-serif);font-weight:700;letter-spacing:.5px;text-transform:uppercase;text-decoration:none;gap:3px;border:none;background:none;cursor:pointer}
+.bnav-btn .ni{font-size:20px;line-height:1}
+.bnav-btn.active{color:#e8a030}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -395,6 +399,12 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
 // 🔗 Google Apps Script API
 const APPS_SCRIPT_URL_PAUTA = 'https://script.google.com/macros/s/AKfycbwa_TMG_RFnsFPE1-Q-gmYN9nPAv6QLy4A5N5B_z8VNK31N7R_-J_rPJtkErhJMLfMzeA/exec';
 
+// ── XSS PROTECTION
+function escapeHtml(str){
+  if(str==null)return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 const S={
   get(k){try{return JSON.parse(localStorage.getItem('chk_'+k))}catch{return null}},
   set(k,v){localStorage.setItem('chk_'+k,JSON.stringify(v))}
@@ -462,7 +472,7 @@ async function carregarDaPlanilhaGoogle() {
         resp: p.responsável,
         setor: p.setor,
         prioridade: p.prioridade.toLowerCase().replace(' ', ''),
-        status: p.status === 'Aberta' ? 'afazer' : p.status === 'Em Andamento' ? 'fazendo' : 'concluido',
+        status: p.status === 'Aberta' ? 'afazer' : p.status === 'Em Andamento' ? 'fazendo' : p.status === 'Cancelado' ? 'cancelado' : 'concluido',
         dataLanc: p.data_lançamento ? String(p.data_lançamento).slice(0,10) : '',
         dataTerm: p.data_término ? String(p.data_término).slice(0,10) : '',
         criadoEm: new Date(p.criado_em).getTime()
@@ -515,7 +525,8 @@ function atualizarContadores(){
 
 function renderCheckin(){renderKanbanCheckin();atualizarContadores()}
 
-function priorCor(p){return p==='alta'?'badge-red':p==='media'?'badge-yellow':'badge-green'}
+function normPrior(p){return String(p||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function priorCor(p){const n=normPrior(p);return n==='alta'?'badge-red':n==='media'?'badge-yellow':'badge-green'}
 function setorCor(s){
   const m={
     'Segurança':'badge-orange','Planejamento':'badge-blue','Suprimentos':'badge-green',
@@ -572,22 +583,22 @@ function renderKanbanCheckin(){
           <span class="kol-count">${cards.length}</span>
         </div>
         ${cards.length?cards.map(a=>`
-          <div class="card" onclick="abrirAcoes('${a.id}')" style="cursor:pointer">
+          <div class="card" onclick="abrirAcoes('${escapeHtml(a.id)}')" style="cursor:pointer">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
-              <div class="card-title">${a.assunto}</div>
+              <div class="card-title">${escapeHtml(a.assunto)}</div>
               ${aging(a)}
             </div>
-            <div class="card-desc">${a.desc||''}</div>
+            <div class="card-desc">${escapeHtml(a.desc||'')}</div>
             <div class="card-meta">
-              <span class="badge ${priorCor(a.prioridade)}">${a.prioridade}</span>
-              ${a.setor?`<span class="badge ${setorCor(a.setor)}">${a.setor}</span>`:''}
+              <span class="badge ${priorCor(a.prioridade)}">${escapeHtml(a.prioridade)}</span>
+              ${a.setor?`<span class="badge ${setorCor(a.setor)}">${escapeHtml(a.setor)}</span>`:''}
             </div>
             <div class="card-dates">
               ${a.dataLanc?`📅 ${formatDate(a.dataLanc)}`:''}
               ${a.dataTerm?` → 🏁 ${formatDate(a.dataTerm)}`:''}
             </div>
             <div class="card-footer">
-              <span class="card-resp">👤 ${a.resp||'—'}${a.criador?' · ✍️ '+a.criador:''}</span>
+              <span class="card-resp">👤 ${escapeHtml(a.resp||'—')}${a.criador?' · ✍️ '+escapeHtml(a.criador):''}</span>
               <span class="badge ${statusBadge(a.status)}">${statusLabel(a.status)}</span>
             </div>
           </div>
@@ -681,22 +692,22 @@ function renderCadastro(){
     <div style="background:#fff;border-radius:8px;padding:11px 12px;margin-bottom:8px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(0,0,0,.06)">
       <div style="display:flex;align-items:flex-start;gap:8px">
         <div style="flex:1">
-          <div style="font-family:var(--serif);font-weight:700;font-size:15px;margin-bottom:4px">${a.assunto}</div>
+          <div style="font-family:var(--serif);font-weight:700;font-size:15px;margin-bottom:4px">${escapeHtml(a.assunto)}</div>
           <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px">
-            <span class="badge ${priorCor(a.prioridade)}">${a.prioridade}</span>
-            ${a.setor?`<span class="badge badge-blue">${a.setor}</span>`:''}
+            <span class="badge ${priorCor(a.prioridade)}">${escapeHtml(a.prioridade)}</span>
+            ${a.setor?`<span class="badge badge-blue">${escapeHtml(a.setor)}</span>`:''}
             <span class="badge ${statusBadge(a.status)}">${statusLabel(a.status)}</span>
           </div>
           <div style="font-size:11px;color:var(--ink-faint)">
             ${a.dataLanc?`📅 Lançamento: ${formatDate(a.dataLanc)}`:''}
             ${a.dataTerm?` &nbsp;|&nbsp; 🏁 Término: ${formatDate(a.dataTerm)}`:''}
           </div>
-          ${a.resp?`<div style="font-size:11px;color:var(--ink-soft);margin-top:2px">👤 Resp: ${a.resp}</div>`:''}
-          ${a.criador?`<div style="font-size:11px;color:var(--ink-faint);margin-top:1px">✍️ Criador: ${a.criador}</div>`:''}
+          ${a.resp?`<div style="font-size:11px;color:var(--ink-soft);margin-top:2px">👤 Resp: ${escapeHtml(a.resp)}</div>`:''}
+          ${a.criador?`<div style="font-size:11px;color:var(--ink-faint);margin-top:1px">✍️ Criador: ${escapeHtml(a.criador)}</div>`:''}
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0">
-          <button class="card-btn" onclick="editarAssunto('${a.id}')" title="Editar">✏️</button>
-          <button class="card-btn" onclick="removerAssunto('${a.id}')" title="Remover">🗑️</button>
+          <button class="card-btn" onclick="editarAssunto('${escapeHtml(a.id)}')" title="Editar">✏️</button>
+          <button class="card-btn" onclick="removerAssunto('${escapeHtml(a.id)}')" title="Remover">🗑️</button>
         </div>
       </div>
     </div>
@@ -876,19 +887,19 @@ function prepararImpressao(tipo){
       var prazoTxt=a.status==='concluido'?'Concluido':diasR===null?'':atrasado?(Math.abs(diasR)+'d atrasado'):(diasR+'d restante');
       return '<div class="card">'+
         '<div style="display:flex;justify-content:space-between">'+
-          '<div class="card-title">'+a.assunto+'</div>'+
-          (prazoTxt?'<span class="card-aging '+(atrasado?'alert':'')+'">'+prazoTxt+'</span>':'') +
+          '<div class="card-title">'+escapeHtml(a.assunto)+'</div>'+
+          (prazoTxt?'<span class="card-aging '+(atrasado?'alert':'')+'">'+escapeHtml(prazoTxt)+'</span>':'') +
         '</div>'+
-        (a.desc?'<div class="card-desc">'+a.desc+'</div>':'')+
+        (a.desc?'<div class="card-desc">'+escapeHtml(a.desc)+'</div>':'')+
         '<div class="card-meta">'+
           '<span class="badge '+statusBadge(a.status)+'">'+statusLabel(a.status)+'</span> '+
-          '<span class="badge '+priorCor(a.prioridade)+'">'+a.prioridade+'</span> '+
-          (a.setor?'<span class="badge '+setorCor(a.setor)+'">'+a.setor+'</span>':'')+
+          '<span class="badge '+priorCor(a.prioridade)+'">'+escapeHtml(a.prioridade)+'</span> '+
+          (a.setor?'<span class="badge '+setorCor(a.setor)+'">'+escapeHtml(a.setor)+'</span>':'')+
         '</div>'+
         (a.dataLanc||a.dataTerm?'<div class="card-dates">'+(a.dataLanc?'Lancamento: '+formatDate(a.dataLanc):'')+' '+(a.dataTerm?'Termino: '+formatDate(a.dataTerm):'')+'</div>':'')+
         '<div class="card-footer">'+
-          '<span class="card-resp">Resp: '+(a.resp||'—')+'</span>'+
-          (a.criador?'<span class="card-resp" style="margin-left:8px">Criador: '+a.criador+'</span>':'')+
+          '<span class="card-resp">Resp: '+escapeHtml(a.resp||'—')+'</span>'+
+          (a.criador?'<span class="card-resp" style="margin-left:8px">Criador: '+escapeHtml(a.criador)+'</span>':'')+
         '</div>'+
       '</div>';
     }).join(''):('<div class="drop-zone" style="display:none"></div>');
@@ -943,12 +954,12 @@ function renderCalendario(){
   }).sort((a,b)=>String(b.dataLanc).localeCompare(String(a.dataLanc)));
   lr.innerHTML=assuntosDoMes.length?assuntosDoMes.map(a=>`
     <div class="ultimas-item">
-      <div class="ultimas-data">${a.dataLanc||''}</div>
-      <div class="ultimas-titulo">${a.assunto}</div>
+      <div class="ultimas-data">${escapeHtml(a.dataLanc||'')}</div>
+      <div class="ultimas-titulo">${escapeHtml(a.assunto)}</div>
       <div class="ultimas-meta">
-        <span class="badge ${priorCor(a.prioridade)}">${a.prioridade}</span>
+        <span class="badge ${priorCor(a.prioridade)}">${escapeHtml(a.prioridade)}</span>
         <span class="badge ${statusBadge(a.status)}">${statusLabel(a.status)}</span>
-        ${a.setor?`<span class="badge ${setorCor(a.setor)}">${a.setor}</span>`:''}
+        ${a.setor?`<span class="badge ${setorCor(a.setor)}">${escapeHtml(a.setor)}</span>`:''}
       </div>
     </div>
   `).join(''):'<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-txt">Nenhum assunto neste mês</div></div>';
@@ -1010,7 +1021,7 @@ function renderResumo(){
         const diasRestantes=vence?Math.round((vence-hoje)/86400000):null;
         const atrasado=diasRestantes!==null&&diasRestantes<0&&a.status!=='concluido';
         return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)">
-          <span style="font-size:13px;font-weight:600;flex:1;padding-right:8px">${a.assunto}</span>
+          <span style="font-size:13px;font-weight:600;flex:1;padding-right:8px">${escapeHtml(a.assunto)}</span>
           <span class="badge ${a.status==='concluido'?'badge-green':atrasado?'badge-red':'badge-gray'}">${a.status==='concluido'?'✔ Concluído':diasRestantes===null?'—':atrasado?`${Math.abs(diasRestantes)}d atraso`:`${diasRestantes}d restante`}</span>
         </div>`;
       }).join(''):'<div class="empty-state"><div class="empty-state-txt">Sem dados</div></div>'}
@@ -1108,5 +1119,12 @@ initData();
 renderCheckin();
 carregarDaPlanilha();
 </script>
+
+<nav class="bottom-nav">
+  <a class="bnav-btn active"><span class="ni">✅</span>Check-in</a>
+  <a class="bnav-btn" href="pauta.html"><span class="ni">📋</span>Pauta</a>
+  <a class="bnav-btn" href="dashboard.html"><span class="ni">📊</span>Dashboard</a>
+  <a class="bnav-btn" href="diario-obras-v4.html"><span class="ni">📓</span>Diário</a>
+</nav>
 </body>
 </html>

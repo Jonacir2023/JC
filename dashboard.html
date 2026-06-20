@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2c2c2c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dashboard Obra">
+<title>Dashboard — Diário de Obras</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg:          #e8e4df;
+  --bg-card:     #f0ece7;
+  --bg-dark:     #2c2c2c;
+  --bg-mid:      #3d3935;
+  --ink:         #1c1a18;
+  --ink-soft:    #4a4540;
+  --ink-faint:   #8a8178;
+  --accent:      #d4541a;
+  --accent-soft: #e8a030;
+  --accent-dim:  rgba(212,84,26,0.12);
+  --line:        #ccc5bc;
+  --line-soft:   #dbd4cb;
+  --green:       #3a6b45;
+  --red:         #b83228;
+  --blue:        #2a4a72;
+  --yellow:      #e8a030;
+  --serif:       'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --sans:        'Barlow', -apple-system, sans-serif;
+  --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeBlend in='SourceGraphic' mode='multiply' result='blend'/%3E%3CfeComposite in='blend' in2='SourceGraphic' operator='in'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.5;
+  overscroll-behavior: none;
+  min-height: 100vh;
+}
+
+body {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+  background-color: var(--bg);
+  background-image: var(--texture), repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,0,0,0.03) 40px);
+}
+
+/* HEADER */
+.header {
+  background: var(--bg-dark);
+  background-image: var(--texture), linear-gradient(180deg, #363230 0%, #2c2c2c 100%);
+  color: #f0ece7;
+  padding: 14px 18px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.35);
+  border-bottom: 3px solid var(--accent);
+}
+.header-top { display: flex; justify-content: space-between; align-items: center; }
+.header-empresa { font-size: 10px; color: var(--accent-soft); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; font-family: var(--serif); }
+.header h1 { font-family: var(--serif); font-size: 22px; font-weight: 800; color: #f0ece7; letter-spacing: 1px; line-height: 1.1; }
+.header-sub { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+
+.btn-refresh {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+.btn-refresh:active { opacity: 0.8; }
+
+/* TABS */
+.tabs {
+  display: flex;
+  background: var(--bg-mid);
+  border-bottom: 2px solid var(--line);
+  overflow: hidden;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 6px;
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.15s;
+  line-height: 1.2;
+  text-align: center;
+}
+.tab-btn.active {
+  color: var(--accent-soft);
+  border-bottom-color: var(--accent);
+  background: rgba(255,255,255,0.06);
+}
+
+/* PAGES */
+.page { display: none; padding: 16px 14px; }
+.page.active { display: block; }
+
+/* SECTION HEADER */
+.section-hd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.section-hd h2 {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.section-hd .badge-count {
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+/* STAT ROW */
+.stat-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.stat-box {
+  flex: 1;
+  min-width: 70px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.stat-box .stat-val {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1;
+}
+.stat-box .stat-lbl {
+  font-size: 10px;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+.stat-box.red .stat-val { color: var(--red); }
+.stat-box.yellow .stat-val { color: var(--yellow); }
+.stat-box.green .stat-val { color: var(--green); }
+.stat-box.blue .stat-val { color: var(--blue); }
+
+/* PRIORIDADE GROUPS */
+.grupo-prioridade {
+  margin-bottom: 18px;
+}
+.grupo-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink-soft);
+  border-bottom: 2px solid var(--line-soft);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+.grupo-label .dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-alta  { background: var(--red); }
+.dot-media { background: var(--yellow); }
+.dot-baixa { background: var(--green); }
+.dot-azul  { background: var(--blue); }
+
+/* PROBLEMA CARD */
+.prob-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border-left: 4px solid var(--line);
+  position: relative;
+}
+.prob-card.alta  { border-left-color: var(--red); }
+.prob-card.media { border-left-color: var(--yellow); }
+.prob-card.baixa { border-left-color: var(--green); }
+.prob-card.atrasado { background: rgba(184,50,40,0.06); }
+
+.prob-assunto {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+.prob-desc {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.prob-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.prob-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-family: var(--serif);
+}
+.prob-tag.setor-tag {
+  background: rgba(42,74,114,0.12);
+  color: var(--blue);
+}
+.prob-tag.atrasado-tag {
+  background: rgba(184,50,40,0.14);
+  color: var(--red);
+}
+.prob-tag.resp-tag {
+  background: rgba(58,107,69,0.12);
+  color: var(--green);
+}
+.prob-prazo {
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin-left: auto;
+}
+.prob-prazo.late { color: var(--red); font-weight: 700; }
+
+/* FRENTE CARD */
+.frente-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 14px 12px;
+  margin-bottom: 10px;
+  border-left: 4px solid var(--blue);
+}
+.frente-nome {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+.frente-obra {
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin-bottom: 8px;
+}
+.frente-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+.frente-stat { text-align: center; flex: 1; }
+.frente-stat .val {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  display: block;
+}
+.frente-stat .lbl {
+  font-size: 9px;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.frente-entries { margin-top: 8px; }
+.entry-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.entry-row:last-child { border-bottom: none; }
+.entry-data {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  min-width: 58px;
+}
+.entry-ativ {
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.4;
+  flex: 1;
+}
+.entry-ef {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+  margin-left: 4px;
+}
+
+/* EQUIP PARADO TAG */
+.parado-tag {
+  display: inline-block;
+  font-size: 11px;
+  background: rgba(184,50,40,0.1);
+  color: var(--red);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-weight: 600;
+  margin: 2px 2px 0 0;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ink-faint);
+}
+.empty-icon { font-size: 40px; margin-bottom: 10px; }
+.empty-txt { font-size: 14px; }
+
+/* LOADING */
+.loading-overlay {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ink-faint);
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.spinner {
+  display: inline-block;
+  width: 28px; height: 28px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* NOTIF */
+.notif {
+  position: fixed;
+  bottom: 90px;
+  left: 50%; transform: translateX(-50%);
+  background: var(--green);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 999;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+.notif.show { opacity: 1; }
+
+/* MÊS SELECTOR */
+.mes-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.mes-selector label {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.mes-selector input[type="month"] {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink);
+  -webkit-appearance: none;
+}
+.mes-btn {
+  background: var(--bg-dark);
+  color: var(--accent-soft);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* SEGURANÇA card */
+.seg-card {
+  background: rgba(184,50,40,0.06);
+  border: 1px solid rgba(184,50,40,0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.seg-title {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.seg-body { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
+.seg-data { font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
+
+/* BOTTOM NAV */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: var(--bg-dark);
+  border-top: 2px solid var(--accent);
+  display: flex;
+  z-index: 200;
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px 10px;
+  color: var(--ink-faint);
+  font-size: 9px;
+  font-family: var(--serif);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  gap: 3px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.nav-btn .nav-icon { font-size: 20px; line-height: 1; }
+.nav-btn.active { color: var(--accent-soft); }
+
+/* FOLD toggle */
+.fold-toggle {
+  text-align: center;
+  padding: 6px;
+  color: var(--ink-faint);
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+.fold-toggle:active { opacity: 0.6; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-empresa" id="hd-obra">Dashboard</div>
+      <h1>📊 PAINEL DE OBRAS</h1>
+      <div class="header-sub" id="hd-sub">Carregando...</div>
+    </div>
+    <button class="btn-refresh" onclick="carregarTudo()">
+      <span>↺</span> Atualizar
+    </button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="goTab('problemas',this)">⚠️ Problemas<br>p/ Apoio</button>
+  <button class="tab-btn" onclick="goTab('frentes',this)">🏗️ Frentes de<br>Trabalho</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 1 — PROBLEMAS QUE PRECISAM DE APOIO
+     ═══════════════════════════════════════════════ -->
+<div class="page active" id="page-problemas">
+  <div id="prob-loading" class="loading-overlay">
+    <div class="spinner"></div><br>Carregando...
+  </div>
+  <div id="prob-content" style="display:none">
+    <!-- Stats -->
+    <div class="stat-row" id="prob-stats"></div>
+    <!-- Grupos por prioridade -->
+    <div id="prob-grupos"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 2 — FRENTES DE TRABALHO
+     ═══════════════════════════════════════════════ -->
+<div class="page" id="page-frentes">
+  <div class="mes-selector">
+    <label>📅 Mês</label>
+    <input type="month" id="mes-input" onchange="carregarFrente()">
+    <button class="mes-btn" onclick="carregarFrente()">VER</button>
+  </div>
+  <div id="fren-loading" class="loading-overlay" style="display:none">
+    <div class="spinner"></div><br>Carregando...
+  </div>
+  <div id="fren-content">
+    <!-- Stats -->
+    <div class="stat-row" id="fren-stats"></div>
+    <!-- Eventos de segurança -->
+    <div id="fren-seguranca"></div>
+    <!-- Frentes -->
+    <div id="fren-grupos"></div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<div class="bottom-nav">
+  <a class="nav-btn" href="Checkin3.html">
+    <span class="nav-icon">✅</span>Check-in
+  </a>
+  <a class="nav-btn" href="pauta.html">
+    <span class="nav-icon">📋</span>Pauta
+  </a>
+  <button class="nav-btn active">
+    <span class="nav-icon">📊</span>Dashboard
+  </button>
+  <a class="nav-btn" href="diario-obras-v4.html">
+    <span class="nav-icon">📓</span>Diário
+  </a>
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwa_TMG_RFnsFPE1-Q-gmYN9nPAv6QLy4A5N5B_z8VNK31N7R_-J_rPJtkErhJMLfMzeA/exec';
+
+function esc(s){ if(s==null)return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function notify(msg, cor){
+  const n=document.getElementById('notif');
+  n.textContent=msg; n.style.background=cor||'#3a6b45';
+  n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),2800);
+}
+
+function goTab(id, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── Hoje
+const hoje = new Date();
+const hojeStr = hoje.toISOString().slice(0,10);
+
+// ── Inicializa mês atual
+function initMes(){
+  const m = hoje.toISOString().slice(0,7);
+  document.getElementById('mes-input').value = m;
+  document.getElementById('hd-sub').textContent = 'Atualizado: ' + hoje.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+
+// ── Format date dd/mm
+function fmtData(s){
+  if(!s) return '—';
+  const d = String(s).slice(0,10);
+  if(d.includes('-')){ const [y,m,dd]=d.split('-'); return `${dd}/${m}`; }
+  return d.slice(0,5);
+}
+
+function diasAtraso(dateStr){
+  if(!dateStr) return 0;
+  const t = new Date(dateStr+'T00:00:00');
+  return Math.floor((hoje - t) / 86400000);
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD 1 — PROBLEMAS QUE PRECISAM DE APOIO
+// ═══════════════════════════════════════════════════════
+
+async function carregarProblemas(){
+  document.getElementById('prob-loading').style.display='block';
+  document.getElementById('prob-content').style.display='none';
+  try {
+    const resp = await fetch(GAS_URL + '?path=pauta&action=listar');
+    const data = await resp.json();
+    renderProblemas(data.pautas || []);
+  } catch(e){
+    document.getElementById('prob-loading').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-txt">Erro ao carregar. Verifique a conexão.</div></div>';
+    notify('Erro ao carregar problemas','#b83228');
+  }
+}
+
+function renderProblemas(pautas){
+  // Filtra apenas os ativos (exclui concluído e cancelado)
+  const ativos = pautas.filter(p => {
+    const s = (p.status||p['status']||'').toLowerCase();
+    return s !== 'concluído' && s !== 'concluido' && s !== 'cancelado';
+  });
+
+  // Normaliza prioridade
+  const normPrior = p => {
+    const v = (p.prioridade||p['prioridade']||'').toLowerCase().trim();
+    if(v.includes('alta')) return 'alta';
+    if(v.includes('média')||v.includes('media')) return 'media';
+    return 'baixa';
+  };
+
+  const atrasados = ativos.filter(p => {
+    const term = p.previsao_termino || p['data_término'] || p.data_termino || '';
+    return term && String(term).slice(0,10) < hojeStr;
+  });
+
+  const emAndamento = ativos.filter(p => {
+    const s = (p.status||'').toLowerCase();
+    return s.includes('andamento') || s.includes('andamento');
+  });
+
+  // Stats
+  document.getElementById('prob-stats').innerHTML = `
+    <div class="stat-box red">
+      <div class="stat-val">${atrasados.length}</div>
+      <div class="stat-lbl">Atrasados</div>
+    </div>
+    <div class="stat-box yellow">
+      <div class="stat-val">${ativos.length}</div>
+      <div class="stat-lbl">Em Aberto</div>
+    </div>
+    <div class="stat-box blue">
+      <div class="stat-val">${emAndamento.length}</div>
+      <div class="stat-lbl">Em Andamento</div>
+    </div>
+    <div class="stat-box green">
+      <div class="stat-val">${pautas.length - ativos.length}</div>
+      <div class="stat-lbl">Concluídos</div>
+    </div>
+  `;
+
+  // Agrupa por prioridade
+  const grupos = {
+    alta:  ativos.filter(p => normPrior(p)==='alta'),
+    media: ativos.filter(p => normPrior(p)==='media'),
+    baixa: ativos.filter(p => normPrior(p)==='baixa'),
+  };
+
+  let html = '';
+
+  const renderGrupo = (label, emoji, dotClass, items) => {
+    if(!items.length) return '';
+    let cards = '';
+    items.forEach(p => {
+      const termStr = p.previsao_termino || p['data_término'] || p.data_termino || '';
+      const term = String(termStr).slice(0,10);
+      const atrasado = term && term < hojeStr;
+      const dias = atrasado ? diasAtraso(term) : 0;
+      const resp = p.responsavel || p['responsável'] || '';
+      const setor = p.setor || '';
+      const desc = p.descricao || p['descrição'] || p.descricao || '';
+      const status = p.status || '';
+      const prior = normPrior(p);
+      cards += `
+        <div class="prob-card ${prior} ${atrasado?'atrasado':''}">
+          <div class="prob-assunto">${esc(p.assunto)}</div>
+          ${desc ? `<div class="prob-desc">${esc(desc)}</div>` : ''}
+          <div class="prob-meta">
+            ${setor ? `<span class="prob-tag setor-tag">🏭 ${esc(setor)}</span>` : ''}
+            ${resp  ? `<span class="prob-tag resp-tag">👤 ${esc(resp)}</span>` : ''}
+            ${atrasado ? `<span class="prob-tag atrasado-tag">⏰ ${dias}d atraso</span>` : ''}
+            <span class="prob-prazo ${atrasado?'late':''}">Prazo: ${fmtData(term)||'—'}</span>
+          </div>
+        </div>`;
+    });
+    return `
+      <div class="grupo-prioridade">
+        <div class="grupo-label">
+          <span class="dot ${dotClass}"></span>
+          ${emoji} ${label} (${items.length})
+        </div>
+        ${cards}
+      </div>`;
+  };
+
+  html += renderGrupo('Alta Prioridade',   '🔴', 'dot-alta',  grupos.alta);
+  html += renderGrupo('Média Prioridade',  '🟡', 'dot-media', grupos.media);
+  html += renderGrupo('Baixa Prioridade',  '🟢', 'dot-baixa', grupos.baixa);
+
+  if(!ativos.length){
+    html = '<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-txt">Nenhum problema em aberto!</div></div>';
+  }
+
+  document.getElementById('prob-grupos').innerHTML = html;
+  document.getElementById('prob-loading').style.display='none';
+  document.getElementById('prob-content').style.display='block';
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD 2 — FRENTES DE TRABALHO
+// ═══════════════════════════════════════════════════════
+
+async function carregarFrente(){
+  const mes = document.getElementById('mes-input').value;
+  if(!mes) return;
+  document.getElementById('fren-loading').style.display='block';
+  document.getElementById('fren-content').style.display='none';
+  try {
+    const resp = await fetch(`${GAS_URL}?path=diario&action=lista-mes&mes=${mes}`);
+    const data = await resp.json();
+    renderFrente(data.diarios || []);
+  } catch(e){
+    document.getElementById('fren-loading').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-txt">Erro ao carregar. Verifique a conexão.</div></div>';
+    notify('Erro ao carregar diários','#b83228');
+  }
+}
+
+function renderFrente(diarios){
+  if(!diarios.length){
+    document.getElementById('fren-stats').innerHTML='';
+    document.getElementById('fren-seguranca').innerHTML='';
+    document.getElementById('fren-grupos').innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-txt">Nenhum diário registrado neste mês.</div></div>';
+    document.getElementById('fren-loading').style.display='none';
+    document.getElementById('fren-content').style.display='block';
+    return;
+  }
+
+  // Mapeia chaves do sheet (pode ser header string ou campo normalizado)
+  const get = (d, ...keys) => {
+    for(const k of keys){ if(d[k]!=null && d[k]!==''){ return d[k]; } }
+    return '';
+  };
+
+  // Efetivo total do mês
+  let efetivoTotal = 0;
+  const obrasSet = new Set();
+  const eventosSeguranca = [];
+
+  diarios.forEach(d => {
+    const ef = parseInt(get(d,'Efetivo Total','efetivoTotal','N') || 0);
+    if(!isNaN(ef)) efetivoTotal += ef;
+    const obra = get(d,'Obra','obra','C');
+    if(obra) obrasSet.add(obra);
+    const evSeg = get(d,'Eventos de Segurança','eventosSeguranca','T');
+    if(evSeg && String(evSeg).trim()){
+      eventosSeguranca.push({ data: get(d,'Data','data','A'), obra, txt: String(evSeg) });
+    }
+  });
+
+  // Stats globais
+  document.getElementById('fren-stats').innerHTML = `
+    <div class="stat-box blue">
+      <div class="stat-val">${diarios.length}</div>
+      <div class="stat-lbl">Diários</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">${efetivoTotal}</div>
+      <div class="stat-lbl">H/H Total</div>
+    </div>
+    <div class="stat-box green">
+      <div class="stat-val">${obrasSet.size}</div>
+      <div class="stat-lbl">Obras</div>
+    </div>
+    <div class="stat-box ${eventosSeguranca.length?'red':'green'}">
+      <div class="stat-val">${eventosSeguranca.length}</div>
+      <div class="stat-lbl">Eventos Seg.</div>
+    </div>
+  `;
+
+  // Eventos de segurança
+  let segHtml = '';
+  if(eventosSeguranca.length){
+    segHtml = `
+      <div class="grupo-label" style="margin-bottom:8px">
+        <span class="dot dot-alta"></span> 🚨 Eventos de Segurança (${eventosSeguranca.length})
+      </div>`;
+    eventosSeguranca.forEach(ev => {
+      segHtml += `
+        <div class="seg-card">
+          <div class="seg-title">⚠️ ${esc(ev.obra)}</div>
+          <div class="seg-body">${esc(ev.txt)}</div>
+          <div class="seg-data">📅 ${fmtData(ev.data)}</div>
+        </div>`;
+    });
+    segHtml += '<div style="margin-bottom:16px"></div>';
+  }
+  document.getElementById('fren-seguranca').innerHTML = segHtml;
+
+  // Agrupa por Local da Obra (col F)
+  const mapFrente = {};
+  diarios.forEach(d => {
+    const local  = get(d,'Local da Obra','localObra','F') || get(d,'Obra','obra','C') || '(sem local)';
+    const obra   = get(d,'Obra','obra','C');
+    const data   = get(d,'Data','data','A');
+    const ativ   = get(d,'Atividades do Dia','atividades','M');
+    const ef     = parseInt(get(d,'Efetivo Total','efetivoTotal','N') || 0);
+    const parados = get(d,'Veículos/Equip. Parados','veiculosParados','S');
+    const descLocal = get(d,'Descrição do Local','descricaoLocal','G');
+
+    if(!mapFrente[local]) mapFrente[local] = { obra, entradas: [], totalEf: 0, diasTrab: 0, parados: new Set() };
+    mapFrente[local].totalEf += isNaN(ef) ? 0 : ef;
+    mapFrente[local].diasTrab++;
+    if(parados) String(parados).split(/[,;\n]+/).map(s=>s.trim()).filter(Boolean).forEach(s=>mapFrente[local].parados.add(s));
+    mapFrente[local].entradas.push({ data, ativ, ef, descLocal });
+  });
+
+  // Ordena entradas de cada frente por data desc
+  Object.values(mapFrente).forEach(f => {
+    f.entradas.sort((a,b) => String(b.data).localeCompare(String(a.data)));
+  });
+
+  // Ordena frentes por qtd de dias trabalhados desc
+  const frentesSorted = Object.entries(mapFrente).sort((a,b)=>b[1].diasTrab - a[1].diasTrab);
+
+  let frenHtml = '';
+  if(!frentesSorted.length){
+    frenHtml = '<div class="empty-state"><div class="empty-icon">🏗️</div><div class="empty-txt">Nenhuma frente registrada.</div></div>';
+  } else {
+    frenHtml += `<div class="grupo-label" style="margin-bottom:10px"><span class="dot dot-azul"></span> 🏗️ Frentes de Trabalho (${frentesSorted.length})</div>`;
+    frentesSorted.forEach(([local, f]) => {
+      // Entradas (mostra até 5, com toggle)
+      const maxVis = 3;
+      const entradasHtml = f.entradas.slice(0, maxVis).map(e => `
+        <div class="entry-row">
+          <span class="entry-data">${fmtData(e.data)}</span>
+          <span class="entry-ativ">${esc(e.ativ || e.descLocal || '—')}</span>
+          ${e.ef ? `<span class="entry-ef">${e.ef} H</span>` : ''}
+        </div>`).join('');
+
+      const mais = f.entradas.length > maxVis ? `
+        <div class="fold-toggle" onclick="toggleEntradas(this)" data-local="${esc(local)}">
+          ▼ ver mais ${f.entradas.length - maxVis} registros
+        </div>
+        <div class="entradas-extra" style="display:none">
+          ${f.entradas.slice(maxVis).map(e=>`
+            <div class="entry-row">
+              <span class="entry-data">${fmtData(e.data)}</span>
+              <span class="entry-ativ">${esc(e.ativ || e.descLocal || '—')}</span>
+              ${e.ef ? `<span class="entry-ef">${e.ef} H</span>` : ''}
+            </div>`).join('')}
+        </div>` : '';
+
+      const paradosHtml = f.parados.size ? `
+        <div style="margin-top:8px;border-top:1px solid var(--line-soft);padding-top:8px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--red);letter-spacing:0.5px;margin-bottom:4px">⛔ Parados</div>
+          ${[...f.parados].map(p=>`<span class="parado-tag">${esc(p)}</span>`).join('')}
+        </div>` : '';
+
+      frenHtml += `
+        <div class="frente-card">
+          <div class="frente-nome">${esc(local)}</div>
+          ${f.obra ? `<div class="frente-obra">📍 ${esc(f.obra)}</div>` : ''}
+          <div class="frente-stats">
+            <div class="frente-stat">
+              <span class="val">${f.diasTrab}</span>
+              <span class="lbl">Dias<br>Trabalhados</span>
+            </div>
+            <div class="frente-stat">
+              <span class="val">${f.totalEf}</span>
+              <span class="lbl">H/H<br>Total</span>
+            </div>
+            <div class="frente-stat">
+              <span class="val">${f.parados.size||'—'}</span>
+              <span class="lbl">Equip.<br>Parados</span>
+            </div>
+          </div>
+          <div class="frente-entries">
+            ${entradasHtml}
+            ${mais}
+          </div>
+          ${paradosHtml}
+        </div>`;
+    });
+  }
+  document.getElementById('fren-grupos').innerHTML = frenHtml;
+  document.getElementById('fren-loading').style.display='none';
+  document.getElementById('fren-content').style.display='block';
+}
+
+function toggleEntradas(el){
+  const extra = el.nextElementSibling;
+  if(!extra) return;
+  if(extra.style.display==='none'){
+    extra.style.display='block';
+    el.textContent='▲ recolher';
+  } else {
+    extra.style.display='none';
+    const cnt = extra.querySelectorAll('.entry-row').length;
+    el.textContent=`▼ ver mais ${cnt} registros`;
+  }
+}
+
+async function carregarTudo(){
+  await carregarProblemas();
+  await carregarFrente();
+  notify('✅ Dados atualizados!');
+}
+
+// INIT
+initMes();
+carregarTudo();
+</script>
+</body>
+</html>
