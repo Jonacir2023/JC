@@ -362,11 +362,16 @@ def sync_sheet(state, sheet_name, state_key, make_fn):
 # ── Loop principal ─────────────────────────────────────────────────────────────
 
 def main():
+    import argparse as _ap
+    parser = _ap.ArgumentParser()
+    parser.add_argument("--once", action="store_true", help="Roda uma vez e sai (para GitHub Actions)")
+    args = parser.parse_args()
+
     print("=" * 60)
     print("Sincronização Google Sheets → Obsidian")
     print(f"  Planilha : {SHEETS_ID}")
     print(f"  Repo     : {GITHUB_REPO} ({GITHUB_BRANCH})")
-    print(f"  Intervalo: {INTERVAL}s")
+    print(f"  Modo     : {'único' if args.once else f'loop {INTERVAL}s'}")
     print("=" * 60)
 
     while True:
@@ -377,12 +382,17 @@ def main():
             state = sync_sheet(state, "Checkins",        "checkin_last_row", make_checkin_md)
             save_state(state)
             ts = datetime.now().strftime("%H:%M:%S")
+            if args.once:
+                print(f"[{ts}] Sincronização concluída.")
+                break
             print(f"[{ts}] Próxima verificação em {INTERVAL}s\n")
         except KeyboardInterrupt:
             print("\nSincronização encerrada.")
             break
         except Exception as e:
             print(f"[ERRO GERAL] {e}")
+        if args.once:
+            break
         time.sleep(INTERVAL)
 
 
