@@ -10,7 +10,7 @@ prioridade: "Alta"
 data_lancamento: "2026-06-16"
 previsao_termino: "2026-06-19"
 status: "Aberta"
-criado_em: "2026-06-26T20:37:47.595074"
+criado_em: "2026-06-26T21:46:14.778363"
 tags: [pauta, gestão, alta]
 ---
 
@@ -27,4 +27,4 @@ t9
 
 ## Histórico
 
-- 26/06/2026, 20:37:47 — Status: "Aberta"
+- 26/06/2026, 21:46:14 — Status: "Aberta"
