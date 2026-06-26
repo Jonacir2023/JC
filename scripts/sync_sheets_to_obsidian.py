@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 """
 sync_sheets_to_obsidian.py
-Monitora Google Sheets e sincroniza entradas novas como arquivos .md no vault Obsidian via GitHub.
+Monitora Google Sheets (planilha real do JC) e sincroniza entradas novas
+como arquivos .md no vault Obsidian via GitHub API.
 
 Uso:
-    GITHUB_PAT=<token> SHEETS_ID=<id> python scripts/sync_sheets_to_obsidian.py
+    export GITHUB_PAT=ghp_...
+    python scripts/sync_sheets_to_obsidian.py
 
 Dependências:
     pip install requests
 
-Configuração Google Sheets:
-    A planilha deve estar compartilhada como "qualquer pessoa com o link pode ver".
-    Acesse a planilha → Compartilhar → Alterar para "Qualquer pessoa com o link" (Visualizador).
+Pré-requisito Google Sheets:
+    Compartilhar planilha como "Qualquer pessoa com o link pode ver".
 """
 
 import os
 import re
+import csv
+import io
 import json
 import time
 import base64
@@ -24,27 +27,22 @@ import requests
 from datetime import datetime
 
 # ── Configurações ──────────────────────────────────────────────────────────────
-GITHUB_PAT   = os.environ["GITHUB_PAT"]  # export GITHUB_PAT=ghp_...
-GITHUB_REPO  = "jonacir2023/jc"
+GITHUB_PAT    = os.environ["GITHUB_PAT"]
+GITHUB_REPO   = "jonacir2023/jc"
 GITHUB_BRANCH = "main"
-SHEETS_ID    = os.getenv("SHEETS_ID", "18w5MaxMaC3ZbUwEHrfywlskht77MeguE")
-INTERVAL     = 60  # segundos entre verificações
+SHEETS_ID     = os.getenv("SHEETS_ID", "19fTP_qyxv1QiLdxBz3jbvTb46DKedrkApEVExmSxKEM")
+INTERVAL      = 60  # segundos
 
-# Arquivo local que rastreia quais linhas já foram sincronizadas
 STATE_FILE = os.path.join(os.path.dirname(__file__), ".sync_state.json")
-
 GITHUB_API = "https://api.github.com"
-SHEETS_API = f"https://sheets.googleapis.com/v4/spreadsheets/{SHEETS_ID}/values"
 
-# ── Helpers ────────────────────────────────────────────────────────────────────
+# ── Utilitários ────────────────────────────────────────────────────────────────
 
 def slugify(text: str) -> str:
-    """Converte texto para kebab-case sem acentos."""
     text = unicodedata.normalize("NFKD", str(text))
     text = text.encode("ascii", "ignore").decode("ascii")
     text = re.sub(r"[^\w\s-]", "", text).strip().lower()
-    text = re.sub(r"[\s_]+", "-", text)
-    return text
+    return re.sub(r"[\s_]+", "-", text)
 
 
 def load_state() -> dict:
@@ -59,44 +57,33 @@ def save_state(state: dict):
         json.dump(state, f, indent=2)
 
 
-def sheets_get(range_name: str) -> list[list]:
-    """Lê um intervalo da planilha (requer planilha pública ou API key)."""
-    url = f"{SHEETS_API}/{requests.utils.quote(range_name)}"
-    params = {"key": os.getenv("GOOGLE_API_KEY", "")}
-    # Se não há API key, tenta acesso público (sem autenticação)
-    resp = requests.get(url, params=params if params["key"] else {})
-    if resp.status_code == 200:
-        return resp.json().get("values", [])
-    # Fallback: exportar como CSV
-    csv_url = f"https://docs.google.com/spreadsheets/d/{SHEETS_ID}/gviz/tq?tqx=out:csv&sheet={requests.utils.quote(range_name)}"
-    resp = requests.get(csv_url)
+def sheets_csv(sheet_name: str) -> list:
+    """Exporta aba como CSV via URL pública."""
+    url = (
+        f"https://docs.google.com/spreadsheets/d/{SHEETS_ID}"
+        f"/gviz/tq?tqx=out:csv&sheet={requests.utils.quote(sheet_name)}"
+    )
+    resp = requests.get(url, timeout=15)
     if resp.status_code != 200:
-        print(f"[ERRO] Não foi possível ler a aba '{range_name}': {resp.status_code}")
+        print(f"  [ERRO] Aba '{sheet_name}': HTTP {resp.status_code}")
         return []
-    rows = []
-    import csv, io
     reader = csv.reader(io.StringIO(resp.text))
-    for row in reader:
-        rows.append(row)
-    return rows
+    return list(reader)
 
 
-def github_get_file(path: str) -> tuple[str | None, str | None]:
-    """Retorna (conteúdo, sha) de um arquivo no GitHub, ou (None, None) se não existe."""
+def github_get_sha(path: str):
     url = f"{GITHUB_API}/repos/{GITHUB_REPO}/contents/{path}"
     headers = {"Authorization": f"Bearer {GITHUB_PAT}", "Accept": "application/vnd.github+json"}
     resp = requests.get(url, headers=headers, params={"ref": GITHUB_BRANCH})
     if resp.status_code == 200:
-        data = resp.json()
-        content = base64.b64decode(data["content"]).decode("utf-8")
-        return content, data["sha"]
-    return None, None
+        return resp.json().get("sha")
+    return None
 
 
-def github_put_file(path: str, content: str, message: str, sha: str | None = None):
-    """Cria ou atualiza um arquivo no GitHub."""
+def github_put(path: str, content: str, message: str):
     url = f"{GITHUB_API}/repos/{GITHUB_REPO}/contents/{path}"
     headers = {"Authorization": f"Bearer {GITHUB_PAT}", "Accept": "application/vnd.github+json"}
+    sha = github_get_sha(path)
     payload = {
         "message": message,
         "content": base64.b64encode(content.encode("utf-8")).decode("ascii"),
@@ -108,95 +95,148 @@ def github_put_file(path: str, content: str, message: str, sha: str | None = Non
     if resp.status_code in (200, 201):
         print(f"  ✅ {path}")
     else:
-        print(f"  ❌ {path} — {resp.status_code}: {resp.text[:200]}")
+        print(f"  ❌ {path} — {resp.status_code}: {resp.text[:300]}")
 
 
-# ── Geradores de Markdown ──────────────────────────────────────────────────────
+# ── Gerador: Diário de Obras ───────────────────────────────────────────────────
 
-def make_diario_md(row: list, headers: list) -> tuple[str, str, str]:
-    """Gera (path, filename, conteúdo md) para uma linha do Diário de Obras."""
-    def get(col):
+def make_diario_md(row, headers):
+    def g(col):
         try:
-            idx = headers.index(col)
-            return row[idx] if idx < len(row) else ""
+            i = headers.index(col)
+            return row[i].strip() if i < len(row) else ""
         except ValueError:
             return ""
 
-    data         = get("Data") or datetime.now().strftime("%Y-%m-%d")
-    setor        = get("Setor") or "Geral"
-    descricao    = get("Descrição das Atividades") or ""
-    responsavel  = get("Responsável") or ""
-    clima        = get("Clima") or ""
-    efetivo      = get("Efetivo (pessoas)") or "0"
-    ocorrencias  = get("Ocorrências") or ""
+    data       = g("Data") or datetime.now().strftime("%Y-%m-%d")
+    dia_sem    = g("Dia da Semana")
+    obra       = g("Obra") or "obra"
+    empresa    = g("Empresa")
+    cidade     = g("Cidade")
+    local_     = g("Local")
+    descricao  = g("Descrição")
+    clima      = g("Tempo / Clima")
+    jornada    = g("Jornada")
+    dss_hora   = g("DSS — Horário")
+    dss_min    = g("DSS — Ministrado Por")
+    dss_tema   = g("DSS — Tema")
+    atividades = g("Atividades do Dia")
+    ef_total   = g("Efetivo Total")
+    ef_funcao  = g("Efetivo por Função")
+    colabor    = g("Colaboradores Presentes")
+    equip      = g("Equipamentos Utilizados")
+    veiculos   = g("Veículos Leves")
+    parados    = g("Equipamentos e Veiculos parados")
+    ev_seg     = g("Eventos de Segurança")
+    ev_meio    = g("Eventos de Meio Ambiente")
+    obs        = g("Observações do Dia")
+    apontador  = g("Apontador")
 
-    obra_slug = slugify(setor)
-    filename  = f"DIARIO-{data}-{obra_slug}.md"
-    path      = f"vault/Diário/{filename}"
+    slug = f"{data}-{slugify(obra or 'obra')}"
+    path = f"vault/Diário/DIARIO-{slug}.md"
+    now  = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
 
-    conteudo = f"""---
+    md = f"""---
 data: "{data}"
-setor: "{setor}"
-responsavel: "{responsavel}"
+dia_semana: "{dia_sem}"
+obra: "{obra}"
+empresa: "{empresa}"
+cidade: "{cidade}"
+local: "{local_}"
 clima: "{clima}"
-efetivo: {efetivo}
+efetivo_total: "{ef_total}"
+apontador: "{apontador}"
 status: "Aberto"
 criado_em: "{datetime.now().isoformat()}"
 tags: [diário, obras]
 ---
 
-# Diário de Obras — {data}
+# Diário de Obras — {data} ({dia_sem})
 
-**Setor:** {setor}
-**Responsável:** {responsavel}
+**Obra:** {obra} | **Empresa:** {empresa}
+**Cidade:** {cidade} | **Local:** {local_}
 **Clima:** {clima}
-**Efetivo:** {efetivo} pessoas
+**Jornada:** {jornada}
 
-## Atividades
+## DSS — Diálogo de Segurança
+
+| Campo | Valor |
+|---|---|
+| Horário | {dss_hora} |
+| Ministrado por | {dss_min} |
+| Tema | {dss_tema} |
+
+## Descrição do Dia
 
 {descricao}
 
-## Ocorrências
+## Atividades do Dia
 
-{ocorrencias or "Nenhuma"}
+{atividades}
+
+## Efetivo
+
+**Total:** {ef_total} pessoas
+
+**Por Função:**
+{ef_funcao}
+
+**Colaboradores Presentes:**
+{colabor}
+
+## Equipamentos e Veículos
+
+**Equipamentos:** {equip}
+**Veículos Leves:** {veiculos}
+**Parados/Indisponíveis:** {parados}
+
+## Eventos
+
+**Segurança:** {ev_seg or "Nenhum"}
+**Meio Ambiente:** {ev_meio or "Nenhum"}
+
+## Observações
+
+{obs or "—"}
+
+**Apontador:** {apontador}
 
 ## Histórico
 
-- {datetime.now().strftime("%d/%m/%Y, %H:%M:%S")} — Criado via sincronização automática
+- {now} — Criado via sincronização automática
 """
-    commit_msg = f"diário: adiciona {setor} ({data})"
-    return path, commit_msg, conteudo
+    commit = f"diário: adiciona {obra} ({data})"
+    return path, commit, md
 
 
-def make_tarefa_md(row: list, headers: list, tipo: str = "Tarefa") -> tuple[str, str, str]:
-    """Gera (path, commit_msg, conteúdo md) para Tarefa/Checkin/Pauta."""
-    def get(col):
+# ── Gerador: Pauta ────────────────────────────────────────────────────────────
+
+def make_pauta_md(row, headers):
+    def g(col):
         try:
-            idx = headers.index(col)
-            return row[idx] if idx < len(row) else ""
+            i = headers.index(col)
+            return row[i].strip() if i < len(row) else ""
         except ValueError:
             return ""
 
-    tid         = get("ID") or get("Id") or "000"
-    assunto     = get("Assunto") or get("Título") or "Sem título"
-    descricao   = get("Descrição") or ""
-    criador     = get("Criador") or ""
-    responsavel = get("Responsável") or ""
-    setor       = get("Setor") or ""
-    prioridade  = get("Prioridade") or "Média"
-    data_lanc   = get("Data") or datetime.now().strftime("%Y-%m-%d")
-    previsao    = get("Previsão") or ""
-    status      = get("Status") or "Aberta"
+    tid         = g("id") or g("ID") or "000"
+    assunto     = g("assunto") or g("Assunto") or "Sem título"
+    descricao   = g("descrição") or g("Descrição") or ""
+    criador     = g("criador") or g("Criador") or ""
+    responsavel = g("responsável") or g("Responsável") or ""
+    setor       = g("setor") or g("Setor") or ""
+    prioridade  = g("prioridade") or g("Prioridade") or "Média"
+    status      = g("status") or g("Status") or "Aberta"
+    data_lanc   = g("data_lançamento") or g("Data de lançamento") or ""
+    previsao    = g("data_término") or g("Previsão de Término") or ""
 
-    tipo_upper = tipo.upper()
-    tipo_lower = tipo.lower()
-    assunto_slug = slugify(assunto)
-    filename = f"{tipo_upper}-{tid}-{assunto_slug}.md"
-    path = f"vault/Tarefas/{filename}"
+    slug = slugify(assunto)
+    path = f"vault/Tarefas/PAUTA-{tid}-{slug}.md"
+    now  = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
 
-    conteudo = f"""---
+    md = f"""---
 id: "{tid}"
-tipo: "{tipo}"
+tipo: "Pauta"
 assunto: "{assunto}"
 descricao: "{descricao}"
 criador: "{criador}"
@@ -207,16 +247,15 @@ data_lancamento: "{data_lanc}"
 previsao_termino: "{previsao}"
 status: "{status}"
 criado_em: "{datetime.now().isoformat()}"
-tags: [{tipo_lower}, {setor.lower()}, {prioridade.lower()}]
+tags: [pauta, {setor.lower()}, {prioridade.lower()}]
 ---
 
-# {assunto}
+# \U0001f4cb {assunto}
 
-**Tipo:** {tipo}
-**Responsável:** {responsavel}
-**Setor:** {setor}
-**Prioridade:** {prioridade}
+**Responsável:** {responsavel} | **Criador:** {criador}
+**Setor:** {setor} | **Prioridade:** {prioridade}
 **Status:** {status}
+**Lançamento:** {data_lanc} | **Término Previsto:** {previsao}
 
 ## Descrição
 
@@ -224,56 +263,99 @@ tags: [{tipo_lower}, {setor.lower()}, {prioridade.lower()}]
 
 ## Histórico
 
-- {datetime.now().strftime("%d/%m/%Y, %H:%M:%S")} — Status inicial: "{status}"
+- {now} — Status: "{status}"
 """
-    commit_msg = f"{tipo_lower}: adiciona {assunto} ({tid})"
-    return path, commit_msg, conteudo
+    commit = f"pauta: adiciona {assunto} ({tid})"
+    return path, commit, md
 
 
-# ── Sincronizadores por aba ────────────────────────────────────────────────────
+# ── Gerador: Checkin ──────────────────────────────────────────────────────────
 
-def sync_diario(state: dict) -> dict:
-    print("[Diário de Obras] Verificando...")
-    rows = sheets_get("Diário de Obras")
+def make_checkin_md(row, headers):
+    def g(col):
+        try:
+            i = headers.index(col)
+            return row[i].strip() if i < len(row) else ""
+        except ValueError:
+            return ""
+
+    tid         = g("id") or g("ID") or "000"
+    data        = g("data") or g("Data") or datetime.now().strftime("%Y-%m-%d")
+    hora        = g("hora") or g("Hora") or ""
+    obra        = g("obra") or g("Obra") or ""
+    resumo      = g("resumo") or g("Resumo") or ""
+    pautas_json = g("assuntos_json") or g("Assuntos") or "[]"
+
+    try:
+        pautas = json.loads(pautas_json)
+        pautas_md = "\n".join(
+            f"- [{p.get('assunto','?')}] → {p.get('status','?')}"
+            for p in pautas
+        )
+    except Exception:
+        pautas_md = pautas_json
+
+    slug = f"{data}-{slugify(obra or 'obra')}"
+    path = f"vault/Tarefas/CHECKIN-{tid}-{slug}.md"
+    now  = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+
+    md = f"""---
+id: "{tid}"
+tipo: "Checkin"
+data: "{data}"
+hora: "{hora}"
+obra: "{obra}"
+status: "Concluído"
+criado_em: "{datetime.now().isoformat()}"
+tags: [checkin, obras]
+---
+
+# ✅ Check-in — {data} {hora}
+
+**Obra:** {obra}
+
+## Resumo
+
+{resumo or "—"}
+
+## Pautas Discutidas
+
+{pautas_md or "—"}
+
+## Histórico
+
+- {now} — Criado via sincronização automática
+"""
+    commit = f"checkin: adiciona {obra} ({data})"
+    return path, commit, md
+
+
+# ── Sincronizadores ────────────────────────────────────────────────────────────
+
+def sync_sheet(state, sheet_name, state_key, make_fn):
+    print(f"[{sheet_name}] Verificando...")
+    rows = sheets_csv(sheet_name)
     if len(rows) < 2:
-        print("  Nenhuma entrada encontrada.")
+        print(f"  Sem dados em '{sheet_name}'.")
         return state
 
     headers = rows[0]
-    last_synced = state.get("diario_last_row", 1)
-    new_rows = rows[last_synced:]  # linhas após o cabeçalho + já sincronizadas
+    last = state.get(state_key, 1)
+    new_rows = rows[last:]
 
-    for i, row in enumerate(new_rows):
-        if not any(row):  # linha vazia
-            continue
-        path, commit_msg, content = make_diario_md(row, headers)
-        _, sha = github_get_file(path)
-        github_put_file(path, content, commit_msg, sha)
-
-    state["diario_last_row"] = len(rows)
-    return state
-
-
-def sync_tarefas(state: dict, aba: str, tipo: str) -> dict:
-    print(f"[{aba}] Verificando...")
-    rows = sheets_get(aba)
-    if len(rows) < 2:
-        print("  Nenhuma entrada encontrada.")
-        return state
-
-    headers = rows[0]
-    key = f"{aba.lower()}_last_row"
-    last_synced = state.get(key, 1)
-    new_rows = rows[last_synced:]
-
+    count = 0
     for row in new_rows:
-        if not any(row):
+        if not any(c.strip() for c in row):
             continue
-        path, commit_msg, content = make_tarefa_md(row, headers, tipo)
-        _, sha = github_get_file(path)
-        github_put_file(path, content, commit_msg, sha)
+        try:
+            path, commit, content = make_fn(row, headers)
+            github_put(path, content, commit)
+            count += 1
+        except Exception as e:
+            print(f"  [ERRO linha] {e}")
 
-    state[key] = len(rows)
+    print(f"  {count} entrada(s) sincronizada(s)." if count else "  Nenhuma entrada nova.")
+    state[state_key] = len(rows)
     return state
 
 
@@ -281,26 +363,26 @@ def sync_tarefas(state: dict, aba: str, tipo: str) -> dict:
 
 def main():
     print("=" * 60)
-    print("🔄 Sincronização Google Sheets → Obsidian")
-    print(f"   Planilha: {SHEETS_ID}")
-    print(f"   Repositório: {GITHUB_REPO}")
-    print(f"   Intervalo: {INTERVAL}s")
+    print("Sincronização Google Sheets → Obsidian")
+    print(f"  Planilha : {SHEETS_ID}")
+    print(f"  Repo     : {GITHUB_REPO} ({GITHUB_BRANCH})")
+    print(f"  Intervalo: {INTERVAL}s")
     print("=" * 60)
 
     while True:
         try:
             state = load_state()
-            state = sync_diario(state)
-            # Descomente quando houver abas Pauta/Checkin na planilha:
-            # state = sync_tarefas(state, "Pauta", "Pauta")
-            # state = sync_tarefas(state, "Checkin", "Checkin")
+            state = sync_sheet(state, "Diário de Obras", "diario_last_row", make_diario_md)
+            state = sync_sheet(state, "Pautas",          "pautas_last_row", make_pauta_md)
+            state = sync_sheet(state, "Checkins",        "checkin_last_row", make_checkin_md)
             save_state(state)
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] Próxima verificação em {INTERVAL}s...\n")
+            ts = datetime.now().strftime("%H:%M:%S")
+            print(f"[{ts}] Próxima verificação em {INTERVAL}s\n")
         except KeyboardInterrupt:
-            print("\n⛔ Sincronização encerrada pelo usuário.")
+            print("\nSincronização encerrada.")
             break
         except Exception as e:
-            print(f"[ERRO] {e}")
+            print(f"[ERRO GERAL] {e}")
         time.sleep(INTERVAL)
 
 
