@@ -1,0 +1,37 @@
+name: Sincronização Sheets → Obsidian
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # a cada 30 minutos
+  workflow_dispatch:          # permite rodar manualmente pelo GitHub
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install requests
+
+      - name: Executar sincronização
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+          SHEETS_ID: ${{ secrets.SHEETS_ID }}
+        run: python scripts/sync_sheets_to_obsidian.py --once
+
+      - name: Salvar estado de sincronização
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sync-state
+          path: scripts/.sync_state.json
+          retention-days: 7
