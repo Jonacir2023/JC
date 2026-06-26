@@ -24,7 +24,7 @@ jobs:
 
       - name: Executar sincronização
         env:
-          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+          GITHUB_PAT: ${{ secrets.GH_PAT }}
           SHEETS_ID: ${{ secrets.SHEETS_ID }}
         run: python scripts/sync_sheets_to_obsidian.py --once
 
