@@ -9,7 +9,7 @@ clima: ""
 efetivo_total: ""
 apontador: ""
 status: "Aberto"
-criado_em: "2026-06-27T09:57:51.023289"
+criado_em: "2026-06-27T09:57:51.868694"
 tags: [diário, obras]
 ---
 
