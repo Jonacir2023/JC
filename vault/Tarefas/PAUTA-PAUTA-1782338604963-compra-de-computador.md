@@ -10,7 +10,7 @@ prioridade: "Alta"
 data_lancamento: "2026-06-24"
 previsao_termino: "2026-06-30"
 status: "Em Andamento"
-criado_em: "2026-06-27T00:12:44.112536"
+criado_em: "2026-06-27T04:31:56.215014"
 tags: [pauta, engenharia, alta]
 ---
 
@@ -27,4 +27,4 @@ Segurança
 
 ## Histórico
 
-- 27/06/2026, 00:12:44 — Status: "Em Andamento"
+- 27/06/2026, 04:31:56 — Status: "Em Andamento"
