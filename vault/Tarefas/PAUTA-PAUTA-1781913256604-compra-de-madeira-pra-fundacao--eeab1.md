@@ -10,7 +10,7 @@ prioridade: "Alta"
 data_lancamento: "2026-06-19"
 previsao_termino: "2026-06-30"
 status: "Em Andamento"
-criado_em: "2026-06-26T22:59:37.093745"
+criado_em: "2026-06-27T00:12:42.394784"
 tags: [pauta, suprimentos, alta]
 ---
 
@@ -27,4 +27,4 @@ Tábuas pra Blocos, Vigas Baldrames
 
 ## Histórico
 
-- 26/06/2026, 22:59:37 — Status: "Em Andamento"
+- 27/06/2026, 00:12:42 — Status: "Em Andamento"
