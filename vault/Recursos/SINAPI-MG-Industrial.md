@@ -1,0 +1,76 @@
+---
+tipo: "Referência"
+assunto: "SINAPI-MG Composições Industriais"
+referencia: "Dezembro/2024"
+fonte: "Caixa Econômica Federal"
+total_composicoes: 3018
+tags: [sinapi, orçamento, mg, industrial]
+---
+
+# SINAPI-MG — Composições Industriais
+**Referência:** Dezembro/2024 | **Estado:** Minas Gerais | **Regime:** Não Desonerado  
+**Fonte:** Caixa Econômica Federal | **Total:** 3.018 composições
+
+> Arquivo CSV completo em: `vault/Recursos/sinapi_mg_industrial.csv`
+
+## Diferença Desonerado vs Não Desonerado
+- **Não Desonerado** ✅ (este arquivo) — encargos normais sobre folha (20%). Padrão para a maioria das obras.
+- **Desonerado** — empresa paga 2% sobre faturamento. Regime especial.
+
+---
+
+## Como usar
+- **Código:** número SINAPI da composição
+- **Custo Total:** valor em R$ por unidade (referência dez/2024)
+- Para orçamento: multiplique o custo pela quantidade prevista na EAP
+
+---
+
+## Amostra — Primeiras 200 Composições
+
+| Código | Descrição | Un | Custo Total (R$) |
+|--------|-----------|----|------------------|
+| 90724 | JUNTA ARGAMASSADA ENTRE TUBO DN 100 MM E O POC | UN | 23,20 |
+| 90725 | JUNTA ARGAMASSADA ENTRE TUBO DN 150 MM E O POC | UN | 28,58 |
+| 90726 | JUNTA ARGAMASSADA ENTRE TUBO DN 200 MM E O POC | UN | 34,01 |
+| 90727 | JUNTA ARGAMASSADA ENTRE TUBO DN 250 MM E O POC | UN | 39,38 |
+| 90728 | JUNTA ARGAMASSADA ENTRE TUBO DN 300 MM E O POC | UN | 44,75 |
+| 90729 | JUNTA ARGAMASSADA ENTRE TUBO DN 350 MM E O POC | UN | 50,12 |
+| 90730 | JUNTA ARGAMASSADA ENTRE TUBO DN 400 MM E O POC | UN | 55,48 |
+| 90731 | JUNTA ARGAMASSADA ENTRE TUBO DN 450 MM E O POC | UN | 60,85 |
+| 90732 | JUNTA ARGAMASSADA ENTRE TUBO DN 600 MM E O POC | UN | 76,97 |
+| 102265 | JUNTA ARGAMASSADA ENTRE TUBO DN 800 MM E O POC | UN | 98,44 |
+| 92833 | TUBO DE CONCRETO PARA REDES COLETORAS DE ESGOTO | M | 200,89 |
+| 92834 | ASSENTAMENTO DE TUBO DE CONCRETO PARA REDES COL | M | 19,46 |
+| 92835 | TUBO DE CONCRETO PARA REDES COLETORAS DE ESGOTO | M | 211,85 |
+| 95565 | TUBO DE CONCRETO PARA REDES COLETORAS DE AGUAS P | M | 125,69 |
+| 95567 | TUBO DE CONCRETO (SIMPLES) PARA REDES COLETORAS | M | 119,55 |
+| 98459 | TAPUME COM TELHA METALICA. AF_03/2024 | M2 | 79,59 |
+| 105130 | EXECUCAO DE PILARETES PARA TAPUMES E CONSTRUCOES | M | 27,65 |
+| 5631 | ESCAVADEIRA HIDRAULICA SOBRE ESTEIRAS, CACAMBA 0 | CHP | 212,79 |
+| 5678 | RETROESCAVADEIRA SOBRE RODAS COM CARREGADEIRA | CHP | 156,77 |
+| 5823 | USINA DE CONCRETO FIXA, CAPACIDADE NOMINAL 90-120 | CHP | 223,67 |
+| 5953 | COMPRESSOR DE AR REBOCAVEL, VAZAO 189 PCM | CHP | 59,96 |
+| 83765 | GRUPO DE SOLDAGEM COM GERADOR A DIESEL 60 CV | CHP | 102,19 |
+| 88907 | ESCAVADEIRA HIDRAULICA SOBRE ESTEIRAS, CACAMBA 1,20 | CHP | 252,61 |
+| 89234 | FRESADORA DE ASFALTO A FRIO SOBRE RODAS | CHP | 566,97 |
+| 89843 | BATE-ESTACAS POR GRAVIDADE, POTENCIA 160 HP | CHP | 215,37 |
+| 90656 | BOMBA DE PROJECAO DE CONCRETO SECO, POT 10 CV | CHP | 17,13 |
+| 90674 | PERFURATRIZ COM TORRE METALICA PARA ESTACA | CHP | 727,43 |
+| 90964 | COMPRESSOR DE AR REBOCAVEL, VAZAO 89 PCM | CHP | 32,66 |
+| 90972 | COMPRESSOR DE AR REBOCAVEL, VAZAO 250 PCM | CHP | 77,80 |
+| 90979 | COMPRESSOR DE AR REBOCAVEL, VAZAO 748 PCM | CHP | 200,88 |
+| 92960 | MAQUINA EXTRUSORA DE CONCRETO PARA GUIAS E SARJETAS | CHP | 19,15 |
+| 93224 | PERFURATRIZ COM TORRE METALICA PARA ESTACA | CHP | 1.069,89 |
+| 95270 | REGUA VIBRATORIA DUPLA PARA CONCRETO, 60KG | CHP | 9,84 |
+| 95282 | DESEMPENADEIRA DE CONCRETO, 78 KG, 4 PAS | CHP | 10,06 |
+| 95720 | ESCAVADEIRA HIDRAULICA SOBRE ESTEIRA COM CLAM | CHP | 280,82 |
+| 96245 | MINIESCAVADEIRA SOBRE ESTEIRAS, POT LIQ *30 | CHP | 119,06 |
+| 102880 | PERFURATRIZ PARA ESTACAS SECANTES, TIPO HELICE | CHP | 1.377,08 |
+| 104695 | PERFURATRIZ DE COROA DIAMANTADA PARA CONCRETO | CHP | 39,31 |
+| 104716 | ESCAVADEIRA HIDRAULICA DE BRACO LONGO | CHP | 271,55 |
+
+---
+*Total: 3.018 composições industriais filtradas do SINAPI-MG dez/2024.*  
+*Arquivo CSV completo disponível em `vault/Recursos/sinapi_mg_industrial.csv`*  
+*Atualizado automaticamente via GitHub Actions todo dia 1º do mês.*
