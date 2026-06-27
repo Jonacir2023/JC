@@ -10,7 +10,7 @@ prioridade: "Alta"
 data_lancamento: "2026-06-24"
 previsao_termino: "2026-06-30"
 status: "Aberta"
-criado_em: "2026-06-27T04:31:55.358700"
+criado_em: "2026-06-27T07:44:14.050844"
 tags: [pauta, produção civil, alta]
 ---
 
@@ -27,4 +27,4 @@ Novos colaboradores p40
 
 ## Histórico
 
-- 27/06/2026, 04:31:55 — Status: "Aberta"
+- 27/06/2026, 07:44:14 — Status: "Aberta"
