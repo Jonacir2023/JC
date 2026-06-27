@@ -1,0 +1,29 @@
+name: Dashboard EVM
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # todo dia às 08h00 UTC (05h00 Brasília)
+  workflow_dispatch:        # permite rodar manualmente
+
+jobs:
+  evm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install requests
+
+      - name: Executar Dashboard EVM
+        env:
+          GITHUB_PAT: ${{ secrets.GH_PAT }}
+          SHEETS_ID: ${{ secrets.SHEETS_ID }}
+        run: python scripts/evm_dashboard.py

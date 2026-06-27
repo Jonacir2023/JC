@@ -1,0 +1,40 @@
+name: Boletim de Medição
+
+on:
+  schedule:
+    - cron: '0 9 1 * *'   # dia 1 de cada mês às 09h UTC (06h Brasília)
+  workflow_dispatch:
+    inputs:
+      mes:
+        description: 'Mês de referência (YYYY-MM)'
+        required: false
+        default: ''
+
+jobs:
+  boletim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install requests
+
+      - name: Gerar Boletim de Medição
+        env:
+          GITHUB_PAT: ${{ secrets.GH_PAT }}
+          SHEETS_ID: ${{ secrets.SHEETS_ID }}
+        run: |
+          MES="${{ github.event.inputs.mes }}"
+          if [ -z "$MES" ]; then
+            python scripts/boletim_medicao.py
+          else
+            python scripts/boletim_medicao.py --mes "$MES"
+          fi
