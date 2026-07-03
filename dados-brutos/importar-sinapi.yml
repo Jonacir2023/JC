@@ -1,0 +1,40 @@
+name: Importar SINAPI-MG
+
+on:
+  push:
+    paths:
+      - 'dados-brutos/**.xlsx'
+  schedule:
+    - cron: '0 6 1 * *'  # todo dia 1 do mês às 6h — reprocessa o XLSX mais recente já commitado
+  workflow_dispatch:       # permite rodar manualmente
+
+jobs:
+  importar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install openpyxl
+
+      - name: Importar SINAPI-MG (a partir do XLSX em dados-brutos/)
+        run: python scripts/importar_sinapi_mg.py --csv
+
+      - name: Commitar CSV e Markdown atualizados
+        env:
+          GITHUB_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/Jonacir2023/JC.git
+          git add vault/Recursos/sinapi_mg_industrial.csv vault/Recursos/SINAPI-MG-Industrial.md
+          git diff --staged --quiet || git commit -m "sinapi: atualiza composições MG $(date +%Y-%m)"
+          git push origin main
