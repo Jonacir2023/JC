@@ -2,8 +2,10 @@
 """Obsidian vault processing tools: link checking, tag listing, orphan finding, HTML export."""
 
 import argparse
+import json
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from html import escape
 
@@ -99,6 +101,144 @@ def strip_frontmatter(text: str) -> tuple[str, str]:
     return '', text
 
 
+def parse_frontmatter_fields(front: str) -> dict[str, str]:
+    """Parse flat scalar `key: value` frontmatter lines (lists/objects are skipped)."""
+    fields = {}
+    for line in front.splitlines():
+        m = re.match(r'^(\w+):\s*(.*)$', line)
+        if not m:
+            continue
+        val = m.group(2).strip()
+        if not val or val.startswith('['):
+            continue
+        fields[m.group(1)] = val.strip('"')
+    return fields
+
+
+def build_graph(vault: Path, out_dir: Path) -> int:
+    """Build a connection graph of the vault: [[wikilinks]] plus folder→index membership."""
+    notes = find_notes(vault)
+    name_map = build_name_map(notes)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    nodes = []
+    node_by_id = {}
+    folder_index: dict[str, str] = {}
+
+    for note in notes:
+        rel = note.relative_to(vault)
+        folder = rel.parts[0] if len(rel.parts) > 1 else '.'
+        nid = note_name(note)
+        if note.name.startswith('Índice de '):
+            folder_index[folder] = nid
+        front, _ = strip_frontmatter(note.read_text(encoding='utf-8'))
+        meta = parse_frontmatter_fields(front)
+        node = {
+            'id': nid,
+            'path': str(rel),
+            'folder': folder,
+            'tipo': meta.get('tipo', ''),
+            'status': meta.get('status', ''),
+            'prioridade': meta.get('prioridade', ''),
+            'setor': meta.get('setor', ''),
+        }
+        nodes.append(node)
+        node_by_id[nid] = node
+
+    edges = []
+    edge_set = set()
+    broken = []
+
+    def add_edge(src: str, dst: str, kind: str) -> None:
+        key = (src, dst, kind)
+        if src == dst or key in edge_set:
+            return
+        edge_set.add(key)
+        edges.append({'source': src, 'target': dst, 'kind': kind})
+
+    for note in notes:
+        text = CODE_SPAN.sub('', note.read_text(encoding='utf-8'))
+        nid = note_name(note)
+        for match in WIKILINK.finditer(text):
+            target = match.group(1).strip()
+            if not target:
+                continue
+            if resolve_link(target, name_map):
+                target_id = target if target in name_map else target.split('/')[-1].strip()
+                add_edge(nid, target_id, 'link')
+            else:
+                broken.append({'from': nid, 'target': target})
+
+    for note in notes:
+        rel = note.relative_to(vault)
+        folder = rel.parts[0] if len(rel.parts) > 1 else '.'
+        nid = note_name(note)
+        idx = folder_index.get(folder)
+        if idx and idx != nid:
+            add_edge(nid, idx, 'index')
+
+    degree = {n['id']: 0 for n in nodes}
+    for e in edges:
+        degree[e['source']] = degree.get(e['source'], 0) + 1
+        degree[e['target']] = degree.get(e['target'], 0) + 1
+    orphans = sorted(nid for nid, c in degree.items() if c == 0)
+
+    graph = {
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'vault': str(vault),
+        'nodes': nodes,
+        'edges': edges,
+        'broken_links': broken,
+        'orphans': orphans,
+    }
+    (out_dir / 'graph.json').write_text(
+        json.dumps(graph, ensure_ascii=False, indent=2), encoding='utf-8'
+    )
+
+    folder_counts: dict[str, int] = {}
+    for n in nodes:
+        folder_counts[n['folder']] = folder_counts.get(n['folder'], 0) + 1
+    top_connected = sorted(nodes, key=lambda n: degree.get(n['id'], 0), reverse=True)[:10]
+
+    lines = [
+        '# Relatório do Grafo do Vault',
+        '',
+        f"Gerado em: {graph['generated_at']}",
+        f"Notas analisadas: {len(nodes)}",
+        f"Conexões (wikilinks + pertencimento a índice): {len(edges)}",
+        f"Links quebrados: {len(broken)}",
+        f"Notas órfãs (sem nenhuma conexão): {len(orphans)}",
+        '',
+        '## Notas por pasta',
+        '',
+    ]
+    for folder, count in sorted(folder_counts.items(), key=lambda kv: -kv[1]):
+        lines.append(f"- {folder}: {count}")
+
+    lines += ['', '## Notas mais conectadas', '']
+    for n in top_connected:
+        lines.append(f"- {n['id']} ({n['folder']}) — {degree.get(n['id'], 0)} conexões")
+
+    if broken:
+        lines += ['', '## Links quebrados', '']
+        for b in broken:
+            lines.append(f"- {b['from']} → [[{b['target']}]]")
+
+    if orphans:
+        lines += ['', '## Notas órfãs', '']
+        for o in orphans:
+            lines.append(f"- {o} ({node_by_id[o]['folder']})")
+
+    (out_dir / 'GRAPH_REPORT.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+    print(
+        f"Grafo gerado: {len(nodes)} notas, {len(edges)} conexões, "
+        f"{len(broken)} links quebrados, {len(orphans)} órfãs."
+    )
+    print(f"Saída: {out_dir}/graph.json, {out_dir}/GRAPH_REPORT.md")
+    return 0
+
+
 def md_to_html(text: str, name_map: dict[str, Path]) -> str:
     def replace_link(m: re.Match) -> str:
         target = m.group(1).strip()
@@ -163,6 +303,8 @@ def main() -> None:
     sub.add_parser('find-orphans', help='Find notes with no incoming links')
     exp = sub.add_parser('export-html', help='Export notes to static HTML')
     exp.add_argument('--out', type=Path, default=Path('export'), help='Output directory')
+    grp = sub.add_parser('graph', help='Generate a connection graph (graph.json + GRAPH_REPORT.md)')
+    grp.add_argument('--out', type=Path, default=Path('graphify-out'), help='Output directory')
 
     args = parser.parse_args()
     vault = args.vault.expanduser().resolve()
@@ -178,6 +320,8 @@ def main() -> None:
         sys.exit(find_orphans(vault))
     elif args.command == 'export-html':
         sys.exit(export_html(vault, args.out))
+    elif args.command == 'graph':
+        sys.exit(build_graph(vault, args.out))
 
 
 if __name__ == '__main__':
