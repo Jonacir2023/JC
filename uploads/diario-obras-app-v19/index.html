@@ -1946,7 +1946,10 @@ const APPS_SCRIPT_URL_DIARIO = 'https://script.google.com/macros/s/AKfycbwa_TMG_
 // ============================================================
 // CONSTANTES E ESTADO
 // ============================================================
-const STORAGE_KEY = 'diario_obras_v3_state';
+// VERSÃO 20: corrige isolamento de dados por obra + cache-buster
+const STORAGE_KEY_BASE = 'diario_obras_v4_state'; // v4 = força rebuild + isolamento por obra
+const HISTORY_KEY_BASE = 'diario_obras_v4_history';
+const STORAGE_KEY = 'diario_obras_v3_state'; // legado, pra migração
 const HISTORY_KEY = 'diario_obras_v3_history';
 
 const DIAS_SEMANA = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
@@ -2102,10 +2105,34 @@ let opSelectedNome = null;
 
 function loadState() {
   try {
-    const s = localStorage.getItem(STORAGE_KEY);
+    const obra = localStorage.getItem('obra_atual') || DEFAULT_DATA.obra.nome;
+    const newKey = STORAGE_KEY_BASE + '_' + obra.replace(/\s+/g, '_').toLowerCase();
+    let s = localStorage.getItem(newKey);
+
+    // Se não achou com chave nova, tenta chave legada UMA VEZ e migra
+    if (!s) {
+      const legado = localStorage.getItem(STORAGE_KEY);
+      if (legado) {
+        try {
+          const data = JSON.parse(legado);
+          localStorage.setItem(newKey, legado);
+          console.log('✅ Dados migrados de chave legada para obra:', obra);
+          return mergeDefaults(data);
+        } catch(e) { console.error('Erro migração:', e); }
+      }
+    }
+
     if (s) return mergeDefaults(JSON.parse(s));
-  } catch(e) {}
+  } catch(e) { console.error('Erro loadState:', e); }
   return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+
+function getStorageKey() {
+  return STORAGE_KEY_BASE + '_' + (state.obra.nome || 'default').replace(/\s+/g, '_').toLowerCase();
+}
+
+function getHistoryKey() {
+  return HISTORY_KEY_BASE + '_' + (state.obra.nome || 'default').replace(/\s+/g, '_').toLowerCase();
 }
 function mergeDefaults(d) {
   const base = JSON.parse(JSON.stringify(DEFAULT_DATA));
@@ -2120,16 +2147,37 @@ function mergeDefaults(d) {
   });
   return base;
 }
-function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function saveState() {
+  const key = getStorageKey();
+  localStorage.setItem(key, JSON.stringify(state));
+  localStorage.setItem('obra_atual', state.obra.nome);
+}
 
 function loadHistory() {
   try {
-    const h = localStorage.getItem(HISTORY_KEY);
+    const obra = localStorage.getItem('obra_atual') || DEFAULT_DATA.obra.nome;
+    const newKey = HISTORY_KEY_BASE + '_' + obra.replace(/\s+/g, '_').toLowerCase();
+    let h = localStorage.getItem(newKey);
+
+    // Migração: se não achou com chave nova, tenta chave legada
+    if (!h) {
+      const legado = localStorage.getItem(HISTORY_KEY);
+      if (legado) {
+        localStorage.setItem(newKey, legado);
+        console.log('✅ Histórico migrado para obra:', obra);
+        return JSON.parse(legado);
+      }
+    }
+
     if (h) return JSON.parse(h);
-  } catch(e) {}
+  } catch(e) { console.error('Erro loadHistory:', e); }
   return {};
 }
-function saveHistory() { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }
+
+function saveHistory() {
+  const key = getHistoryKey();
+  localStorage.setItem(key, JSON.stringify(history));
+}
 
 // ============================================================
 // UTILS
