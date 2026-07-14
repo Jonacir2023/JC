@@ -2105,18 +2105,30 @@ let opSelectedNome = null;
 
 function loadState() {
   try {
-    const obra = localStorage.getItem('obra_atual') || DEFAULT_DATA.obra.nome;
-    const newKey = STORAGE_KEY_BASE + '_' + obra.replace(/\s+/g, '_').toLowerCase();
+    let obra = localStorage.getItem('obra_atual') || '';
+    let newKey = obra ? (STORAGE_KEY_BASE + '_' + obra.replace(/\s+/g, '_').toLowerCase()) : (STORAGE_KEY_BASE + '_default');
     let s = localStorage.getItem(newKey);
 
-    // Se não achou com chave nova, tenta chave legada UMA VEZ e migra
+    // Se não achou com chave atual, tenta chave legada UMA VEZ e migra
     if (!s) {
       const legado = localStorage.getItem(STORAGE_KEY);
       if (legado) {
         try {
           const data = JSON.parse(legado);
+          // Extrai nome da obra dos dados antigos para isolar corretamente
+          const obraFromData = (data.obra && data.obra.nome && data.obra.nome.trim()) ? data.obra.nome.trim() : '';
+
+          if (obraFromData) {
+            // Dados antigos têm nome de obra, usa esse para a chave
+            newKey = STORAGE_KEY_BASE + '_' + obraFromData.replace(/\s+/g, '_').toLowerCase();
+            localStorage.setItem('obra_atual', obraFromData);
+          } else {
+            // Dados antigos sem nome, salva como default
+            newKey = STORAGE_KEY_BASE + '_default';
+            localStorage.setItem('obra_atual', '');
+          }
           localStorage.setItem(newKey, legado);
-          console.log('✅ Dados migrados de chave legada para obra:', obra);
+          console.log('✅ Dados migrados de v3 para obra:', obraFromData || '(sem nome)');
           return mergeDefaults(data);
         } catch(e) { console.error('Erro migração:', e); }
       }
@@ -2155,8 +2167,8 @@ function saveState() {
 
 function loadHistory() {
   try {
-    const obra = localStorage.getItem('obra_atual') || DEFAULT_DATA.obra.nome;
-    const newKey = HISTORY_KEY_BASE + '_' + obra.replace(/\s+/g, '_').toLowerCase();
+    let obra = localStorage.getItem('obra_atual') || '';
+    let newKey = obra ? (HISTORY_KEY_BASE + '_' + obra.replace(/\s+/g, '_').toLowerCase()) : (HISTORY_KEY_BASE + '_default');
     let h = localStorage.getItem(newKey);
 
     // Migração: se não achou com chave nova, tenta chave legada
@@ -2164,7 +2176,7 @@ function loadHistory() {
       const legado = localStorage.getItem(HISTORY_KEY);
       if (legado) {
         localStorage.setItem(newKey, legado);
-        console.log('✅ Histórico migrado para obra:', obra);
+        console.log('✅ Histórico migrado para obra:', obra || '(sem nome)');
         return JSON.parse(legado);
       }
     }
