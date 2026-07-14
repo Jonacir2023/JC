@@ -7,6 +7,7 @@ Projetos ativos com prazo ou resultado definido.
 ## Ativos
 
 - [[Projetos/Implantação JC - Obsidian + N8N]]
+- [[Projetos/Diário de Obras (App RDO)]]
 
 ## Como criar um projeto
 
