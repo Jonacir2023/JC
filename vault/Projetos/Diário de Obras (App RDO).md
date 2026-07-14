@@ -39,6 +39,29 @@ para consulta rápida a partir do JC.
 CLAUDE.md de referência do projeto: `~/diario-obras/CLAUDE.md` (máquina local do usuário, fora
 deste repositório).
 
+### Colunas da aba Diário (confirmado no código-fonte, v5)
+
+`A` Data · `B` Dia da Semana · `C` Obra · `D` Empresa · `E` Cidade · `F` Local da Obra ·
+`G` Descrição do Local · `H` Tempo / Clima · `I` Jornada · `J` DSS — Horário ·
+`K` DSS — Ministrado Por · `L` DSS — Tema · `M` Atividades do Dia · `N` Efetivo Total ·
+`O` Efetivo por Função · `P` Colaboradores Presentes · `Q` Equipamentos Utilizados ·
+`R` Veículos Leves · `S` Veículos/Equip. Parados · `T` Eventos de Segurança ·
+`U` Eventos de Meio Ambiente · `V` Observações do Dia · `W` Apontador · `X` Fotos · `Y` RDO Nº
+
+### Código-fonte de referência
+
+Cópias do código atual (fora do repo `diario-obras`, salvas aqui só para consulta rápida sem
+depender de acesso a outro repositório):
+
+- [[Recursos/Anexos/diario-obras-index.html]] — app completo (PWA, ~6.160 linhas). Visual
+  "Paleta Concreto Rústico" (laranja óxido `#d4541a` / amarelo capacete `#e8a030` sobre fundo
+  concreto claro `#e8e4df`), fontes Barlow / Barlow Condensed via Google Fonts, manifest PWA
+  embutido em base64 no próprio `<head>`.
+- [[Recursos/Anexos/DiarioObrasv5.gs]] — Apps Script backend (v5, ~480 linhas).
+
+Estas cópias podem ficar desatualizadas — antes de assumir comportamento do app, prefira pedir o
+arquivo atual ao usuário em vez de confiar cegamente nesta cópia.
+
 ---
 
 ## Regras operacionais críticas
