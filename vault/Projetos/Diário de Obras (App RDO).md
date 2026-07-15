@@ -1,6 +1,6 @@
 ---
 criado: 2026-07-14
-status: ativo
+status: estagnado
 prazo:
 área: Planejamento
 tags: [projeto, diario-de-obras, rdo, app, cesbe]
@@ -8,7 +8,11 @@ tags: [projeto, diario-de-obras, rdo, app, cesbe]
 
 # Diário de Obras (App RDO) — Cesbe Engenharia
 
-**Status:** 🟡 Em andamento
+**Status:** ⏸️ Estagnado (15/07/2026) — decisão do usuário de congelar este app e migrar o
+desenvolvimento ativo para um projeto novo, separado ("Diário Premium" — nome, repo e planilha
+próprios). Ver [[Recursos/Anexos/HANDOFF-Diario-Premium-novo-projeto]] para o briefing do novo
+projeto. Este app segue existindo e recebendo só correções pontuais/reconstrução histórica
+pendente (PDFs de junho-julho/2026) — nenhuma feature nova aqui.
 **Área:** Planejamento
 **Responsável:** Jonacir Cazelli (engenheiro civil, gerente de obras GO/PR)
 

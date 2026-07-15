@@ -5,5 +5,6 @@ Capture aqui qualquer ideia, link ou pensamento rápido. Processe regularmente m
 ---
 
 - [ ] Revisar e organizar esta caixa semanalmente
+- 15/07/2026 — Tomei o primeiro Monjaro hoje.
 
 #inbox
