@@ -78,6 +78,49 @@ arquivo atual ao usuário em vez de confiar cegamente nesta cópia.
 - App vazio → botão "☁️ Restaurar da Nuvem" em Cadastro. Nunca redigitar dados.
 - Atualização normal de código nunca apaga dados locais (armazenamentos independentes).
 - Ícone da tela de início só precisa ser recriado se um `icon.png` novo for entregue.
+- **Regra crítica (desde v20.1, 15/07/2026):** o usuário NUNCA deve precisar apagar/redigitar
+  cadastros manualmente por causa de bug de migração/atualização. Se dados antigos aparecerem
+  misturados após um update, a correção é sempre buscar o backup correto (Drive ou JSON) e
+  restaurar automaticamente — nunca pedir para o usuário deletar colaboradores/equipamentos/
+  atividades um por um. Ver dados de referência da obra Suzano abaixo.
+
+---
+
+## Dados de referência confirmados — Obra Suzano (fonte: backup Drive, 13/07/2026 19:51)
+
+**Obra:** Suzano · **Empresa:** Cesbe SA · **Local:** Ribas do Rio Pardo - MS · **Contrato:** 2022
+**Local da obra atual:** ETA
+
+Backup fonte: Google Drive → `Diario de Obras - Backups/Suzano/backup_2026-07-13_1951.json`
+(fileId `1yADRmwXXnKyPIvmI9050F54mZb5Eo370`) — backup mais recente e confirmado pelo usuário em
+15/07/2026 como correto. Usar este arquivo como fonte da verdade se precisar restaurar/comparar
+dados da obra Suzano; nunca usar dados de "Rio Tanque" (obra anterior, já encerrada no app).
+
+### Colaboradores (8 confirmados)
+
+| Nome | Função | Empresa | Matrícula |
+|---|---|---|---|
+| Jonacir Cazelli | Gerente de obras | — | 26640 |
+| Jekyll da Costa Vinente | Analista de DP / Apontador | — | 32901 |
+| Claudemir Aparecido Ferreira | Encarregado | Samarc | 001 |
+| Ivanildo Silva Sena | Encarregado | Samarc | 002 |
+| Francisco dos Santos Silva | Pedreiro | Samarc | 003 |
+| Gabriel Ferreira dos Santos | Ajudante | Samarc | 004 |
+| Gustavo Gabriel Lima Ferreira | Ajudante | Samarc | 005 |
+| Moises da Silva Cristo | Ajudante | Samarc | 006 |
+
+### Equipamentos
+- GUI-003 — Guindaste 100T
+- BR-01 — Bomba de Recalque
+
+### Veículos de frota
+- VL-01 — Onix
+- VL-02 — Onix
+- VL-03 — Uno Way
+
+### Atividades
+- Enchimento de bags com areia (local: Filtro 2, unidade: Un)
+- Inspeção de bags usados (local: ETA, unidade: Un)
 
 ---
 
