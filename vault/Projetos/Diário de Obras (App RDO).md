@@ -165,12 +165,28 @@ dados da obra Suzano; nunca usar dados de "Rio Tanque" (obra anterior, já encer
       mensagens, nada inventado — vários dias (a partir de fev/2026) já vêm com "Relatório de
       Atividades" formal do Jekyll incluindo efetivo declarado. Dias mais antigos (nov/dez 2025)
       têm menos detalhe (mensagens curtas tipo "atividade iniciada").
-      **Pendente:** usuário revisar/validar a numeração e o conteúdo antes de qualquer uso
-      oficial — os RDOs já emitidos pela planilha (06/07 em diante) têm numeração própria (1, 2,
-      4...) que não bate com esta sequência histórica; decisão de renumerar definitivamente é do
-      usuário. Depois da validação: gerar arquivo de importação único pro app (mesclando com
-      backup atual) e/ou lançar em lote na planilha via upsert.
-      **Regra mantida:** nunca inventar dados operacionais (é documento contratual).
+      **2ª leva entregue (15/07/2026) — RDOs OFICIAIS em PDF, mais confiáveis que o WhatsApp.**
+      Usuário enviou 5 PDFs originais "RELATÓRIO DIÁRIO DE OBRA" (SAMARC ENGENHARIA LTDA ×
+      CESBE S.A., Contrato Nº 8700): RDO_SAMARC_INOCENCIA (set/2025), RDO_SAMARC_CESBE (dez/2025
+      e jan/2026), e dois PDFs escaneados/manuscritos (abr/2026 e mai/2026, lidos página a
+      página via visão, já que não tinham camada de texto). Extraído com `pdftotext -layout` +
+      parser Python para os 3 primeiros; leitura visual manual para os 2 últimos.
+      **Entregue:** [[Recursos/Anexos/RDO-oficial-PDF-set2025-dez2025-jan2026-abr2026-mai2026]]
+      — 71 dias com efetivo (M.O.I./M.O.D. detalhado), serviços e comentários/observações
+      transcritos literalmente. Contrato tem 2 fases visíveis: Data Contratual 25/06/2025
+      (set/2025-jan/2026) e 09/03/2026 (fase garantia/retrabalho, abr-mai/2026, bate com o nome
+      do grupo WhatsApp "SUZANO Ribas Garantia").
+      **GAPs restantes:** fevereiro e março de 2026 (usuário vai enviar a seguir — ele avisou
+      "vou lançar na sequência os meses 2 e 3 de 2026"); outubro e novembro de 2025 (só
+      cobertura informal via WhatsApp, sem RDO oficial ainda).
+      **Pendente:** usuário revisar/validar toda a numeração e conteúdo antes de qualquer uso
+      oficial — os RDOs já emitidos pela planilha (06/07/2026 em diante) têm numeração própria
+      (1, 2, 4...) que não bate com nenhuma das sequências históricas; decisão de renumerar
+      definitivamente é do usuário. Depois da validação completa (incluindo fev/mar/2026):
+      gerar arquivo de importação único pro app (mesclando com backup atual) e/ou lançar em
+      lote na planilha via upsert.
+      **Regra mantida:** nunca inventar dados operacionais (é documento contratual) — toda
+      extração é literal/transcrita, nunca inferida ou estimada.
 - [ ] Multi-obra — cadastrar/alternar obras, cada uma com cadastros/histórico próprios.
 - [ ] SINAPI — usuário vai listar problemas do fluxo de orçamentação antes de retomar (projeto
       separado; ver [[Recursos/SINAPI-MG-Industrial]]).
