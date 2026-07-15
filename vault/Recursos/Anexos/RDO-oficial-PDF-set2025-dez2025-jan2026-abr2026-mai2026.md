@@ -1,18 +1,20 @@
 # RDOs Oficiais — SAMARC / CESBE S.A. (extraídos de PDFs originais)
 
-**Fonte:** 5 PDFs oficiais "RELATÓRIO DIÁRIO DE OBRA" fornecidos pelo usuário em 15/07/2026:
+**Fonte:** 8 PDFs oficiais "RELATÓRIO DIÁRIO DE OBRA" fornecidos pelo usuário em 15/07/2026:
 - RDO_SAMARC_INOCENCIA (set/2025) — texto digital
 - RDO_SAMARC_CESBE (dez/2025) — texto digital
 - RDO_SAMARC_CESBE (jan/2026) — texto digital
+- RDO_SAMARC_CESBE (fev/2026, 2 cópias idênticas) — texto digital
+- RDO_SAMARC_CESBE (mar/2026) — texto digital
 - 27042026_1_Combinar.pdf (abr/2026) — escaneado/manuscrito, lido visualmente página a página
 - 01052026_1_Combinar.pdf (mai/2026) — escaneado/manuscrito, lido visualmente página a página
 
 **Contratada:** SAMARC ENGENHARIA LTDA · **Contratante:** CESBE S.A. ENGENHARIA E EMPREENDIMENTOS · **Contrato Nº 8700**.
-Nota: contrato tem duas fases visíveis nos documentos — Data Contratual 25/06/2025 (fase set/2025-jan/2026) e Data Contratual 09/03/2026 (fase de garantia/retrabalho, abr-mai/2026, compatível com o grupo WhatsApp "SUZANO Ribas Garantia").
+Nota: contrato tem duas fases visíveis nos documentos — Data Contratual 25/06/2025 (fase set/2025-mar/2026, RDO Nº 1 a 140) e Data Contratual 09/03/2026 (fase de garantia/retrabalho, abr-mai/2026, compatível com o grupo WhatsApp "SUZANO Ribas Garantia").
 
-**Total de dias com RDO oficial extraído: 71**
+**Total de dias com RDO oficial extraído: 102**
 
-**GAPs conhecidos (sem PDF oficial ainda):** fevereiro e março de 2026 — usuário vai enviar na sequência. Outubro e novembro de 2025 — só cobertura informal via WhatsApp, ver [[Recursos/Anexos/RDO-historico-reconstruido-whatsapp-21out2025-a-03jul2026]].
+**GAPs restantes (sem PDF oficial ainda):** 11 a 16/03/2026 (RDO Nº 133-136, não cobertos por nenhum PDF enviado até agora); outubro e novembro de 2025 (só cobertura informal via WhatsApp, ver [[Recursos/Anexos/RDO-historico-reconstruido-whatsapp-21out2025-a-03jul2026]]).
 
 ---
 
@@ -470,6 +472,353 @@ M.O.D.: AJUDANTE: 2, PEDREIRO: 1
 M.O.I.: ENGENHEIRO CIVIL: 1, ENCARREGADO: 1  
 M.O.D.: AJUDANTE: 2, PEDREIRO: 1  
 *Fonte: PDF oficial RDO_SAMARC_CESBE (jan/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+
+# 02/2026
+
+## 02/02/2026 — RDO Nº 106
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 03/02/2026 — RDO Nº 107
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 04/02/2026 — RDO Nº 108
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 05/02/2026 — RDO Nº 109
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 06/02/2026 — RDO Nº 110
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 09/02/2026 — RDO Nº 111
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 10/02/2026 — RDO Nº 112
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 11/02/2026 — RDO Nº 113
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 12/02/2026 — RDO Nº 114
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 13/02/2026 — RDO Nº 115
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 16/02/2026 — RDO Nº 116
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 17/02/2026 — RDO Nº 117
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 18/02/2026 — RDO Nº 118
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 19/02/2026 — RDO Nº 119
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 20/02/2026 — RDO Nº 120
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 23/02/2026 — RDO Nº 121
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 24/02/2026 — RDO Nº 122
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 25/02/2026 — RDO Nº 123
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 26/02/2026 — RDO Nº 124
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 27/02/2026 — RDO Nº 125
+
+**Efetivo total:** 2  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 1  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (fev/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+
+# 03/2026
+
+## 02/03/2026 — RDO Nº 126
+
+**Efetivo total:** 3  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 2  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (mar/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 03/03/2026 — RDO Nº 127
+
+**Efetivo total:** 3  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 2  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (mar/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 04/03/2026 — RDO Nº 128
+
+**Efetivo total:** 3  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 2  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (mar/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 05/03/2026 — RDO Nº 129
+
+**Efetivo total:** 3  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 2  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (mar/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 06/03/2026 — RDO Nº 130
+
+**Efetivo total:** 3  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 2  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (mar/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 09/03/2026 — RDO Nº 131
+
+**Efetivo total:** 3  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 2  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (mar/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 10/03/2026 — RDO Nº 132
+
+**Efetivo total:** 3  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 2  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (mar/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 17/03/2026 — RDO Nº 137
+
+**Efetivo total:** 3  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 2  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (mar/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 18/03/2026 — RDO Nº 138
+
+**Efetivo total:** 3  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 2  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (mar/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 19/03/2026 — RDO Nº 139
+
+**Efetivo total:** 3  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 2  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (mar/2026)*
+
+**Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
+
+---
+
+## 20/03/2026 — RDO Nº 140
+
+**Efetivo total:** 3  
+M.O.I.: ENCARREGADO: 1  
+M.O.D.: AJUDANTE: 2  
+*Fonte: PDF oficial RDO_SAMARC_CESBE (mar/2026)*
 
 **Serviços:** GRAUTE [UN]; Retiradas de bags de areia [UN]
 
