@@ -187,6 +187,23 @@ dados da obra Suzano; nunca usar dados de "Rio Tanque" (obra anterior, já encer
       único pro app (mesclando com backup atual) e/ou lançar em lote na planilha via upsert.
       **Regra mantida:** nunca inventar dados operacionais (é documento contratual) — toda
       extração é literal/transcrita, nunca inferida ou estimada.
+      **4ª leva — arquivo de importação único entregue (15/07/2026), aguardando PDFs de
+      junho/julho para fechar de vez.** Usuário pediu para gerar já um backup pro app cobrindo
+      "do dia 1 até hoje", numeração sequencial automática (o app calcula RDO Nº pela posição
+      cronológica da data no `history` — ver `numeroRDO()` em index.html linha ~5240 — não
+      precisa de campo manual). Mesclado por prioridade **PDF oficial > planilha (06-14/07) >
+      WhatsApp** (WhatsApp só preenche gaps sem PDF: out-nov/2025 e trechos sem PDF entre
+      mai-jul/2026). Dias de fonte PDF ficam com `efetivo: {}` vazio (formulário oficial não
+      lista nomes, só contagem por categoria — não dava pra mapear pra pessoa sem inventar) e
+      o resumo (efetivo por categoria + serviços + comentários) vai em `observacoesDia` com tag
+      `[RDO OFICIAL Nº X — fonte]`. Dias de fonte WhatsApp tentam mapear efetivo por nome citado
+      no texto (heurística, pode falhar silenciosamente — revisar se algo parecer errado).
+      **Entregue:** [[Recursos/Anexos/RESTAURAR-HISTORICO-COMPLETO-05set2025-a-14jul2026]] — 149
+      dias, de 05/09/2025 (RDO oficial Nº1) a 14/07/2026. Import via app: Cadastro → Backup em
+      Arquivo → Importar Arquivo.
+      **Aguardando do usuário:** PDFs de junho e julho/2026 (ele vai cobrar a empresa) — quando
+      chegarem, gerar novo arquivo de importação substituindo/completando esse, fechando o
+      histórico por inteiro sem nenhum gap.
 - [ ] Multi-obra — cadastrar/alternar obras, cada uma com cadastros/histórico próprios.
 - [ ] SINAPI — usuário vai listar problemas do fluxo de orçamentação antes de retomar (projeto
       separado; ver [[Recursos/SINAPI-MG-Industrial]]).
