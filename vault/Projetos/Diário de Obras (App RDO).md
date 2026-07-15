@@ -89,6 +89,29 @@ arquivo atual ao usuário em vez de confiar cegamente nesta cópia.
   `parentId` da pasta) e usar os dados de lá (cadastros + histórico) como base — nunca pedir
   pro usuário redigitar ou re-informar cadastros já existentes. Atualizar a tabela de dados de
   referência abaixo sempre que buscar um backup novo.
+- **BUG GRAVE descoberto 15/07/2026 — perda recorrente de memória local (não é evento único):**
+  Investigando reclamação do usuário de que "a cada nova versão perde a memória dos diários
+  anteriores", baixei e decodifiquei ~20 backups do Drive (pastas duplicadas "Suzano - ETA",
+  "Suzano", "Obra"). Achado: `state.obra.nome` e `history` local **voltam vazios repetidas
+  vezes** (não só uma vez) — ex: backup 2026-07-12 18:49 (obra vazia, 1 dia), backup
+  2026-07-13 19:51 (obra "Suzano" ok, mas só 1 dia no history), backup 2026-07-14 17:27
+  (obra vazia de novo, só 1 dia). Toda vez que `obra.nome` fica vazio, `backupNuvem()` usa
+  `state.obra.nome || 'Obra'` como nome de pasta no Drive, criando uma pasta nova "Obra" —
+  por isso há 11+ pastas "Suzano - ETA" duplicadas. **Causa mais provável: reinstalação do
+  ícone PWA na tela de início do iPhone cria um container de localStorage separado/zerado.**
+  Cada vez que isso acontece, `history` local também zera e só acumula o dia corrente a partir
+  dali (nunca mais que 1 dia por backup) — mas a **planilha "Diário" nunca é afetada** (é
+  gravada direto pelo Apps Script, fonte de verdade). Confirmado em 15/07/2026: planilha tinha
+  9 dias intactos (06/07 a 14/07) mesmo com o app local zerado.
+  **Ação tomada:** reconstruído `history` dos 9 dias a partir da planilha + cadastro do backup
+  confirmado, entregue arquivo único de restauração ao usuário (import via Cadastro → Restaurar
+  do Arquivo) — zero redigitação.
+  **Pendente para v21:** (1) investigar/confirmar se é reinstalação do ícone PWA causando o
+  problema (perguntar ao usuário quantas vezes reinstalou); (2) nunca deixar `backupNuvem()`
+  criar pasta "Obra" silenciosamente — se `obra.nome` vier vazio, é sinal de perda de estado e
+  deve alertar/bloquear em vez de seguir criando pasta nova; (3) considerar que a planilha
+  Sheets é a fonte de verdade mais robusta — avaliar buscar automaticamente da planilha (não só
+  do backup local/Drive) ao detectar `history` vazio ou incompleto.
 
 ---
 
