@@ -83,6 +83,12 @@ arquivo atual ao usuário em vez de confiar cegamente nesta cópia.
   misturados após um update, a correção é sempre buscar o backup correto (Drive ou JSON) e
   restaurar automaticamente — nunca pedir para o usuário deletar colaboradores/equipamentos/
   atividades um por um. Ver dados de referência da obra Suzano abaixo.
+- **Workflow de continuidade entre versões (acordado 15/07/2026):** o usuário faz backup no
+  Drive a cada diário lançado. Antes de entregar qualquer nova versão do app, buscar o backup
+  mais recente em `Diario de Obras - Backups/Suzano/` (Google Drive, `search_files` com
+  `parentId` da pasta) e usar os dados de lá (cadastros + histórico) como base — nunca pedir
+  pro usuário redigitar ou re-informar cadastros já existentes. Atualizar a tabela de dados de
+  referência abaixo sempre que buscar um backup novo.
 
 ---
 
