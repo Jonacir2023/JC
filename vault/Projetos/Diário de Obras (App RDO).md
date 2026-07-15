@@ -155,13 +155,22 @@ dados da obra Suzano; nunca usar dados de "Rio Tanque" (obra anterior, já encer
 
 ## Fila de desenvolvimento (ordem confirmada com o usuário)
 
-- [ ] **Em andamento** — Reconstrução histórica de RDOs. Obra iniciou em 01/09/2025; testes no
-      app só começaram em 13/07/2026 (RDO Nº1 ficou marcado errado como marco zero). Aguardando
-      do usuário: nome/local da obra, PDFs de registros antigos, export do ChatGPT, backup atual
-      do app. Plano: extrair dados dos PDFs/conversas, cruzar histórico meteorológico real,
-      gerar arquivo de importação único (mescla com backup atual), botão de reenvio em lote via
-      upsert. Alternativa mais rápida se fontes forem insuficientes: um único RDO Nº 001 de marco
-      de mobilização — **nunca inventar dados operacionais** (é documento contratual).
+- [ ] **Em andamento — 1ª leva pronta, aguardando revisão do usuário (15/07/2026).** Reconstrução
+      histórica de RDOs. Obra iniciou em 01/09/2025; testes no app só começaram em 13/07/2026
+      (RDO Nº1 ficou marcado errado como marco zero). Usuário forneceu export do WhatsApp do
+      grupo "SUZANO Ribas Garantia" (25/08/2025 a 14/07/2026, ~2450 mensagens).
+      **Entregue:** [[Recursos/Anexos/RDO-historico-reconstruido-whatsapp-21out2025-a-03jul2026]]
+      — 72 RDOs (RDO Nº1 = marco de mobilização em 21/10/2025; RDO Nº2 a 72 = dias com evidência
+      literal de trabalho executado no grupo, até 03/07/2026). Extração 100% literal das
+      mensagens, nada inventado — vários dias (a partir de fev/2026) já vêm com "Relatório de
+      Atividades" formal do Jekyll incluindo efetivo declarado. Dias mais antigos (nov/dez 2025)
+      têm menos detalhe (mensagens curtas tipo "atividade iniciada").
+      **Pendente:** usuário revisar/validar a numeração e o conteúdo antes de qualquer uso
+      oficial — os RDOs já emitidos pela planilha (06/07 em diante) têm numeração própria (1, 2,
+      4...) que não bate com esta sequência histórica; decisão de renumerar definitivamente é do
+      usuário. Depois da validação: gerar arquivo de importação único pro app (mesclando com
+      backup atual) e/ou lançar em lote na planilha via upsert.
+      **Regra mantida:** nunca inventar dados operacionais (é documento contratual).
 - [ ] Multi-obra — cadastrar/alternar obras, cada uma com cadastros/histórico próprios.
 - [ ] SINAPI — usuário vai listar problemas do fluxo de orçamentação antes de retomar (projeto
       separado; ver [[Recursos/SINAPI-MG-Industrial]]).
