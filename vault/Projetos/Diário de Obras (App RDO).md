@@ -208,6 +208,21 @@ dados da obra Suzano; nunca usar dados de "Rio Tanque" (obra anterior, já encer
       **Aguardando do usuário:** PDFs de junho e julho/2026 (ele vai cobrar a empresa) — quando
       chegarem, gerar novo arquivo de importação substituindo/completando esse, fechando o
       histórico por inteiro sem nenhum gap.
+- [x] **Planilha de produtividade semanal entregue (16/07/2026).** Usuário pediu levantamento
+      de produtividade das atividades executadas, semana a semana, de janeiro até hoje, pra
+      cobrar a empresa dos meses 06 e 07. Gerada
+      [[Recursos/Anexos/Produtividade-Semanal-Suzano-jan-a-jul2026]] (3 abas: Resumo Semanal,
+      Detalhe Diário com trecho de origem de cada número, Gaps e Limitações). Fonte: RDOs
+      oficiais em PDF + mensagens "Relatório de Atividades" do grupo WhatsApp + planilha JC.
+      **Achado metodológico importante:** várias mensagens do WhatsApp reportam um dia de
+      trabalho DIFERENTE do dia de envio (catch-up de atendimento atrasado) — corrigido
+      extraindo a data real de dentro do texto "Relatório de Atividades – ETA Suzano | DD/MM",
+      não a data de envio da mensagem (36 mensagens tinham essa divergência). Também descartadas
+      menções de quantidade que não eram produção real (pedidos de compra, specs técnicas de
+      equipamento, peso de bags, contagem de veículos) para não inflar os números.
+      **Gaps de produtividade (sem dado em nenhuma fonte):** janeiro inteiro (só 1 dia
+      oficial, feriado), fevereiro e março têm RDO oficial mas sem quantidade preenchida no
+      formulário (só 3 dias de fev têm número, via WhatsApp), e junho quase todo.
 - [ ] Multi-obra — cadastrar/alternar obras, cada uma com cadastros/histórico próprios.
 - [ ] SINAPI — usuário vai listar problemas do fluxo de orçamentação antes de retomar (projeto
       separado; ver [[Recursos/SINAPI-MG-Industrial]]).
