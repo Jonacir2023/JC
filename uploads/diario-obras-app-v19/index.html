@@ -1033,40 +1033,64 @@
   }
 
 /* ===== PDF do RDO ===== */
-.pdf-capa { text-align: center; padding: 30px 10px 10px; page-break-after: always; }
-.pdf-capa-logo { max-width: 300px; max-height: 140px; object-fit: contain; margin-bottom: 24px; }
-.pdf-capa-titulo { font-size: 22px; font-weight: 800; letter-spacing: 2px; color: #1a1a1a; }
-.pdf-capa-num { font-size: 14px; font-weight: 700; color: #b85c1e; margin-top: 4px; }
-.pdf-capa-obra { font-size: 17px; font-weight: 700; margin-top: 16px; }
-.pdf-capa-data { font-size: 13px; color: #444; margin-top: 4px; }
-.pdf-capa table { text-align: left; }
-.pdf-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.pdf-card { border: 1px solid #999; border-radius: 6px; text-align: center; padding: 8px 4px; }
-.pdf-card .v { font-size: 18px; font-weight: 800; color: #1a1a1a; }
-.pdf-card .t { font-size: 9px; color: #555; margin-top: 2px; }
-#pdfOverlay { position: fixed; inset: 0; background: #fff; z-index: 9999; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+:root {
+  --rdo-navy: #1a2b4d;
+  --rdo-green: #5ea966;
+  --rdo-blue: #3a81bf;
+  --rdo-ink: #1c1a18;
+  --rdo-ink-soft: #4a4540;
+  --rdo-ink-faint: #8a8178;
+  --rdo-line: #ccc5bc;
+}
+@page { size: A4; margin: 15mm; }
+#pdfOverlay { position: fixed; inset: 0; background: #eeeae3; z-index: 9999; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .pdf-toolbar { position: sticky; top: 0; background: #2c2c2c; padding: 10px 14px; display: flex; gap: 10px; z-index: 2; }
 .pdf-toolbar button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
-.pdf-doc { max-width: 800px; margin: 0 auto; padding: 20px 22px 40px; font-family: Arial, 'Helvetica Neue', sans-serif; font-size: 12px; color: #1a1a1a; background: #fff; }
-.pdf-cab { display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #b85c1e; padding-bottom: 12px; margin-bottom: 14px; }
-.pdf-cab img { width: 64px; height: 64px; object-fit: contain; }
-.pdf-cab-info { flex: 1; }
-.pdf-cab-info h1 { font-size: 17px; margin: 0 0 2px; color: #1a1a1a; }
-.pdf-cab-info div { font-size: 11px; color: #444; }
-.pdf-cab-num { text-align: center; border: 2px solid #1a1a1a; border-radius: 6px; padding: 6px 12px; }
-.pdf-cab-num .n { font-size: 16px; font-weight: 800; }
-.pdf-cab-num .d { font-size: 10px; }
-.pdf-sec { margin-bottom: 12px; page-break-inside: avoid; }
-.pdf-sec h2 { font-size: 12px; background: #2c2c2c; color: #f5b334; padding: 5px 8px; margin: 0 0 6px; border-radius: 3px; }
-.pdf-doc table { width: 100%; border-collapse: collapse; font-size: 11px; }
-.pdf-doc th, .pdf-doc td { border: 1px solid #999; padding: 4px 6px; text-align: left; vertical-align: top; }
-.pdf-doc th { background: #eee; font-weight: 700; }
+.pdf-doc { max-width: 800px; margin: 16px auto; padding: 15mm; font-family: 'Barlow', Arial, 'Helvetica Neue', sans-serif; font-size: 12pt; line-height: 1.35; color: var(--rdo-ink); background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.15); }
+.pdf-page { page-break-before: always; }
+.pdf-page:first-child { page-break-before: avoid; }
+
+/* Capa */
+.pdf-capa-head { display: flex; align-items: flex-end; gap: 14px; border-bottom: 3px solid var(--rdo-navy); padding-bottom: 10px; }
+.pdf-capa-logo { height: 30px; max-width: 140px; width: auto; object-fit: contain; flex-shrink: 0; }
+.pdf-capa-htext { flex: 1; }
+.pdf-capa-titulo { font-size: 16pt; font-weight: 800; letter-spacing: .02em; color: var(--rdo-ink); }
+.pdf-capa-sub { font-size: 10pt; color: var(--rdo-ink-soft); margin-top: 2px; }
+.pdf-capa-rdotag { margin-top: 12px; display: inline-flex; align-items: center; background: rgba(212,84,26,.08); border: 1px solid var(--rdo-navy); border-radius: 3px; padding: 4px 10px; }
+.pdf-capa-rdotag span { font-size: 13pt; font-weight: 800; color: var(--rdo-navy); letter-spacing: .03em; }
+.pdf-capa-obra { font-size: 16pt; font-weight: 700; margin-top: 12px; }
+.pdf-capa-data { font-size: 11pt; color: var(--rdo-ink-soft); margin-top: 3px; }
+.pdf-capa-meta { margin-top: 12px; display: flex; gap: 28px; flex-wrap: wrap; }
+.pdf-capa-meta .k { font-size: 8pt; letter-spacing: .08em; text-transform: uppercase; color: var(--rdo-ink-faint); }
+.pdf-capa-meta .v { font-size: 11pt; font-weight: 700; margin-top: 2px; }
+
+/* Cabecalho das paginas internas */
+.pdf-pg-head { display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--rdo-navy); padding-bottom: 8px; margin-bottom: 12px; }
+.pdf-pg-head img { height: 22px; max-width: 90px; width: auto; object-fit: contain; flex-shrink: 0; }
+.pdf-pg-head .htext { flex: 1; }
+.pdf-pg-head .htext .t { font-size: 13pt; font-weight: 800; }
+.pdf-pg-head .htext .s { font-size: 9pt; color: var(--rdo-ink-soft); }
+
+.pdf-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.pdf-card { border: 1px solid var(--rdo-line); border-radius: 4px; text-align: center; padding: 6px 4px; }
+.pdf-card .v { font-size: 16pt; font-weight: 800; color: var(--rdo-ink); }
+.pdf-card .t { font-size: 8pt; color: var(--rdo-ink-faint); margin-top: 2px; }
+.pdf-sec { margin-bottom: 10px; page-break-inside: avoid; }
+.pdf-sec h2 {
+  font-size: 14pt; font-weight: 700; letter-spacing: .01em;
+  background: linear-gradient(90deg, var(--rdo-green), var(--rdo-blue));
+  color: var(--rdo-navy); border: 1px solid var(--rdo-navy);
+  padding: 5px 8px; margin: 0 0 6px; border-radius: 3px;
+}
+.pdf-doc table { width: 100%; border-collapse: collapse; font-size: 11pt; }
+.pdf-doc th, .pdf-doc td { border: 1px solid var(--rdo-line); padding: 4px 7px; text-align: left; vertical-align: top; }
+.pdf-doc th { background: #f0ece4; font-weight: 700; font-size: 9pt; text-transform: uppercase; letter-spacing: .02em; color: var(--rdo-ink-soft); }
 .pdf-fotos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .pdf-fotos figure { margin: 0; page-break-inside: avoid; }
-.pdf-fotos img { width: 100%; border: 1px solid #999; border-radius: 3px; }
-.pdf-fotos figcaption { font-size: 10px; color: #333; margin-top: 3px; }
-.pdf-ass { display: flex; gap: 30px; margin-top: 44px; page-break-inside: avoid; }
-.pdf-ass > div { flex: 1; text-align: center; font-size: 11px; }
+.pdf-fotos img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border: 1px solid var(--rdo-line); border-radius: 3px; }
+.pdf-fotos figcaption { font-size: 9pt; color: var(--rdo-ink-soft); margin-top: 3px; }
+.pdf-ass { display: flex; gap: 30px; margin-top: 32px; page-break-inside: avoid; }
+.pdf-ass > div { flex: 1; text-align: center; font-size: 10pt; }
 #padAssOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 16px; }
 #padAssOverlay .pad-box { background: #fff; border-radius: 12px; padding: 14px; width: 100%; max-width: 520px; }
 #padAssOverlay canvas { width: 100%; height: 200px; border: 1.5px dashed #999; border-radius: 8px; touch-action: none; display: block; background: #fff; }
@@ -1074,10 +1098,11 @@
 #padAssOverlay .pad-btns button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
 @media print {
   body.pdf-printing > *:not(#pdfOverlay) { display: none !important; }
+  html, body, #pdfOverlay { background: #fff !important; }
   #pdfOverlay { position: static !important; overflow: visible !important; }
   .pdf-toolbar { display: none !important; }
   .ass-vazia { visibility: hidden !important; }
-  .pdf-doc { max-width: none; padding: 0; }
+  .pdf-doc { max-width: none !important; width: auto !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
 }
 </style>
 </head>
@@ -2782,45 +2807,29 @@ function gerarPdfRDO() {
 
   let h = '';
   const logoSrc = state.obra.logo || LOGO_PADRAO;
+  const pgHeadMini = `<div class="pdf-pg-head">
+    <img src="${logoSrc}" alt="logo">
+    <div class="htext">
+      <div class="t">RDO Nº ${num} · ${escHtml((state.obra.nome || '').toUpperCase())}</div>
+      <div class="s">${escHtml(state.obra.local || '')} · ${dataBR}</div>
+    </div>
+  </div>`;
 
-  // ================= CAPA =================
-  // Condições de área (derivada da operação dos períodos de trabalho)
-  const opM = day.pratManha, opT = day.pratTarde;
-  let condArea = '—';
-  if (opM === 'praticavel' && opT === 'praticavel') condArea = 'Operável';
-  else if (opM === 'impraticavel' && opT === 'impraticavel') condArea = 'Inoperável';
-  else if (opM || opT) condArea = 'Parcialmente operável';
-
-  // Prazos do contrato
-  let prazoHtml = '';
-  if (state.obra.dataInicio && state.obra.dataTermino) {
-    const ini = parseISO(state.obra.dataInicio);
-    const fim = parseISO(state.obra.dataTermino);
-    const hoje = parseISO(day.data);
-    const dia = 86400000;
-    const total = Math.round((fim - ini) / dia);
-    const incorrido = Math.max(0, Math.min(total, Math.round((hoje - ini) / dia)));
-    const faltante = total - incorrido;
-    prazoHtml = `<table style="margin-top:14px"><tr><th>Prazo</th><th>Incorrido</th><th>Faltante</th><th>Início</th><th>Término</th></tr>
-      <tr><td>${total} dias</td><td>${incorrido} dias</td><td>${faltante} dias</td><td>${formatDateBR(state.obra.dataInicio)}</td><td>${formatDateBR(state.obra.dataTermino)}</td></tr></table>`;
-  }
-
-  h += `<div class="pdf-capa">
+  // ================= PÁGINA 1 — CAPA =================
+  h += `<div class="pdf-page"><div class="pdf-capa-head">
     <img src="${logoSrc}" alt="logo" class="pdf-capa-logo">
-    <div class="pdf-capa-titulo">RELATÓRIO DIÁRIO DE OBRAS</div>
-    <div class="pdf-capa-num">RDO Nº ${num}</div>
-    <div class="pdf-capa-obra">${escHtml(state.obra.nome || '')}</div>
-    <div class="pdf-capa-data">${escHtml(dataPorExtenso(day.data))}</div>
-    <table style="margin-top:22px">
-      <tr><th style="width:50%">Cliente</th><th>Gestor da Obra</th></tr>
-      <tr><td>${escHtml(state.obra.cliente || '—')}</td><td>${escHtml(state.obra.gestor || '—')}</td></tr>
-      <tr><th>Construtora</th><th>Gerenciadora</th></tr>
-      <tr><td>${escHtml(state.obra.empresa || '—')}</td><td>${escHtml(state.obra.gerenciadora || '—')}</td></tr>
-      <tr><th>Jornada de Trabalho</th><th>Condições de Área</th></tr>
-      <tr><td>${day.cafeFim || '--'} às ${day.encerramento || '--'}</td><td><strong>${condArea}</strong></td></tr>
-    </table>
-    ${prazoHtml}
-    ${state.obra.contrato ? `<div style="margin-top:14px;font-size:11px;color:#555">Contrato: ${escHtml(state.obra.contrato)} · ${escHtml(state.obra.local || '')}</div>` : ''}
+    <div class="pdf-capa-htext">
+      <div class="pdf-capa-titulo">RELATÓRIO DIÁRIO DE OBRA</div>
+      <div class="pdf-capa-sub">${escHtml(state.obra.empresa || '')}</div>
+    </div>
+  </div>
+  <div class="pdf-capa-rdotag"><span>RDO Nº ${num}</span></div>
+  <div class="pdf-capa-obra">${escHtml(state.obra.nome || '')}</div>
+  <div class="pdf-capa-data">${escHtml(dataPorExtenso(day.data))}</div>
+  <div class="pdf-capa-meta">
+    <div><div class="k">Local</div><div class="v">${escHtml(state.obra.local || '—')}</div></div>
+    ${state.obra.contrato ? `<div><div class="k">Contrato</div><div class="v">${escHtml(state.obra.contrato)}</div></div>` : ''}
+    ${state.obra.cliente ? `<div><div class="k">Cliente</div><div class="v">${escHtml(state.obra.cliente)}</div></div>` : ''}
   </div>`;
 
   // ================= RESUMO GERAL =================
@@ -2863,6 +2872,15 @@ function gerarPdfRDO() {
     ${linhasClima}
     <tr><th colspan="3">Total acumulado</th><th style="text-align:right">${totalPrecipitacao(day).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mm</th></tr></table></div>`;
 
+  if (day.localObra || day.descricaoLocal) {
+    h += `<div class="pdf-sec"><h2>LOCAL DOS TRABALHOS</h2>
+      <table><tr><td><strong>${escHtml(day.localObra || '')}</strong>${day.descricaoLocal ? '<br>' + escHtml(day.descricaoLocal) : ''}</td></tr></table></div>`;
+  }
+  h += `</div>`; // fecha pdf-page 1 (capa)
+
+  // ================= PÁGINA 2 — Jornada, Efetivo, Equipamentos =================
+  h += `<div class="pdf-page">${pgHeadMini}`;
+
   // Jornada + DSS
   h += `<div class="pdf-sec"><h2>JORNADA · DSS</h2>
     <table><tr><th>Jornada</th><th>DSS</th></tr>
@@ -2870,11 +2888,6 @@ function gerarPdfRDO() {
         <td>Café: ${day.cafeInicio || '--'}–${day.cafeFim || '--'} · Almoço: ${day.almocoInicio || '--'}–${day.almocoFim || '--'} · Encerramento: ${day.encerramento || '--'}</td>
         <td>Horário: ${escHtml(day.dssHorario || '—')} · Ministrante: ${escHtml(day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '—')} · Tema: ${escHtml(day.dssTema || '—')}</td>
       </tr></table></div>`;
-
-  if (day.localObra || day.descricaoLocal) {
-    h += `<div class="pdf-sec"><h2>LOCAL DOS TRABALHOS</h2>
-      <table><tr><td><strong>${escHtml(day.localObra || '')}</strong>${day.descricaoLocal ? '<br>' + escHtml(day.descricaoLocal) : ''}</td></tr></table></div>`;
-  }
 
   // Efetivo
   // Efetivo — Mão de obra própria (Função | Qtd por categoria) + Subcontratada (Função | Qtd | Empresa)
@@ -2972,6 +2985,10 @@ function gerarPdfRDO() {
     h += `<div class="pdf-sec"><h2>VEÍCULOS / EQUIPAMENTOS PARADOS — ${equipsParados.length + vlParados.length}</h2>
       <table><tr><th style="width:45%">Item</th><th>Justificativa</th></tr>${linhas}</table></div>`;
   }
+  h += `</div>`; // fecha pdf-page 2
+
+  // ================= PÁGINA 3 — Atividades, Observações, Assinaturas =================
+  h += `<div class="pdf-page">${pgHeadMini}`;
 
   // Atividades
   const ativsMarc = state.atividades.filter(a => day.atividadesMarcadas[a.id]);
@@ -3028,27 +3045,6 @@ function gerarPdfRDO() {
   h += eventos('EVENTOS DE SEGURANÇA', day.eventosSeguranca);
   h += eventos('EVENTOS DE MEIO AMBIENTE', day.eventosAmbiente);
 
-  // Fotos — agrupadas por atividade (padrão de anexos)
-  if ((day.fotos || []).length) {
-    h += `<div class="pdf-sec"><h2>REGISTRO FOTOGRÁFICO — ${day.fotos.length}</h2>`;
-    const figHtml = f => `<figure>
-        <img src="https://drive.google.com/thumbnail?id=${f.fileId}&sz=w800" onerror="this.parentElement.style.display='none'">
-        <figcaption>${f.legenda ? escHtml(f.legenda) : '&nbsp;'}</figcaption>
-      </figure>`;
-    ativsMarc.forEach(a => {
-      const fs = day.fotos.filter(f => f.ativId === a.id);
-      if (!fs.length) return;
-      h += `<div style="font-weight:700;font-size:11px;margin:8px 0 4px">Anexos — ${escHtml(a.desc)}</div>
-        <div class="pdf-fotos">${fs.map(figHtml).join('')}</div>`;
-    });
-    const gerais = day.fotos.filter(f => !f.ativId || !ativsMarc.some(a => a.id === f.ativId));
-    if (gerais.length) {
-      h += `<div style="font-weight:700;font-size:11px;margin:8px 0 4px">Anexos — Geral</div>
-        <div class="pdf-fotos">${gerais.map(figHtml).join('')}</div>`;
-    }
-    h += `</div>`;
-  }
-
   // Assinaturas (toque na caixa para assinar em tela)
   const nomeApont = day.apontador || '';
   const sigs = day.assinaturas || {};
@@ -3064,6 +3060,29 @@ function gerarPdfRDO() {
     <span>RDO Nº ${num} · ${escHtml(state.obra.nome || '')}</span>
     <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
   </div>`;
+  h += `</div>`; // fecha pdf-page 3
+
+  // ================= PÁGINA(S) 4+ — Registro Fotográfico =================
+  // Uma foto do dia é suportada até 20 por RDO; a cada múltiplo de 6, inicia nova página.
+  if ((day.fotos || []).length) {
+    const figHtml = f => {
+      const ativ = ativsMarc.find(a => a.id === f.ativId);
+      const legenda = f.legenda ? f.legenda : (ativ ? ativ.desc : '');
+      return `<figure>
+        <img src="https://drive.google.com/thumbnail?id=${f.fileId}&sz=w800" onerror="this.parentElement.style.display='none'">
+        <figcaption>${legenda ? escHtml(legenda) : '&nbsp;'}</figcaption>
+      </figure>`;
+    };
+    const FOTOS_POR_PAGINA = 6;
+    for (let i = 0; i < day.fotos.length; i += FOTOS_POR_PAGINA) {
+      const lote = day.fotos.slice(i, i + FOTOS_POR_PAGINA);
+      const primeiraPagina = i === 0;
+      h += `<div class="pdf-page">${pgHeadMini}
+        <div class="pdf-sec"><h2>REGISTRO FOTOGRÁFICO${primeiraPagina ? ` — ${day.fotos.length}` : ' (continuação)'}</h2>
+        <div class="pdf-fotos">${lote.map(figHtml).join('')}</div></div>
+      </div>`;
+    }
+  }
 
   // Montar overlay
   const overlay = document.createElement('div');
