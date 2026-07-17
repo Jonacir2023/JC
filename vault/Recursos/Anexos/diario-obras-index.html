@@ -70,16 +70,18 @@
   }
   
   /* HEADER — concreto escuro rústico */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
   .header {
     background: var(--bg-dark);
     background-image:
       var(--texture),
       linear-gradient(180deg, #363230 0%, #2c2c2c 100%);
     color: #f0ece7;
-    padding: 14px 18px 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    padding: 8px 14px 0;
     box-shadow: 0 3px 16px rgba(0,0,0,0.35);
     border-bottom: 3px solid var(--accent);
   }
@@ -87,17 +89,17 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 12px;
-    padding-bottom: 12px;
+    gap: 10px;
+    padding-bottom: 6px;
   }
   .header-id { flex: 1; min-width: 0; }
   .header-empresa {
-    font-size: 10px;
+    font-size: 9px;
     color: var(--accent-soft);
     font-weight: 800;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -105,28 +107,28 @@
   }
   .header h1 {
     font-family: var(--serif);
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 800;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
     line-height: 1.1;
     text-transform: uppercase;
     color: #f0ece7;
   }
   .header-obra {
-    font-size: 11px;
+    font-size: 10px;
     color: rgba(240,236,231,0.6);
     font-style: normal;
     font-weight: 500;
     letter-spacing: 0.3px;
-    margin-top: 2px;
+    margin-top: 1px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .header-logo {
-    width: 46px;
-    height: 46px;
-    border-radius: 6px;
+    width: 34px;
+    height: 34px;
+    border-radius: 5px;
     background: var(--accent-soft);
     display: flex;
     align-items: center;
@@ -136,23 +138,23 @@
     color: var(--ink);
     font-family: var(--serif);
     font-weight: 800;
-    font-size: 13px;
+    font-size: 11px;
     border: 2px solid rgba(255,255,255,0.15);
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }
   .header-logo img { width: 100%; height: 100%; object-fit: contain; }
   .header-date {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--accent-soft);
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
     font-family: var(--serif);
-    padding: 6px 0 10px;
+    padding: 4px 0 6px;
     border-top: 1px solid rgba(255,255,255,0.08);
-    margin-top: 2px;
+    margin-top: 1px;
   }
-  
+
   /* TABS */
   .tabs {
     background: var(--bg-mid);
@@ -162,7 +164,7 @@
     grid-template-columns: repeat(5, 1fr);
   }
   .tab {
-    padding: 10px 4px;
+    padding: 7px 4px;
     font-size: 10px;
     font-weight: 700;
     font-family: var(--serif);
@@ -1046,7 +1048,7 @@
 #pdfOverlay { position: fixed; inset: 0; background: #eeeae3; z-index: 9999; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .pdf-toolbar { position: sticky; top: 0; background: #2c2c2c; padding: 10px 14px; display: flex; gap: 10px; z-index: 2; }
 .pdf-toolbar button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
-.pdf-doc { max-width: 800px; margin: 16px auto; padding: 15mm; font-family: 'Barlow', Arial, 'Helvetica Neue', sans-serif; font-size: 12pt; line-height: 1.35; color: var(--rdo-ink); background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.15); }
+.pdf-doc { max-width: 800px; margin: 16px auto; padding: 15mm; font-family: 'Barlow', Arial, 'Helvetica Neue', sans-serif; font-size: 10pt; line-height: 1.4; color: var(--rdo-ink); background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.15); }
 .pdf-page { page-break-before: always; }
 .pdf-page:first-child { page-break-before: avoid; }
 
@@ -1054,41 +1056,41 @@
 .pdf-capa-head { display: flex; align-items: flex-end; gap: 14px; border-bottom: 3px solid var(--rdo-navy); padding-bottom: 10px; }
 .pdf-capa-logo { height: 30px; max-width: 140px; width: auto; object-fit: contain; flex-shrink: 0; }
 .pdf-capa-htext { flex: 1; }
-.pdf-capa-titulo { font-size: 16pt; font-weight: 800; letter-spacing: .02em; color: var(--rdo-ink); }
+.pdf-capa-titulo { font-size: 12pt; font-weight: 800; letter-spacing: .02em; color: var(--rdo-ink); }
 .pdf-capa-sub { font-size: 10pt; color: var(--rdo-ink-soft); margin-top: 2px; }
 .pdf-capa-rdotag { margin-top: 12px; display: inline-flex; align-items: center; background: rgba(212,84,26,.08); border: 1px solid var(--rdo-navy); border-radius: 3px; padding: 4px 10px; }
-.pdf-capa-rdotag span { font-size: 13pt; font-weight: 800; color: var(--rdo-navy); letter-spacing: .03em; }
-.pdf-capa-obra { font-size: 16pt; font-weight: 700; margin-top: 12px; }
-.pdf-capa-data { font-size: 11pt; color: var(--rdo-ink-soft); margin-top: 3px; }
+.pdf-capa-rdotag span { font-size: 12pt; font-weight: 800; color: var(--rdo-navy); letter-spacing: .03em; }
+.pdf-capa-obra { font-size: 12pt; font-weight: 700; margin-top: 12px; }
+.pdf-capa-data { font-size: 10pt; color: var(--rdo-ink-soft); margin-top: 3px; }
 .pdf-capa-meta { margin-top: 12px; display: flex; gap: 28px; flex-wrap: wrap; }
-.pdf-capa-meta .k { font-size: 8pt; letter-spacing: .08em; text-transform: uppercase; color: var(--rdo-ink-faint); }
-.pdf-capa-meta .v { font-size: 11pt; font-weight: 700; margin-top: 2px; }
+.pdf-capa-meta .k { font-size: 10pt; letter-spacing: .08em; text-transform: uppercase; color: var(--rdo-ink-faint); }
+.pdf-capa-meta .v { font-size: 10pt; font-weight: 700; margin-top: 2px; }
 
 /* Cabecalho das paginas internas */
 .pdf-pg-head { display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--rdo-navy); padding-bottom: 8px; margin-bottom: 12px; }
 .pdf-pg-head img { height: 22px; max-width: 90px; width: auto; object-fit: contain; flex-shrink: 0; }
 .pdf-pg-head .htext { flex: 1; }
-.pdf-pg-head .htext .t { font-size: 13pt; font-weight: 800; }
-.pdf-pg-head .htext .s { font-size: 9pt; color: var(--rdo-ink-soft); }
+.pdf-pg-head .htext .t { font-size: 12pt; font-weight: 800; }
+.pdf-pg-head .htext .s { font-size: 10pt; color: var(--rdo-ink-soft); }
 
 .pdf-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .pdf-card { border: 1px solid var(--rdo-line); border-radius: 4px; text-align: center; padding: 6px 4px; }
-.pdf-card .v { font-size: 16pt; font-weight: 800; color: var(--rdo-ink); }
-.pdf-card .t { font-size: 8pt; color: var(--rdo-ink-faint); margin-top: 2px; }
+.pdf-card .v { font-size: 12pt; font-weight: 800; color: var(--rdo-ink); }
+.pdf-card .t { font-size: 10pt; color: var(--rdo-ink-faint); margin-top: 2px; }
 .pdf-sec { margin-bottom: 10px; page-break-inside: avoid; }
 .pdf-sec h2 {
-  font-size: 14pt; font-weight: 700; letter-spacing: .01em;
+  font-size: 12pt; font-weight: 700; letter-spacing: .01em;
   background: linear-gradient(90deg, var(--rdo-green), var(--rdo-blue));
   color: var(--rdo-navy); border: 1px solid var(--rdo-navy);
-  padding: 5px 8px; margin: 0 0 6px; border-radius: 3px;
+  padding: 4px 7px; margin: 0 0 6px; border-radius: 3px;
 }
-.pdf-doc table { width: 100%; border-collapse: collapse; font-size: 11pt; }
+.pdf-doc table { width: 100%; border-collapse: collapse; font-size: 10pt; }
 .pdf-doc th, .pdf-doc td { border: 1px solid var(--rdo-line); padding: 4px 7px; text-align: left; vertical-align: top; }
-.pdf-doc th { background: #f0ece4; font-weight: 700; font-size: 9pt; text-transform: uppercase; letter-spacing: .02em; color: var(--rdo-ink-soft); }
+.pdf-doc th { background: #f0ece4; font-weight: 700; font-size: 10pt; text-transform: uppercase; letter-spacing: .02em; color: var(--rdo-ink-soft); }
 .pdf-fotos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .pdf-fotos figure { margin: 0; page-break-inside: avoid; }
 .pdf-fotos img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border: 1px solid var(--rdo-line); border-radius: 3px; }
-.pdf-fotos figcaption { font-size: 9pt; color: var(--rdo-ink-soft); margin-top: 3px; }
+.pdf-fotos figcaption { font-size: 10pt; color: var(--rdo-ink-soft); margin-top: 3px; }
 .pdf-ass { display: flex; gap: 30px; margin-top: 32px; page-break-inside: avoid; }
 .pdf-ass > div { flex: 1; text-align: center; font-size: 10pt; }
 #padAssOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -1108,6 +1110,7 @@
 </head>
 <body>
 
+<div class="topbar">
 <header class="header">
   <div class="header-top">
     <div class="header-id">
@@ -1128,6 +1131,7 @@
   <button class="tab" data-view="calendario">📅<br>Calendário</button>
   <button class="tab" data-view="config">⚙️<br>Cadastro</button>
 </nav>
+</div>
 
 <!-- ============ DIÁRIO ============ -->
 <main id="view-diario" class="view active">
@@ -1368,10 +1372,8 @@
     <div class="section-title"><div class="section-title-text">📤 Texto para WhatsApp</div></div>
     <div class="output-box" id="output">Toque em "Gerar Relatório" abaixo.</div>
     <div class="btn-stack">
-      <button class="btn btn-primary" onclick="gerarRelatorio()">🔄 Gerar / Atualizar Relatório</button>
       <button class="btn btn-primary" onclick="gerarPdfRDO()">📄 Gerar PDF do RDO</button>
       <button class="btn btn-whatsapp" onclick="copiarRelatorio()">📋 Copiar Texto</button>
-      <button class="btn btn-secondary" onclick="enviarWhatsApp()">💬 Abrir WhatsApp</button>
       <button class="btn btn-ghost" onclick="limparDiarioAtual()">🗑️ Limpar Diário Atual</button>
     </div>
   </div>
@@ -5879,7 +5881,6 @@ function gerarRelatorio() {
   return txt;
 }
 function copiarRelatorio() { copiarTexto(gerarRelatorio()); }
-function enviarWhatsApp() { abrirWhatsApp(gerarRelatorio()); }
 function copiarTexto(txt) {
   if (navigator.clipboard) {
     navigator.clipboard.writeText(txt).then(() => toast('Texto copiado!')).catch(() => fallbackCopy(txt));
