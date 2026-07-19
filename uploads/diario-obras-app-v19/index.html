@@ -2789,6 +2789,28 @@ function escHtml(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function calcResumoPeriodoPDF(isoInicio, isoFim) {
+  const dias = Object.keys(history).filter(d => d >= isoInicio && d <= isoFim).sort();
+  const acum = {}; // atId -> total
+  let somaEfetivo = 0, diasComEfetivo = 0;
+  dias.forEach(data => {
+    const dia = history[data];
+    const ids = new Set([
+      ...Object.keys(dia.atividadesQtd || {}),
+      ...Object.keys(dia.atividadesMarcadas || {})
+    ]);
+    ids.forEach(atId => {
+      const val = qtdAtividadeDia(dia, atId);
+      if (val > 0) acum[atId] = (acum[atId] || 0) + val;
+    });
+    if (dia.efetivo) {
+      const n = Object.keys(dia.efetivo).length;
+      if (n > 0) { somaEfetivo += n; diasComEfetivo++; }
+    }
+  });
+  return { dias, acum, somaEfetivo, diasComEfetivo };
+}
+
 function gerarPdfRDO() {
   const day = currentDay;
   if (!day.data) { toast('❌ Defina a data do diário'); return; }
@@ -3076,6 +3098,49 @@ function gerarPdfRDO() {
       </div>`;
     }
   }
+
+  // ================= PÁGINA FINAL — RESUMO DA SEMANA E DO MÊS =================
+  const fmtISOlocalPdf = d => {
+    const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  };
+  const dRefPdf = new Date(day.data + 'T00:00:00');
+  const dowPdf = dRefPdf.getDay();
+  const diffSegPdf = (dowPdf === 0) ? -6 : 1 - dowPdf;
+  const iniSemD = new Date(dRefPdf); iniSemD.setDate(dRefPdf.getDate() + diffSegPdf);
+  const fimSemD = new Date(iniSemD); fimSemD.setDate(iniSemD.getDate() + 5);
+  const isoIniSem = fmtISOlocalPdf(iniSemD), isoFimSem = fmtISOlocalPdf(fimSemD);
+  const iniMesD = new Date(dRefPdf.getFullYear(), dRefPdf.getMonth(), 1);
+  const fimMesD = new Date(dRefPdf.getFullYear(), dRefPdf.getMonth() + 1, 0);
+  const isoIniMes = fmtISOlocalPdf(iniMesD), isoFimMes = fmtISOlocalPdf(fimMesD);
+
+  const resumoSemana = calcResumoPeriodoPDF(isoIniSem, isoFimSem);
+  const resumoMes = calcResumoPeriodoPDF(isoIniMes, isoFimMes);
+  const mesesPdf = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+  const blocoResumoPeriodo = (titulo, periodoLabel, r) => {
+    const ativsComDado = state.atividades.filter(a => r.acum[a.id]);
+    let linhasServ = '';
+    if (ativsComDado.length === 0) {
+      linhasServ = `<tr><td colspan="2">Nenhum serviço com quantidade registrada no período.</td></tr>`;
+    } else {
+      ativsComDado.forEach(a => {
+        const unid = a.unidade ? ' ' + a.unidade : '';
+        linhasServ += `<tr><td>${escHtml(a.desc)}</td><td style="text-align:right"><strong>${r.acum[a.id].toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${unid}</strong></td></tr>`;
+      });
+    }
+    const mediaEf = r.diasComEfetivo > 0 ? Math.round(r.somaEfetivo / r.diasComEfetivo) : 0;
+    return `<div class="pdf-sec"><h2>${titulo} — ${periodoLabel}</h2>
+      <table><tr><th>Dias com registro</th><th>Efetivo médio/dia</th></tr>
+      <tr><td style="text-align:center">${r.dias.length}</td><td style="text-align:center">${mediaEf || '—'}</td></tr></table>
+      <table style="margin-top:6px"><tr><th>Serviço</th><th style="width:30%">Total no período</th></tr>${linhasServ}</table>
+    </div>`;
+  };
+
+  h += `<div class="pdf-page">${pgHeadMini}`;
+  h += blocoResumoPeriodo('RESUMO DA SEMANA', `${formatDateBR(isoIniSem)} a ${formatDateBR(isoFimSem)}`, resumoSemana);
+  h += blocoResumoPeriodo('RESUMO DO MÊS', `${mesesPdf[iniMesD.getMonth()]} de ${iniMesD.getFullYear()}`, resumoMes);
+  h += `</div>`; // fecha pdf-page resumo semana/mês
 
   // Montar overlay
   const overlay = document.createElement('div');
