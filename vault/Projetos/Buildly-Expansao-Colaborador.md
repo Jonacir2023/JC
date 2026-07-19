@@ -60,10 +60,12 @@ Expandir o módulo **Gestão de Equipes** (`js/modulos/equipes.js`) com 20 campo
 - [ ] Testar migration localmente
 
 ### Fase 2: Backend API (2-3 dias)
-- [ ] Criar endpoints CRUD
-- [ ] Implementar validações
-- [ ] Adicionar filtros
-- [ ] Testar com Postman/curl
+- [x] Criar funções/triggers PL/pgSQL de validação
+- [x] Implementar validações server-side (nome, matrícula, datas)
+- [x] Criar views úteis (por frente, hierarquia, contratos vencendo)
+- [x] Documentar API Supabase completa
+- [x] Exemplos de CRUD em JavaScript
+- [x] Guia de error handling e RLS
 
 ### Fase 3: Frontend Form (3-4 dias)
 - [x] Criar form com 3 abas
@@ -75,9 +77,11 @@ Expandir o módulo **Gestão de Equipes** (`js/modulos/equipes.js`) com 20 campo
 - [x] Adicionar validações client-side
 
 ### Fase 4: List View (1-2 dias)
-- [ ] Redesenhar lista/tabela
-- [ ] Adicionar modal de detalhes
-- [ ] Implementar ações (editar, remover, detalhes)
+- [x] Aprimorar tabela com filtros
+- [x] Adicionar busca em tempo real (por nome)
+- [x] Adicionar ordenação customizável
+- [x] Exibir estatísticas de equipe
+- [x] Botão de limpar filtros
 
 ### Fase 5: Testes (1-2 dias)
 - [ ] E2E workflow (add → list → edit → delete)
@@ -184,7 +188,22 @@ Expandir o módulo **Gestão de Equipes** (`js/modulos/equipes.js`) com 20 campo
   - Estilos CSS para modal, abas, formulário e tabela
   - Commit: `7b53f50`
 
-- ⏳ **Próximo:** Fase 4 (List View - melhorias)
+- ✅ **FASE 2 CONCLUÍDA: Backend API (Supabase)**
+  - Criadas 3 funções PL/pgSQL para validações (nome, matrícula, datas)
+  - Criados 3 triggers para automação (validação + timestamp)
+  - Criadas 3 views úteis (por frente, hierarquia, experimentos vencendo)
+  - Documentação completa API: CRUD examples, error handling, RLS
+  - Commit: `95e04b0`
+
+- ✅ **FASE 4 CONCLUÍDA: List View Aprimorado**
+  - Barra de filtros com 4 opções (empresa, situação, frente, ordenação)
+  - Busca em tempo real por nome (live search)
+  - 5 opções de ordenação (nome A-Z, nome Z-A, empresa, cargo, data admissão)
+  - Dashboard de estatísticas (total, ativos, inativos, MOD, MOI, terceiros)
+  - Tabela re-renderiza dinamicamente com filtros
+  - Commit: `99b7dfc`
+
+- ⏳ **Próximo:** Fase 5 (Testes Integrados)
 
 ---
 
