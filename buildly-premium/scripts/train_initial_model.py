@@ -38,6 +38,21 @@ class XGBoostModelTrainer:
         self.model_path = Path(__file__).parent.parent / 'data' / 'models'
         self.model_path.mkdir(parents=True, exist_ok=True)
 
+    def _load_optuna_params(self) -> dict:
+        """Carregar parâmetros tuned pelo Optuna se disponível"""
+        optuna_file = self.model_path / 'optuna_results.json'
+
+        if optuna_file.exists():
+            try:
+                with open(optuna_file, 'r') as f:
+                    results = json.load(f)
+                logger.info(f"✅ Carregando Optuna params (F1: {results.get('best_score', 0):.4f})")
+                return results.get('best_params', {})
+            except Exception as e:
+                logger.warning(f"⚠️  Erro ao carregar Optuna params: {e}")
+                return {}
+        return {}
+
     def train(self, X: np.ndarray, y: np.ndarray) -> bool:
         """Treina modelo com pipeline completo"""
         logger.info("🤖 Iniciando treinamento XGBoost...")
@@ -59,15 +74,20 @@ class XGBoostModelTrainer:
             dval = xgb.DMatrix(X_val, label=y_val + 1)
             dtest = xgb.DMatrix(X_test, label=y_test + 1)
 
-            # 3. Parâmetros XGBoost
+            # 3. Parâmetros XGBoost (usar Optuna se disponível)
+            optuna_params = self._load_optuna_params()
+
             params = {
                 'objective': 'multi:softmax',
                 'num_class': 3,
-                'max_depth': 6,
-                'learning_rate': 0.1,
-                'subsample': 0.8,
-                'colsample_bytree': 0.8,
-                'min_child_weight': 1,
+                'max_depth': optuna_params.get('max_depth', 6),
+                'learning_rate': optuna_params.get('learning_rate', 0.1),
+                'subsample': optuna_params.get('subsample', 0.8),
+                'colsample_bytree': optuna_params.get('colsample_bytree', 0.8),
+                'min_child_weight': optuna_params.get('min_child_weight', 1),
+                'gamma': optuna_params.get('gamma', 0),
+                'reg_alpha': optuna_params.get('reg_alpha', 0),
+                'reg_lambda': optuna_params.get('reg_lambda', 0),
                 'eval_metric': 'mlogloss',
                 'tree_method': 'hist',
                 'device': 'cpu',
@@ -139,19 +159,66 @@ class XGBoostModelTrainer:
             traceback.print_exc()
             return False
 
+    def _load_registry(self) -> dict:
+        """Carregar registry de modelos anterior"""
+        registry_file = self.model_path / 'registry.json'
+
+        if registry_file.exists():
+            try:
+                with open(registry_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                logger.warning(f"⚠️  Erro ao carregar registry: {e}")
+                return {'models': [], 'current_deployed': None}
+        return {'models': [], 'current_deployed': None}
+
+    def _should_deploy(self, previous_registry: dict) -> bool:
+        """Decidir se deve fazer deploy (F1 improvement > 2%)"""
+        if not previous_registry.get('current_deployed'):
+            logger.info("✅ Primeiro deploy (sem modelo anterior)")
+            return True
+
+        current_f1 = self.metrics['f1_score']
+
+        # Buscar F1 do modelo atual deployed
+        deployed_version = previous_registry['current_deployed']
+        for model in previous_registry.get('models', []):
+            if model['version'] == deployed_version:
+                previous_f1 = model.get('f1_score', 0)
+                improvement = ((current_f1 - previous_f1) / previous_f1 * 100) if previous_f1 > 0 else 0
+                logger.info(f"   Comparação: {previous_f1:.4f} → {current_f1:.4f} ({improvement:+.2f}%)")
+
+                if improvement > 2:
+                    logger.info(f"   ✅ Improvement {improvement:.2f}% > 2% threshold — DEPLOY")
+                    return True
+                else:
+                    logger.info(f"   ❌ Improvement {improvement:.2f}% < 2% threshold — NO DEPLOY")
+                    return False
+
+        return True
+
     def _save_model(self, duration: float) -> bool:
-        """Salvar modelo em arquivo"""
+        """Salvar modelo em arquivo com versionamento"""
         logger.info("💾 Salvando modelo...")
 
         try:
-            # Salvar modelo em arquivo binário
-            model_file = self.model_path / 'xgboost_v1.0.model'
-            self.model.save_model(str(model_file))
-            logger.info(f"   ✅ Modelo salvo: {model_file}")
+            # Carregar registry anterior
+            registry = self._load_registry()
 
-            # Salvar metadados em JSON
+            # Determinar versão
+            next_version_num = len(registry.get('models', [])) + 1
+            version = f"v{next_version_num}.0"
+            model_file_name = f'xgboost_{version}.model'
+            metadata_file_name = f'xgboost_{version}.json'
+
+            # Salvar modelo binário
+            model_file = self.model_path / model_file_name
+            self.model.save_model(str(model_file))
+            logger.info(f"   ✅ Modelo salvo: {model_file_name}")
+
+            # Salvar metadados
             metadata = {
-                'version': 'v1.0',
+                'version': version,
                 'trained_at': datetime.now().isoformat(),
                 'training_duration_seconds': duration,
                 'metrics': self.metrics,
@@ -159,34 +226,37 @@ class XGBoostModelTrainer:
                 'status': 'trained',
             }
 
-            metadata_file = self.model_path / 'xgboost_v1.0.json'
+            metadata_file = self.model_path / metadata_file_name
             with open(metadata_file, 'w') as f:
                 json.dump(metadata, f, indent=2)
 
-            logger.info(f"   ✅ Metadados salvos: {metadata_file}")
+            logger.info(f"   ✅ Metadados salvos: {metadata_file_name}")
 
-            # Criar registry entry
+            # Decidir deploy
+            should_deploy = self._should_deploy(registry)
+
+            # Atualizar registry
+            registry['models'].append({
+                'version': version,
+                'model_file': model_file_name,
+                'metadata_file': metadata_file_name,
+                'status': 'deployed' if should_deploy else 'trained',
+                'f1_score': self.metrics['f1_score'],
+                'trained_at': datetime.now().isoformat(),
+                'improved_from': registry.get('current_deployed'),
+            })
+
+            if should_deploy:
+                registry['current_deployed'] = version
+                logger.info(f"   🚀 Modelo {version} deployado automaticamente")
+
+            registry['updated_at'] = datetime.now().isoformat()
+
             registry_file = self.model_path / 'registry.json'
-            registry = {
-                'version': '1.0',
-                'created_at': datetime.now().isoformat(),
-                'models': [
-                    {
-                        'version': 'v1.0',
-                        'model_file': 'xgboost_v1.0.model',
-                        'metadata_file': 'xgboost_v1.0.json',
-                        'status': 'trained',
-                        'f1_score': self.metrics['f1_score'],
-                        'trained_at': datetime.now().isoformat(),
-                    }
-                ],
-                'current_deployed': None
-            }
-
             with open(registry_file, 'w') as f:
                 json.dump(registry, f, indent=2)
 
-            logger.info(f"   ✅ Registry atualizado: {registry_file}")
+            logger.info(f"   ✅ Registry atualizado")
             return True
 
         except Exception as e:
