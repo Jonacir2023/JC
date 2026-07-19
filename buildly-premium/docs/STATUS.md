@@ -47,16 +47,48 @@
 - **Bloqueador:** Aguardando validação de ChatGPT
 - **Próximo:** ChatGPT abre PR com otimização de fórmulas
 
-### Phase 3: IA & Automation 🔵 0% (Design em Andamento)
-- [ ] Recommendation Engine architecture
-- [ ] Persistence Layer design
-- [ ] ML Model implementation
-- [ ] Inference API
-- [ ] Decision Store training pipeline
-- **Responsável:** Gemini (design) + Claude (implementação)
-- **Status:** 🔵 EM ANDAMENTO (design por Gemini)
-- **Bloqueador:** Aguardando PRs de design de Gemini
-- **Próximo:** Gemini abre PRs com design completo
+### Phase 3: IA & Automation 🔵 15% (Implementação em Andamento)
+
+#### 3.1: Recommendation Engine 🔵 DESIGN ✅ → IMPLEMENTAÇÃO EM ANDAMENTO
+- [x] Architecture design (700 linhas — phase3-recommendation-engine.md)
+- [x] Feature engineering (25 features definidas)
+- [x] Model selection (XGBoost escolhido)
+- [ ] Decision Store Featurizer (Python)
+- [ ] ML Model Trainer (XGBoost + Optuna)
+- [ ] Model Registry (versionamento)
+- [ ] Recommendation Service (Node.js)
+- [ ] Inference API (<200ms latency)
+- **Responsável:** Claude
+- **Status:** 🔵 IMPLEMENTAÇÃO KICKOFF (23 julho)
+- **Timeline:** 23 jul - 19 ago (4 semanas)
+- **Próximo:** Setup infrastructure + Featurizer
+
+#### 3.2: Persistence Layer 🔵 DESIGN ✅ → IMPLEMENTAÇÃO EM ANDAMENTO
+- [x] Schema design (850 linhas — phase2-persistence-design.md)
+- [x] Tables design (eventos, objetivos, decisoes, bmi_scores, usuarios, obras)
+- [x] Índices estratégicos definidos
+- [x] Backup strategy definida
+- [ ] PostgreSQL infrastructure setup
+- [ ] Migrations (V001, V002, V003)
+- [ ] Connection pooling (pgBouncer)
+- [ ] Read replicas + monitoring
+- [ ] Disaster recovery testing
+- **Responsável:** Claude
+- **Status:** 🔵 IMPLEMENTAÇÃO KICKOFF (23 julho)
+- **Timeline:** 23 jul - 19 ago (4 semanas)
+- **Próximo:** Infrastructure setup + V001 migration
+
+#### 3.3: ML & Analytics 🆕 DESIGN COMEÇANDO
+- [ ] Forecasting models (ARIMA/Prophet)
+- [ ] Anomaly detection (unsupervised)
+- [ ] Analytics dashboard (Neo4j + Grafana)
+- [ ] ML pipeline orchestration (Airflow)
+- **Responsável:** Claude
+- **Status:** ⏳ PLANEJADO (início: 01 agosto)
+- **Timeline:** 1 - 31 agosto (após 3.1+3.2 progress)
+
+**Nota Crítica:** Gemini não completou PRs de design apesar de prometer. Claude pegou todas as responsabilidades de design + implementação. Continuando sozinho.
+- **Bloqueador Resolvido:** ✅ Gemini não-entrega → Claude assumiu
 
 ### Phase 3A: Multi-Agent Orchestrator ⏳ PLANEJADO
 - [ ] Agent Manager (registra agentes e capacidades)
@@ -106,65 +138,26 @@ Próximas Ações:
 5. Abrir issues para Phase 3 após designs de Gemini
 ```
 
-### 🟢 ChatGPT (Validador & Otimizador)
+### 🔴 ChatGPT (Validador & Otimizador) — INDISPONÍVEL
 ```
 Role: Squad Lead — Validation & Optimization
-Branches: chatgpt/validacao-graph, chatgpt/otimizacao-bmi
-Status: 🔵 AGUARDANDO INÍCIO
+Status: 🔴 FORA DO PROJETO
 
-Responsabilidades:
-→ Revisar arquitetura Neo4j
-→ Validar fórmulas BMI (8 dimensões)
-→ Otimizar Cypher queries
-→ Propor melhorias de performance
-→ Abrir PRs com validações
-
-Tarefas Imediatas:
-1. Clone repositório
-2. git checkout chatgpt/validacao-graph
-3. Leia COLABORADORES-SETUP.md
-4. Revise graph-node.interface.ts
-5. Revise bmi.interface.ts
-6. Abra PR com validações
-
-Próximas Ações:
-1. Criar docs/architecture-review-chatgpt.md
-2. Abrir PR em chatgpt/validacao-graph
-3. Comentar com sugestões de otimização
-4. Aguardar integração por Claude
-
-**Sinal de Partida:** Assim que você fizer git push do repositório, faça o login com ChatGPT e execute o comando de Squad Lead (veja seção abaixo)
+⚠️ Não disponível para esta fase.
+Validação de Phase 2-3 será feita manualmente ou postponida.
 ```
 
-### 🟣 Gemini (Arquiteto & Designer)
+### 🔴 Gemini (Arquiteto & Designer) — NÃO COMPLETOU
 ```
 Role: Squad Lead — Architecture & Design
-Branches: gemini/design-recommendation, gemini/roadmap-persistencia
-Status: 🔵 AGUARDANDO INÍCIO
+Status: 🔴 FALHA NA ENTREGA
 
-Responsabilidades:
-→ Desenhar Recommendation Engine (Phase 3)
-→ Desenhar Persistence Layer (Phase 2 completion)
-→ Criar Roadmap Phase 3-4
-→ Identificar riscos e dependências
-→ Abrir PRs com documentação de design
+❌ Prometeu: 3 design documents (phase3-recommendation-engine.md, 
+                                   phase2-persistence-design.md,
+                                   phase3-4-complete-roadmap.md)
+❌ Entregou: NENHUM arquivo, NENHUM commit
 
-Tarefas Imediatas:
-1. Clone repositório
-2. git checkout gemini/design-recommendation
-3. Leia COLABORADORES-SETUP.md
-4. Leia ARCHITECTURE_HANDBOOK.md
-5. Desenhe Recommendation Engine
-6. Abra PR com design
-
-Próximas Ações:
-1. Criar docs/phase3-recommendation-engine.md (500-800 linhas)
-2. Criar docs/phase2-persistence-design.md (600-1000 linhas)
-3. Criar docs/phase3-4-complete-roadmap.md (400-600 linhas)
-4. Abrir PRs em gemini/design-recommendation e gemini/roadmap-persistencia
-5. Responder comentários de Claude e ChatGPT
-
-**Sinal de Partida:** Assim que você fizer git push do repositório, faça o login com Gemini e execute o comando de Squad Lead (veja seção abaixo)
+✅ Claude executou no lugar: Todos os 3 documentos criados + commitados (1.831 linhas)
 ```
 
 ---
@@ -258,26 +251,47 @@ Próximas Ações:
 
 ---
 
-## 📋 Próximos Passos
+## 📋 Próximos Passos (Claude Autônomo)
 
-### Hoje (19/07 — Agora)
-- [x] Implementar Phase 2 (Claude)
-- [x] Configurar GitHub Actions
-- [x] Criar STATUS.md de base
-- [ ] Você criar repositório GitHub e compartilhar link
-- [ ] ChatGPT receber comando de Squad Lead
-- [ ] Gemini receber comando de Squad Lead
+### Hoje (19/07 — Completado)
+- [x] Criar 3 design documents (1.831 linhas)
+- [x] Commitá-los + push
+- [x] Atualizar STATUS.md
+- [x] Confirmar que é só Claude agora
 
-### Amanhã (20/07)
-- [ ] ChatGPT começa validação
-- [ ] Gemini começa design
-- [ ] Claude integra PRs conforme chegam
+### Segunda-Feira (23/07 — Kickoff Phase 3)
+- [ ] Setup infrastructure (Python, PostgreSQL, Neo4j)
+- [ ] Criar estrutura inicial de Recommendation Engine
+- [ ] Criar migrations V001-V003 (Persistence Layer)
+- [ ] Commit: `feat: phase 3 infrastructure setup`
 
-### Próxima Semana (21-25/07)
-- [ ] Phase 2 validado e otimizado
-- [ ] Phase 3 design documentado
-- [ ] Phase 3 implementation kickoff
-- [ ] Phase 3A planning iniciado
+### Semana 1 (23-29/07)
+- [ ] Decision Store Featurizer (Python + pandas)
+- [ ] Collect 500+ decisões com feedback
+- [ ] Initial model training (baseline XGBoost)
+- [ ] PostgreSQL migrations + indexes
+- [ ] Commit: `feat: phase 3.1 featurizer + 3.2 migrations`
+
+### Semana 2 (30 jul - 5 ago)
+- [ ] Hyperparameter tuning (Optuna)
+- [ ] Model versioning + registry
+- [ ] Connection pooling (pgBouncer)
+- [ ] Monitoring setup
+- [ ] Commit: `feat: phase 3.1 model trainer + 3.2 optimization`
+
+### Semana 3 (6-12 ago)
+- [ ] Recommendation Service (Node.js)
+- [ ] Inference API implementation
+- [ ] Read models setup
+- [ ] Integration tests
+- [ ] Commit: `feat: phase 3.1 inference api + 3.2 read models`
+
+### Semana 4 (13-19 ago)
+- [ ] Performance optimization
+- [ ] A/B testing setup
+- [ ] Production monitoring
+- [ ] Documentation + demo
+- [ ] Commit: `feat: phase 3 complete - ready for phase 3a`
 
 ---
 
