@@ -1,0 +1,121 @@
+name: 🔔 Notify Agents
+# Notifica os agentes quando há trabalho para fazer
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  notify-on-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Detectar qual agente deve revisar
+        id: detect-agent
+        run: |
+          if [[ "${{ github.event.pull_request.head.ref }}" == claude* ]]; then
+            echo "agent=claude" >> $GITHUB_OUTPUT
+            echo "message=Claude criou uma nova implementação" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event.pull_request.head.ref }}" == chatgpt* ]]; then
+            echo "agent=chatgpt" >> $GITHUB_OUTPUT
+            echo "message=ChatGPT abriu uma validação" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event.pull_request.head.ref }}" == gemini* ]]; then
+            echo "agent=gemini" >> $GITHUB_OUTPUT
+            echo "message=Gemini submeteu um design" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comentar em PR informando os próximos passos
+        if: github.event_name == 'pull_request' && github.event.action == 'opened'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prAuthor = context.payload.pull_request.user.login;
+            const branchName = context.payload.pull_request.head.ref;
+
+            let nextAgent = "Claude";
+            let message = "";
+
+            if (branchName.includes("claude")) {
+              nextAgent = "ChatGPT & Gemini";
+              message = `🔍 **Notificação Automática**\n\n**Claude** acaba de submeter uma PR com a implementação.\n\n✅ **Próximas ações esperadas:**\n- **ChatGPT:** Revisar arquitetura e otimizações\n- **Gemini:** Revisar impacto na arquitetura geral\n\n📋 Para revisar, consulte o \`docs/STATUS.md\` e o \`ARCHITECTURE_HANDBOOK.md\`.`;
+            } else if (branchName.includes("chatgpt")) {
+              nextAgent = "Claude & Gemini";
+              message = `🔍 **Notificação Automática**\n\n**ChatGPT** submeteu uma validação e/ou otimização.\n\n✅ **Próximas ações esperadas:**\n- **Claude:** Revisar sugestões e aplicar se apropriado\n- **Gemini:** Avaliar impacto na arquitetura\n\n📋 Leia os comentários nesta PR com atenção.`;
+            } else if (branchName.includes("gemini")) {
+              nextAgent = "Claude & ChatGPT";
+              message = `🔍 **Notificação Automática**\n\n**Gemini** submeteu um design ou arquitetura.\n\n✅ **Próximas ações esperadas:**\n- **Claude:** Avaliar viabilidade de implementação\n- **ChatGPT:** Revisar consistência com code atual\n\n📋 Revise a documentação em \`docs/\` para detalhes.`;
+            }
+
+            if (message) {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message + `\n\n---\n*Mensagem automática via GitHub Actions*`
+              });
+            }
+
+  notify-on-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Etiquetar issues de tarefa
+        if: github.event_name == 'issues' && github.event.action == 'opened'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            let labels = [];
+
+            if (issue.title.includes("[Claude]")) {
+              labels.push("claude");
+            }
+            if (issue.title.includes("[ChatGPT]")) {
+              labels.push("chatgpt");
+            }
+            if (issue.title.includes("[Gemini]")) {
+              labels.push("gemini");
+            }
+            if (issue.title.includes("Bloqueador")) {
+              labels.push("bloqueador");
+            }
+            if (issue.title.includes("Design")) {
+              labels.push("design");
+            }
+            if (issue.title.includes("Validação")) {
+              labels.push("validacao");
+            }
+
+            if (labels.length > 0) {
+              github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: labels
+              });
+            }
+
+      - name: Comentar em nova issue
+        if: github.event_name == 'issues' && github.event.action == 'opened'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `📋 **Nova Tarefa Registrada**\n\nEsta tarefa foi criada pelo Sistema Automático.\n\n✅ **Para executar:**\n1. Verifique a descrição da issue\n2. Crie uma branch: \`git checkout -b sua-branch\`\n3. Faça o trabalho\n4. Abra uma PR referenciando esta issue com \`closes #${context.issue.number}\`\n\n📖 Leia \`docs/STATUS.md\` para contexto adicional.`
+            });
