@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "claude-real-video": {
+      "source": "HUANGCHIHHUNGLeo/claude-real-video",
+      "sourceType": "github",
+      "skillPath": "skills/claude-real-video/SKILL.md",
+      "computedHash": "7829602d12e5894c6937979125757adffcfce35bb45af3b840626d45fc284530"
+    },
+    "claude-real-video-for-agents": {
+      "source": "HUANGCHIHHUNGLeo/claude-real-video",
+      "sourceType": "github",
+      "skillPath": "skills/claude-real-video-for-agents/SKILL.md",
+      "computedHash": "d71d5b388458731d426e1ed1f1aceae2cf0e12841b26460e4a7c670a1ef4dcea"
+    }
+  }
+}
