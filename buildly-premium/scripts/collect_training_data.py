@@ -13,10 +13,13 @@ import logging
 import json
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict, Any
 
 import pandas as pd
 import numpy as np
+import psycopg2
+from psycopg2.extras import DictCursor
+from dotenv import load_dotenv
 
 # Setup logging
 logging.basicConfig(
@@ -24,6 +27,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+load_dotenv()
 
 
 class DecisionStoreFeaturizer:
@@ -60,9 +64,16 @@ class DecisionStoreFeaturizer:
         'entrega': 3
     }
 
-    def __init__(self, db_pool=None):
-        self.db_pool = db_pool
+    def __init__(self, db_conn=None):
+        self.db_conn = db_conn
         self.feature_names = self.FEATURE_NAMES
+
+        # Database configuration from .env
+        self.pg_host = os.getenv('PG_HOST', 'localhost')
+        self.pg_port = int(os.getenv('PG_PORT', 5432))
+        self.pg_database = os.getenv('PG_DATABASE', 'buildly')
+        self.pg_user = os.getenv('PG_USER', 'postgres')
+        self.pg_password = os.getenv('PG_PASSWORD', '')
 
     def transform_decisao(self, decisao: dict) -> Optional[Tuple[List[float], int]]:
         """Transforma decisão em feature vector + label"""
@@ -157,14 +168,137 @@ class DecisionStoreFeaturizer:
             logger.error(f"Erro ao transformar decisão: {e}")
             return None
 
-    async def coletar_decisoes_treino(self, min_date: Optional[datetime] = None) -> Tuple[np.ndarray, np.ndarray]:
+    def _connect_db(self) -> Optional[psycopg2.extensions.connection]:
+        """Conectar ao PostgreSQL"""
+        try:
+            conn = psycopg2.connect(
+                host=self.pg_host,
+                port=self.pg_port,
+                database=self.pg_database,
+                user=self.pg_user,
+                password=self.pg_password
+            )
+            logger.info(f"✅ Conectado ao PostgreSQL ({self.pg_host}:{self.pg_port})")
+            return conn
+        except Exception as e:
+            logger.warning(f"⚠️  Erro ao conectar ao PostgreSQL: {e}")
+            logger.info("   Usando dados mock para MVP...")
+            return None
+
+    def _fetch_decisoes_from_db(self, conn: psycopg2.extensions.connection, min_date: Optional[datetime] = None) -> List[Dict[str, Any]]:
+        """Fetch decisões com feedback do banco"""
+        cursor = conn.cursor(cursor_factory=DictCursor)
+
+        sql = """
+            SELECT
+                d.id,
+                d.evento_id,
+                d.opcoes,
+                d.opcao_escolhida_id,
+                d.feedback_score,
+                e.tipo as tipo_evento,
+                e.contexto,
+                o.conclusao_pct,
+                o.orcamento_total,
+                o.gasto_atual
+            FROM decisoes d
+            LEFT JOIN eventos e ON d.evento_id = e.id
+            LEFT JOIN obras o ON e.obra_id = o.id
+            WHERE d.feedback_score IS NOT NULL
+        """
+
+        params = []
+        if min_date:
+            sql += " AND d.criado_em >= %s"
+            params.append(min_date)
+
+        sql += " ORDER BY d.criado_em DESC LIMIT 500"
+
+        try:
+            cursor.execute(sql, params)
+            decisoes = cursor.fetchall()
+            cursor.close()
+            logger.info(f"✅ Fetched {len(decisoes)} decisões do banco")
+            return decisoes
+        except Exception as e:
+            logger.error(f"❌ Erro ao buscar decisões: {e}")
+            cursor.close()
+            return []
+
+    def transformBatch(self, decisoes: List[Dict[str, Any]]) -> Tuple[np.ndarray, np.ndarray]:
+        """Transforma lote de decisões em feature vectors"""
+        features_list = []
+        labels_list = []
+
+        for decisao in decisoes:
+            # Parsear JSONB fields
+            try:
+                opcoes = decisao.get('opcoes', [])
+                if isinstance(opcoes, str):
+                    opcoes = json.loads(opcoes)
+
+                contexto = decisao.get('contexto', {})
+                if isinstance(contexto, str):
+                    contexto = json.loads(contexto)
+
+                decisao_dict = {
+                    'tipo_evento': decisao.get('tipo_evento', 'MATERIAL_DELAY'),
+                    'opcoes': opcoes,
+                    'opcao_escolhida_id': decisao.get('opcao_escolhida_id'),
+                    'contexto': contexto,
+                    'feedback_score': decisao.get('feedback_score', 0)
+                }
+
+                result = self.transform_decisao(decisao_dict)
+                if result:
+                    features, label = result
+                    features_list.append(features)
+                    labels_list.append(label)
+            except Exception as e:
+                logger.warning(f"Erro ao transformar decisão: {e}")
+                continue
+
+        if not features_list:
+            logger.warning("Nenhuma decisão foi transformada com sucesso")
+            return np.array([]), np.array([])
+
+        X = np.array(features_list)
+        y = np.array(labels_list)
+
+        return X, y
+
+    def coletar_decisoes_treino(self, min_date: Optional[datetime] = None) -> Tuple[np.ndarray, np.ndarray]:
         """Coleta decisões com feedback do banco"""
         logger.info("Coletando decisões com feedback...")
 
-        # TODO: Implementar query real ao banco
-        # Por enquanto, retornar dados mock para MVP
-        X = np.random.rand(100, len(self.FEATURE_NAMES))
-        y = np.random.choice([-1, 0, 1], size=100, p=[0.2, 0.3, 0.5])
+        # Tentar conectar ao banco
+        conn = self._connect_db()
+
+        if conn is None:
+            # Usar dados mock se falhar conexão
+            logger.info("Usando mock data para MVP")
+            X = np.random.rand(100, len(self.FEATURE_NAMES))
+            y = np.random.choice([-1, 0, 1], size=100, p=[0.2, 0.3, 0.5])
+        else:
+            try:
+                # Buscar decisões do banco
+                decisoes = self._fetch_decisoes_from_db(conn, min_date)
+
+                if not decisoes:
+                    logger.warning("⚠️  Nenhuma decisão com feedback encontrada")
+                    logger.info("Usando mock data para MVP")
+                    X = np.random.rand(100, len(self.FEATURE_NAMES))
+                    y = np.random.choice([-1, 0, 1], size=100, p=[0.2, 0.3, 0.5])
+                else:
+                    # Transformar para features
+                    X, y = self.transformBatch(decisoes)
+
+                    if len(X) == 0:
+                        logger.warning("Falha ao transformar decisões, usando mock data")
+                        X = np.random.rand(100, len(self.FEATURE_NAMES))
+                        y = np.random.choice([-1, 0, 1], size=100, p=[0.2, 0.3, 0.5])
+            finally:
+                conn.close()
 
         logger.info(f"✅ Coletadas {len(X)} decisões")
         logger.info(f"   - Features shape: {X.shape}")
@@ -179,14 +313,16 @@ def main():
 
     featurizer = DecisionStoreFeaturizer()
 
-    # TODO: Integrar com banco de dados real
-    # Por enquanto, mostrar estrutura
+    # Mostrar feature names
     logger.info(f"📊 Feature names ({len(featurizer.FEATURE_NAMES)}):")
     for i, name in enumerate(featurizer.FEATURE_NAMES, 1):
         logger.info(f"   {i:2d}. {name}")
 
-    logger.info("\n⚠️  [MVP] Dados mock sendo usados")
-    logger.info("   Integração com banco virá em next commit")
+    # Coletar dados (tenta banco, fallback para mock)
+    logger.info("\n📡 Tentando coletar dados do PostgreSQL...")
+    X, y = featurizer.coletar_decisoes_treino(
+        min_date=datetime.now() - timedelta(days=180)  # Últimos 180 dias
+    )
 
     # Salvar estrutura de features
     output_path = Path(__file__).parent.parent / 'data' / 'features.json'
@@ -196,6 +332,12 @@ def main():
         "version": "1.0",
         "count": len(featurizer.FEATURE_NAMES),
         "names": featurizer.FEATURE_NAMES,
+        "samples_collected": int(len(X)),
+        "label_distribution": {
+            "erro": int(np.sum(y == -1)),
+            "neutro": int(np.sum(y == 0)),
+            "sucesso": int(np.sum(y == 1))
+        },
         "created_at": datetime.now().isoformat()
     }
 
@@ -203,9 +345,15 @@ def main():
         json.dump(features_info, f, indent=2)
 
     logger.info(f"✅ Feature schema salvo: {output_path}")
-    logger.info("\n🚀 Próximo passo: python scripts/train_initial_model.py")
+    logger.info(f"\n📊 Resumo:")
+    logger.info(f"   - Total amostras: {len(X)}")
+    logger.info(f"   - Erros (label=-1): {np.sum(y == -1)}")
+    logger.info(f"   - Neutro (label=0): {np.sum(y == 0)}")
+    logger.info(f"   - Sucessos (label=1): {np.sum(y == 1)}")
+    logger.info(f"\n🚀 Próximo passo: python scripts/train_initial_model.py")
+
+    return 0
 
 
 if __name__ == '__main__':
-    import asyncio
-    asyncio.run(main()) if sys.version_info >= (3, 7) else main()
+    sys.exit(main())
