@@ -1,0 +1,21 @@
+{
+  "name": "@buildly/intelligence-layer",
+  "version": "0.1.0",
+  "description": "Camada de inteligência — Neo4j, Digital Twin, BMI",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "demo": "ts-node demo.ts",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@buildly/intelligence-types": "^0.1.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.0"
+  }
+}
