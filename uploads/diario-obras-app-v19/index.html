@@ -1229,11 +1229,10 @@
   <div class="section">
     <div class="section-title"><div class="section-title-text">⏰ Jornada de Trabalho</div></div>
     <div class="grid-2" style="gap:6px;align-items:end">
-      <div><label style="margin-top:0">☕ Café início</label><input type="time" id="cafeInicio" value="06:30"></div>
-      <div><label style="margin-top:0">Café fim — Início de Jornada</label><input type="time" id="cafeFim" value="07:00"></div>
-      <div><label>🍽️ Almoço início</label><input type="time" id="almocoInicio" value="12:00"></div>
-      <div><label>Almoço fim</label><input type="time" id="almocoFim" value="13:00"></div>
-      <div style="grid-column:1/-1"><label>🔚 Encerramento da Jornada</label><input type="time" id="encerramento" value="17:00"></div>
+      <div><label style="margin-top:0">🕐 Início de Jornada</label><input type="time" id="cafeFim" value="07:00"></div>
+      <div><label style="margin-top:0">🍽️ Início Almoço</label><input type="time" id="almocoInicio" value="12:00"></div>
+      <div><label>🍽️ Fim Almoço</label><input type="time" id="almocoFim" value="13:00"></div>
+      <div><label>🔚 Fim de Jornada</label><input type="time" id="encerramento" value="17:00"></div>
     </div>
     <div class="info-line" id="jornadaInfo" style="display:none">
       <span>ℹ️</span>
@@ -1243,18 +1242,10 @@
   
   <div class="section">
     <div class="section-title"><div class="section-title-text">📋 DSS — Diálogo de Segurança</div></div>
-    <div class="grid-2" style="gap:8px;align-items:end">
-      <div>
-        <label style="margin-top:0">🕐 Horário do DSS</label>
-        <input type="time" id="dssHorario">
-      </div>
-      <div>
-        <label style="margin-top:0">👷 Ministrado por</label>
-        <select id="dssMinistrou">
-          <option value="">— Selecionar —</option>
-        </select>
-      </div>
-    </div>
+    <label style="margin-top:0">👷 Ministrado por</label>
+    <select id="dssMinistrou">
+      <option value="">— Selecionar —</option>
+    </select>
     <label>Tema</label>
     <textarea id="dssTema" placeholder="Tema abordado no DSS do dia..."></textarea>
   </div>
