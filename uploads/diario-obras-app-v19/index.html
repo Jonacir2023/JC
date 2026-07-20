@@ -1381,7 +1381,6 @@
     <div id="btnAcumuladoAcoes" style="display:none;margin-top:8px">
       <div class="btn-stack">
         <button class="btn btn-whatsapp" onclick="copiarAcumulado()">📋 Copiar Acumulado</button>
-        <button class="btn btn-secondary" onclick="enviarAcumuladoWhatsApp()">💬 WhatsApp Acumulado</button>
       </div>
     </div>
   </div>
@@ -5915,11 +5914,6 @@ function copiarAcumulado() {
   const txt = document.getElementById('outputAcumulado').textContent;
   if (txt) copiarTexto(txt);
 }
-function enviarAcumuladoWhatsApp() {
-  const txt = document.getElementById('outputAcumulado').textContent;
-  if (txt) abrirWhatsApp(txt);
-}
-
 function gerarRelatorio() {
   // Capturar campos de texto livre antes de salvar
   const localEl = document.getElementById('localObra');
