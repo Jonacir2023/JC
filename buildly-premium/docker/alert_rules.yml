@@ -1,0 +1,95 @@
+groups:
+  - name: intelligence_layer_alerts
+    interval: 30s
+    rules:
+      # High latency alert (P95 > 200ms)
+      - alert: HighInferenceLatency
+        expr: histogram_quantile(0.95, rate(recommendation_latency_ms_bucket[5m])) > 200
+        for: 2m
+        labels:
+          severity: warning
+          service: intelligence-layer
+        annotations:
+          summary: "Inference latency P95 exceeds 200ms"
+          description: "Current P95: {{ $value }}ms on {{ $labels.instance }}"
+
+      # Cache hit ratio too low
+      - alert: LowCacheHitRatio
+        expr: (rate(recommendation_cache_hits_total[5m]) / (rate(recommendation_cache_hits_total[5m]) + rate(recommendation_cache_misses_total[5m]))) < 0.2
+        for: 5m
+        labels:
+          severity: info
+          service: intelligence-layer
+        annotations:
+          summary: "Cache hit ratio below 20%"
+          description: "Current ratio: {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: (rate(recommendation_errors_total[5m]) / rate(recommendation_requests_total[5m])) > 0.001
+        for: 2m
+        labels:
+          severity: critical
+          service: intelligence-layer
+        annotations:
+          summary: "Error rate exceeds 0.1%"
+          description: "Current error rate: {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+      # Model not loaded
+      - alert: ModelNotLoaded
+        expr: recommendation_model_loaded == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: intelligence-layer
+        annotations:
+          summary: "Recommendation model failed to load"
+          description: "Model is not available on {{ $labels.instance }}"
+
+  - name: database_alerts
+    interval: 30s
+    rules:
+      # PostgreSQL connection pool exhaustion
+      - alert: ConnectionPoolExhausted
+        expr: pg_stat_activity_count > 18  # 90% of 20 max
+        for: 1m
+        labels:
+          severity: warning
+          service: postgres
+        annotations:
+          summary: "PostgreSQL connection pool nearly exhausted"
+          description: "Active connections: {{ $value }} on {{ $labels.instance }}"
+
+      # PostgreSQL slow queries
+      - alert: SlowQueriesDetected
+        expr: rate(pg_slow_queries_total[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          service: postgres
+        annotations:
+          summary: "High rate of slow queries detected"
+          description: "Rate: {{ $value | humanize }}/sec on {{ $labels.instance }}"
+
+  - name: infrastructure_alerts
+    interval: 30s
+    rules:
+      # Service down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.instance }} has been down for more than 1 minute"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes / 536870912) > 0.8  # 80% of 512MB
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage: {{ $value | humanizePercentage }} on {{ $labels.instance }}"
