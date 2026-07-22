@@ -9,6 +9,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Pool } from 'pg';
 import { RecommendationModule } from './recommendation/recommendation.module';
+import { BrainModule } from './brain/brain.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -17,8 +20,11 @@ import { RecommendationModule } from './recommendation/recommendation.module';
       envFilePath: '../../.env',
     }),
     RecommendationModule,
+    BrainModule,
   ],
+  controllers: [AppController],
   providers: [
+    AppService,
     {
       provide: 'DATABASE_POOL',
       useFactory: async () => {
