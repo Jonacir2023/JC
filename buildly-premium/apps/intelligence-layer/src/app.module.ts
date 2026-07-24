@@ -10,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 import { Pool } from 'pg';
 import { RecommendationModule } from './recommendation/recommendation.module';
 import { BrainModule } from './brain/brain.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -21,6 +22,7 @@ import { AppService } from './app.service';
     }),
     RecommendationModule,
     BrainModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [
