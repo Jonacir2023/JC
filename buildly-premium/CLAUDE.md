@@ -8,12 +8,22 @@
 
 ## 📍 Contexto Rápido
 
-**O Buildly Premium** é um Sistema Operacional para Empreendimentos de Infraestrutura Pesada. Diferente de um ERP tradicional, opera como um "cérebro digital" que:
+**Buildly** é um **Sistema Operacional Integrado** para Empreendimentos de Infraestrutura Pesada composto por:
 
+### 🏗️ Buildly Core
 1. **Registra tudo** (Imutabilidade via Event Sourcing)
 2. **Entende relacionamentos** (Neo4j Graph DB)
-3. **Aprende com o tempo** (Decision Store + Machine Learning)
-4. **Recomenda proativamente** (IA Prescritiva)
+3. **Orquestra processos** (workflows + automação)
+4. **Aprende com tempo** (Decision Store + Feedback)
+
+### 🧠 Buildly Brain (Módulo Complementar)
+Um módulo **não-orquestrante** que:
+- **Observa** documentos (diários, reuniões, contratos)
+- **Detecta** padrões e anomalias
+- **Prevê** eventos (7-day forecast)
+- **Recomenda** otimizações (custos, recursos)
+
+**Brain NÃO executa**—apenas "pensa" e recomenda via APIs.
 
 ---
 

@@ -1,19 +1,29 @@
-# 🏗️ Buildly Premium — OS para Infraestrutura Pesada
+# 🏗️ Buildly Premium — SO para Infraestrutura Pesada
 
-**Versão:** 0.1.0  
-**Fase:** 2 (Intelligence Layer)  
-**Status:** 🟡 Em Desenvolvimento — Colaboração 3-Hands Ativa
+**Versão:** 1.0.0  
+**Core:** Phase 2 (Intelligence Layer)  
+**Brain Module:** Phase 3.7-3.8 (IA & Analytics) ✅ Completo  
+**Status:** 🟢 Production-Ready
 
 ---
 
 ## 📍 Sobre o Projeto
 
-Buildly Premium é um **Sistema Operacional** para empreendimentos de infraestrutura pesada que funciona como um "cérebro digital" capaz de:
+**Buildly** é um **Sistema Operacional Integrado** para empreendimentos de infraestrutura pesada que:
 
-1. **Registrar tudo** — Event Sourcing (imutabilidade)
-2. **Entender relacionamentos** — Neo4j Graph DB
-3. **Aprender com o tempo** — Decision Store + Machine Learning
-4. **Recomendar proativamente** — IA Prescritiva
+1. **Orquestra processos** — Event Sourcing + workflows
+2. **Entende relacionamentos** — Neo4j Graph DB
+3. **Aprende continuamente** — Decision Store + Machine Learning
+4. **Recomenda decisões** — IA Prescritiva via **Brain Module**
+
+### 🧠 O que é o Brain?
+
+**Buildly Brain** é um **módulo complementar** de IA que não orquestra, apenas *recomenda*. Trabalha em paralelo, observando:
+
+- 📄 Documentos (diários, reuniões, contratos, cronogramas)
+- 🔍 Padrões (delays, custos, recursos)
+- 🚨 Alertas (previsões com 7 dias de antecedência)
+- 💰 Otimizações (atribuição de custos, ROI)
 
 ---
 
@@ -58,26 +68,51 @@ npx ts-node bmi-demo.ts
 ## 📂 Estrutura do Projeto
 
 ```
-buildly-premium/
+buildly-premium/                   # 🏗️ BUILDLY CORE
 ├── libs/
 │   ├── common-types/              # Phase 1: IEvent, IObjective, IDecision
 │   └── intelligence-types/        # Phase 2: Graph, Twin, BMI
 ├── apps/
-│   ├── core-api/                  # Phase 1: Event workflows
+│   ├── core-api/                  # Phase 1: Event workflows (Buildly Core)
 │   │   ├── src/use-cases/
 │   │   ├── demo.ts
 │   │   └── package.json
-│   └── intelligence-layer/        # Phase 2: Neo4j, Digital Twin, BMI
+│   └── intelligence-layer/        # Phase 2: Neo4j, Digital Twin, BMI (Buildly Core)
 │       ├── src/neo4j/
 │       ├── src/bmi-engine/
 │       ├── src/infrastructure/
-│       ├── bmi-demo.ts
-│       ├── demo.ts
 │       └── package.json
-├── ARCHITECTURE_HANDBOOK.md       # Constituição técnica
-├── CLAUDE.md                      # Guia de desenvolvimento
+│
+├── modules/
+│   └── brain/                      # 🧠 BUILDLY BRAIN (Complementary Module)
+│       ├── apps/
+│       │   ├── intelligence-layer/ # Phase 3.7: Analytics (REST API)
+│       │   └── ml-engine/          # Phase 3.8: ML Optimization (REST API)
+│       ├── supabase/migrations/
+│       │   ├── V008__create_analytics_views.sql
+│       │   ├── V009__create_analytics_indexes.sql
+│       │   └── V010__create_ml_infrastructure.sql
+│       ├── docs/
+│       │   ├── PHASE3.7-ANALYTICS.md
+│       │   └── PHASE3.8-ML-OPTIMIZATION.md
+│       ├── README.md               # Brain module overview
+│       └── CLAUDE.md               # Brain development guide
+│
+├── ARCHITECTURE_HANDBOOK.md       # Constituição técnica (Core)
+├── CLAUDE.md                      # Guia de desenvolvimento (Core)
 ├── docker-compose.yml
 └── package.json
+```
+
+### Hierarquia
+
+```
+BUILDLY (Sistema Operacional Principal)
+  ├─ Core API (Orquestra processos)
+  ├─ Intelligence Layer (Neo4j, BMI, Digital Twin)
+  └─ BRAIN Module (Recomenda via IA)
+      ├─ Analytics (observa, agrega, visualiza)
+      └─ ML Engine (prevê, otimiza, aprende)
 ```
 
 ---
@@ -131,13 +166,15 @@ gemini/roadmap-persistencia       # Schema PostgreSQL, escalabilidade
 
 ## 🔄 Fases de Desenvolvimento
 
-### Phase 1: Foundation ✅ COMPLETO
+### **BUILDLY CORE**
+
+#### Phase 1: Foundation ✅ COMPLETO
 - [x] IEvent, IObjective, IDecision interfaces
 - [x] Builders com validação
 - [x] MaterialDelayWorkflowService demo
 - [x] Event Sourcing pattern
 
-### Phase 2: Intelligence Layer 🟡 70% COMPLETO
+#### Phase 2: Intelligence Layer 🟡 70% COMPLETO
 - [x] Neo4j Graph interfaces
 - [x] Digital Twin (Real vs Planejado vs Forecast)
 - [x] BMI (8 dimensões) calculator
@@ -146,13 +183,42 @@ gemini/roadmap-persistencia       # Schema PostgreSQL, escalabilidade
 - [ ] Testes unitários (80% coverage)
 - [ ] Integração PostgreSQL/Neo4j
 
-### Phase 3: IA & Automation ⏳ PRÓXIMO
-- [ ] RAG integration (Qdrant)
-- [ ] Recommendation Engine
-- [ ] Decision Store training
-- [ ] Predictive Analytics
+---
 
-### Phase 4: Enterprise ⏳ FUTURO
+### **BUILDLY BRAIN Module**
+
+#### Phase 3.7: Advanced Analytics ✅ COMPLETO
+- [x] 6 Materialized Views (sub-500ms)
+- [x] Redis Cache (24h TTL)
+- [x] Analytics REST API (4 endpoints + health)
+- [x] Python Aggregation Service (daily/hourly)
+- [x] Looker Studio integration
+
+#### Phase 3.8: ML Optimization ✅ COMPLETO
+- [x] Adaptive EMA Pattern Learning (recency-based alpha)
+- [x] 7-Day Alert Forecasting (seasonal patterns)
+- [x] Cost Attribution (3 components)
+- [x] ML REST API (5 endpoints + health)
+- [x] Model Performance Tracking (accuracy, F1, ROC-AUC)
+
+#### Phase 3.9: Document Recognition ⏳ PRÓXIMO
+- [ ] OCR Connector (Tesseract)
+- [ ] Diário de Obra Parser
+- [ ] Meeting Transcription (Whisper)
+- [ ] Contract Analysis (NLP)
+- [ ] Schedule Deviation Detection
+
+---
+
+### **BUILDLY CORE (Phases 3-4)**
+
+#### Phase 3: IA & Automation ⏳ PRÓXIMO
+- [ ] Brain Module integration (via REST APIs)
+- [ ] RAG integration (Qdrant)
+- [ ] Recommendation Engine consumption
+- [ ] Decision Store training
+
+#### Phase 4: Enterprise ⏳ FUTURO
 - [ ] Multi-tenancy
 - [ ] Advanced Security
 - [ ] API Pública (GraphQL + REST)
@@ -160,45 +226,78 @@ gemini/roadmap-persistencia       # Schema PostgreSQL, escalabilidade
 
 ---
 
-## 🎯 Para Colaboradores
+## 🧠 Usando o Brain Module
 
-### ChatGPT: Validação & Otimização
+### Como o Buildly Core Consome Brain APIs
 
-**Tarefas:**
-1. Revisar `libs/intelligence-types/graph-node.interface.ts`
-   - Nós e relacionamentos suficientes?
-   - Índices Neo4j recomendados?
-   
-2. Revisar `libs/intelligence-types/bmi.interface.ts`
-   - Fórmulas das 8 dimensões estão otimizadas?
-   - Indicadores fazem sentido?
+```typescript
+// buildly-premium/apps/core-api/src/services/brain.service.ts
+import axios from 'axios';
 
-3. Revisar `apps/intelligence-layer/src/infrastructure/queries.ts`
-   - Cypher queries eficientes?
-   - Performance com 100k nós?
+@Injectable()
+export class BrainService {
+  async getAlertPredictions(obra_id: string) {
+    return axios.get('http://brain-ml:3002/ml/predict/alerts', {
+      headers: { 'X-Tenant-ID': obra_id }
+    });
+  }
 
-**Branch:** `chatgpt/validacao-graph` + `chatgpt/otimizacao-bmi`
+  async getCostOptimization(obra_id: string) {
+    return axios.get('http://brain-ml:3002/ml/cost/attribution', {
+      headers: { 'X-Tenant-ID': obra_id }
+    });
+  }
+
+  async getObraKpis(obra_id: string) {
+    return axios.get('http://brain-analytics:3001/analytics/obras/summary', {
+      headers: { 'X-Tenant-ID': obra_id }
+    });
+  }
+}
+```
+
+### Brain Module Endpoints
+
+**Analytics Layer (Port 3001):**
+- `GET /analytics/events/aggregated` — Agregação de eventos
+- `GET /analytics/patterns/effectiveness` — Efetividade de padrões
+- `GET /analytics/alerts/timeline` — Timeline de alertas
+- `GET /analytics/obras/summary` — Resumo KPI
+
+**ML Engine (Port 3002):**
+- `GET /ml/predict/alerts` — Previsão 7-day forecast
+- `GET /ml/cost/attribution` — Atribuição de custos
+- `GET /ml/models/performance` — Performance de modelos
+- `POST /ml/train/patterns` — Retrair pesos de padrões
+- `POST /ml/training/prepare` — Preparar dataset
+
+📚 Documentação completa: [modules/brain/README.md](./modules/brain/README.md)
 
 ---
 
-### Gemini: Design & Arquitetura
+## 🎯 Para Colaboradores
+
+### Trabalhar no Buildly Core
 
 **Tarefas:**
-1. Desenhar Recommendation Engine (Phase 3)
-   - Como Decision Store treina ML?
-   - Features + modelo + inference?
+1. Implementar Event Store (PostgreSQL)
+2. Integrar com Brain Module
+3. Criar Recommendation Engine
+4. Testes E2E
 
-2. Desenhar Persistence Layer (Phase 2)
-   - Schema PostgreSQL completo
-   - Migrations + índices
-   - Escalabilidade (100k eventos/mês)
+**Branch:** `main` (core development)
 
-3. Desenhar roadmap Phase 3-4
-   - Timeline
-   - Dependências
-   - Riscos
+---
 
-**Branch:** `gemini/design-recommendation` + `gemini/roadmap-persistencia`
+### Trabalhar no Buildly Brain
+
+**Tarefas:**
+1. Phase 3.9: Document Recognition (OCR + NLP)
+2. Phase 4.0: Real-time Streaming (Kafka)
+3. Phase 4.1: Multi-model Ensemble
+
+**Branch:** `main` > `modules/brain/`  
+**Dev Guide:** [modules/brain/CLAUDE.md](./modules/brain/CLAUDE.md)
 
 ---
 
