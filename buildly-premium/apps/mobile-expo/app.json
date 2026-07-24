@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Buildly Brain",
+    "slug": "buildly-brain",
+    "version": "3.6.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#667eea"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTabletMode": true,
+      "bundleIdentifier": "com.buildly.brain"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#667eea"
+      },
+      "package": "com.buildly.brain"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          },
+          "android": {
+            "useFrameworks": "openssl"
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "seu-eas-project-id"
+      },
+      "buildlyApiUrl": "https://seu-buildly-deploy.vercel.app"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
+  }
+}

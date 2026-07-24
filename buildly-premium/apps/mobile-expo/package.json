@@ -1,0 +1,43 @@
+{
+  "name": "buildly-mobile",
+  "version": "3.6.0",
+  "description": "Buildly Brain Mobile App — React Native Expo",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject",
+    "build:android": "eas build --platform android",
+    "build:ios": "eas build --platform ios",
+    "preview": "eas build --platform all --auto-submit=false"
+  },
+  "dependencies": {
+    "expo": "^51.0.0",
+    "expo-constants": "^16.0.0",
+    "expo-status-bar": "^1.12.0",
+    "react": "^18.2.0",
+    "react-native": "0.74.1",
+    "react-navigation": "^6.1.0",
+    "react-navigation-bottom-tabs": "^6.5.0",
+    "react-navigation-native": "^6.1.0",
+    "react-navigation-stack": "^6.3.0",
+    "@apollo/client": "^3.10.0",
+    "graphql": "^16.8.0",
+    "@react-native-async-storage/async-storage": "^1.23.0",
+    "axios": "^1.6.0",
+    "react-native-screens": "^3.29.0",
+    "react-native-safe-area-context": "^4.8.0",
+    "react-native-gesture-handler": "^2.14.0",
+    "react-native-reanimated": "^3.6.0",
+    "date-fns": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-native": "^0.74.0",
+    "expo-dev-client": "^3.3.0",
+    "typescript": "^5.0.0"
+  }
+}
