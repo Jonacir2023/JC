@@ -175,4 +175,33 @@ export class MLDelayService {
       estimated_impact_brl: Math.round(estimatedImpact),
     };
   }
+
+  async recordPredictionFeedback(feedback: any): Promise<{ status: string; message: string; prediction_id: string }> {
+    try {
+      const query = `
+        INSERT INTO brain_alert_feedback (
+          prediction_id, actual_outcome, actual_date, actual_impact_brl, notes, created_at
+        ) VALUES ($1, $2, $3, $4, $5, NOW())
+        RETURNING prediction_id
+      `;
+
+      await this.dbPool.query(query, [
+        feedback.prediction_id,
+        feedback.actual_outcome,
+        feedback.actual_date || null,
+        feedback.actual_impact_brl || null,
+        feedback.notes || null,
+      ]);
+
+      await this.cacheManager.del(`ml:delay:*`);
+
+      return {
+        status: 'success',
+        message: `Feedback recorded for prediction ${feedback.prediction_id}. Model weights will update on next training cycle.`,
+        prediction_id: feedback.prediction_id,
+      };
+    } catch (error) {
+      throw new Error(`Feedback recording failed: ${error.message}`);
+    }
+  }
 }

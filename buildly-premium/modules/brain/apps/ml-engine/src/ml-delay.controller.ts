@@ -1,6 +1,7 @@
-import { Controller, Get, Query, Header, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Query, Header, HttpCode, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { MLDelayService, MaterialDelayAlertResponse } from './ml-delay.service';
+import { MaterialDelayFeedbackDTO } from './ml-delay.dto';
 
 @ApiTags('ml-delays')
 @ApiBearerAuth()
@@ -18,15 +19,10 @@ export class MLDelayController {
   @ApiResponse({
     status: 200,
     description: 'Material delay predictions',
-    type: MaterialDelayAlertResponse,
   })
   @ApiResponse({
     status: 400,
     description: 'Invalid obra_id or forecast_days',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Obra not found or insufficient historical data',
   })
   async predictDelays(
     @Header('X-Tenant-ID') tenantId: string,
@@ -45,5 +41,23 @@ export class MLDelayController {
     }
 
     return this.delayService.predictMaterialDelays(obra_id, forecast_days);
+  }
+
+  @Post('feedback')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Submit feedback on material delay prediction',
+    description:
+      'Records actual outcome of a prediction to improve model accuracy via adaptive EMA learning',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Feedback recorded successfully',
+  })
+  async submitFeedback(
+    @Header('X-Tenant-ID') tenantId: string,
+    @Body() feedback: MaterialDelayFeedbackDTO,
+  ): Promise<{ status: string; message: string; prediction_id: string }> {
+    return this.delayService.recordPredictionFeedback(feedback);
   }
 }
