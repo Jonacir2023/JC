@@ -1,7 +1,7 @@
 # 🏗️ Buildly × Codex Partnership Brief
 
 **Data:** Julho 2026  
-**Status:** Production-Ready (Phases 1-3.8 Completas)  
+**Status:** Base Técnica Pronta para Validação em Piloto Controlado  
 **Versão:** 1.0.0
 
 ---
@@ -13,11 +13,11 @@
 1. **Buildly Core** — Orquestração operacional (Event Sourcing + Neo4j)
 2. **Buildly Brain** — Inteligência complementar de IA/ML (Analytics + Predictive)
 
-Criado em **colaboração com Codex**, o projeto está **100% production-ready** com:
-- ✅ 10,338 linhas de código testadas
-- ✅ 6 fases de desenvolvimento completas
-- ✅ Zero custo de infraestrutura (100% free tier)
-- ✅ 21x ROI multiplier esperado
+Fases 1-3.8 estão documentadas, testadas e organizadas para avaliação técnica:
+- ✅ 17,214 linhas de código + migrations + documentação
+- ✅ 6 fases de desenvolvimento com arquitetura modular
+- ✅ Infraestrutura baseada em open source e free tier (baixo custo inicial)
+- ✅ ROI potencial estimado em 21x (validar com dados reais em piloto)
 
 ---
 
@@ -134,17 +134,21 @@ Brain é um módulo de **IA não-orquestrante** que:
 
 **Total TCO:** R$ 0/mês
 
-### ROI Esperado
+### ROI Potencial (Cenário Estimado)
 
 ```
-Economia por obra: R$ 50k - 225k (savings + prevention + optimization)
-Obras/ano: ~20-50
-Total potencial: R$ 1M - 11.25M / ano
+Premissas:
+- Economia por obra: R$ 50k - 225k (savings + prevention + optimization)
+- Obras/ano: ~20-50 clientes
+- Overhead operacional: ~R$ 50k/mês
 
-Brain cost: R$ 0
-ROI multiplier: 21x
+Cenário otimista:
+- 50 obras × R$ 225k = R$ 11.25M / ano
+- Menos overhead (R$ 600k) = R$ 10.65M net
 
-Expected return: R$ 21M+ / ano (com escala)
+ROI multiplier: 21x (em cenário com escala)
+
+⚠️ Validar com dados reais no piloto antes de expandir
 ```
 
 ---
