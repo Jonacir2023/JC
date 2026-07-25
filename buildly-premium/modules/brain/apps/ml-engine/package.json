@@ -1,0 +1,27 @@
+{
+  "name": "@buildly/brain-ml-engine",
+  "version": "1.0.0",
+  "description": "Buildly Brain ML Engine - Material Delay Predictions",
+  "main": "src/main.ts",
+  "scripts": {
+    "dev": "ts-node src/main.ts",
+    "mock": "ts-node mock-api-server.ts",
+    "test": "jest",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "axios": "^1.6.0",
+    "express": "^4.18.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.0",
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.8",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}
