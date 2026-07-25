@@ -202,23 +202,31 @@ Buildly Premium Infrastructure Management
 Usage: ./scripts/infrastructure.sh [command] [options]
 
 Commands:
-  start              Start all services
-  stop               Stop all services
-  restart            Restart all services
-  status             Show service status & health checks
-  logs [service]     Show logs (optional service name)
-  test-workflow      Run complete workflow test
-  db-backup          Create database backup
-  db-restore <file>  Restore from backup
-  clear-cache        Clear Redis cache
-  metrics            Show Docker resource usage
-  help               Show this help message
+  start                   Start all services
+  stop                    Stop all services
+  restart                 Restart all services
+  status                  Show service status & health checks
+  logs [service]          Show logs (optional service name)
+  test-workflow           Run complete workflow test
+  db-backup               Create database backup
+  db-restore <file>       Restore from backup
+  clear-cache             Clear Redis cache
+  metrics                 Show Docker resource usage
+
+Pilot Validation (Phase 4.3):
+  pilot-setup             Initialize pilot infrastructure & schema
+  pilot-load-data         Load historical material data for 5 sites
+  pilot-generate-baseline Generate baseline predictions from history
+  pilot-status            Display pilot sites & metrics status
+  help                    Show this help message
 
 Examples:
   ./scripts/infrastructure.sh start
   ./scripts/infrastructure.sh logs brain-ml
-  ./scripts/infrastructure.sh db-backup
-  ./scripts/infrastructure.sh test-workflow
+  ./scripts/infrastructure.sh pilot-setup
+  ./scripts/infrastructure.sh pilot-load-data
+  ./scripts/infrastructure.sh pilot-generate-baseline
+  ./scripts/infrastructure.sh pilot-status
 
 Services:
   - postgres        PostgreSQL database
@@ -227,6 +235,13 @@ Services:
   - core-api        Buildly Core API
   - pgadmin         Database UI (http://localhost:5050)
   - redis-commander Cache UI (http://localhost:8081)
+
+Pilot Sites (Phase 4.3):
+  - SP (Camargo Corrêa)          São Paulo Commercial (950 records)
+  - MG (Odebrecht)               Belo Horizonte Residential (650 records)
+  - RJ (Queiroz Galvão)          Rio Waterfront (1,200 records)
+  - DF (governo do Brasil)       Brasília Government (800 records)
+  - AM (SUFRAMA)                 Manaus Industrial (450 records)
 
 EOF
 }
@@ -266,6 +281,18 @@ main() {
     metrics)
       cmd_metrics
       ;;
+    pilot-setup)
+      cmd_pilot_setup
+      ;;
+    pilot-load-data)
+      cmd_pilot_load_data
+      ;;
+    pilot-generate-baseline)
+      cmd_pilot_generate_baseline
+      ;;
+    pilot-status)
+      cmd_pilot_status
+      ;;
     help|"")
       cmd_help
       ;;
@@ -275,6 +302,89 @@ main() {
       exit 1
       ;;
   esac
+}
+
+# Pilot-specific commands
+
+cmd_pilot_setup() {
+  log_info "Setting up pilot infrastructure..."
+
+  log_info "1. Applying pilot data migrations..."
+  docker-compose exec -T postgres psql -U buildly_user -d buildly_db -f /docker-entrypoint-initdb.d/V011__create_pilot_infrastructure.sql
+  log_success "Pilot schema created"
+
+  log_info "2. All systems ready for data loading"
+}
+
+cmd_pilot_load_data() {
+  log_info "Loading historical material data for 5 pilot sites..."
+
+  if [ ! -f "scripts/load-pilot-data.sql" ]; then
+    log_error "Script not found: scripts/load-pilot-data.sql"
+    return 1
+  fi
+
+  log_info "Executing data load (this may take 30-60 seconds)..."
+  docker-compose exec -T postgres psql -U buildly_user -d buildly_db -f /docker-entrypoint-initdb.d/load-pilot-data.sql
+
+  log_success "Pilot data loaded successfully"
+  log_info "  • 950+ records: São Paulo (Camargo Corrêa)"
+  log_info "  • 650+ records: Belo Horizonte (Odebrecht)"
+  log_info "  • 1,200+ records: Rio de Janeiro (Queiroz Galvão)"
+  log_info "  • 800+ records: Brasília (governo do Brasil)"
+  log_info "  • 450+ records: Manaus (SUFRAMA)"
+}
+
+cmd_pilot_generate_baseline() {
+  log_info "Generating baseline predictions from historical data..."
+
+  if [ ! -f "scripts/generate-baseline-predictions.ts" ]; then
+    log_error "Script not found: scripts/generate-baseline-predictions.ts"
+    return 1
+  fi
+
+  log_info "Building and running baseline prediction generator..."
+  npx ts-node scripts/generate-baseline-predictions.ts
+
+  if [ $? -eq 0 ]; then
+    log_success "Baseline predictions generated successfully"
+  else
+    log_error "Failed to generate baseline predictions"
+    return 1
+  fi
+}
+
+cmd_pilot_status() {
+  log_info "Pilot Sites Status:"
+  echo ""
+
+  docker-compose exec -T postgres psql -U buildly_user -d buildly_db << EOF
+    \x
+    SELECT
+      site_name,
+      client_name,
+      location_state,
+      status,
+      expected_historical_records,
+      (SELECT COUNT(*) FROM pilot_material_history WHERE site_id = pilot_sites.id) as loaded_records,
+      (SELECT COUNT(*) FROM pilot_baseline_predictions WHERE site_id = pilot_sites.id) as baseline_predictions,
+      updated_at
+    FROM pilot_sites
+    ORDER BY created_at;
+EOF
+
+  echo ""
+  log_info "Material Delay Statistics:"
+  docker-compose exec -T postgres psql -U buildly_user -d buildly_db << EOF
+    SELECT
+      COUNT(DISTINCT site_id) as sites_loaded,
+      COUNT(*) as total_records,
+      COUNT(CASE WHEN delay_days > 0 THEN 1 END) as delayed_shipments,
+      ROUND(100.0 * COUNT(CASE WHEN delay_days > 0 THEN 1 END) / COUNT(*), 2) as delay_rate_percent,
+      ROUND(AVG(CASE WHEN delay_days > 0 THEN delay_days END)::NUMERIC, 2) as avg_delay_days,
+      MAX(delay_days) as max_delay_days
+    FROM pilot_material_history;
+EOF
 }
 
 main "$@"
