@@ -156,7 +156,41 @@ gemini/roadmap-persistencia       # Schema PostgreSQL, escalabilidade
 
 ---
 
-## 📝 Documentação Essencial
+## 📚 Documentação Phase 4-5 (Pilot Validation & Enterprise)
+
+**NOVO: Documentação completa do Pilot Validation (Phase 4) e Enterprise Roadmap (Phase 5)**
+
+### Para Executivos
+- **[PILOT-VALIDATION-PLAYBOOK.md](./PILOT-VALIDATION-PLAYBOOK.md)** — Guia completo 6 semanas (leia PRIMEIRO)
+- **[PHASE-4.6-ANALYSIS.md](./PHASE-4.6-ANALYSIS.md)** — Resultados finais & decisão Go/No-Go
+- **[PHASE-5-ROADMAP.md](./PHASE-5-ROADMAP.md)** — Roadmap expansão enterprise + receita
+
+### Para Time Técnico
+- **[PHASE-4.5-ACTIVE.md](./PHASE-4.5-ACTIVE.md)** — Semanas 4-5: Decisions em tempo real
+- **[architecture.json](./architecture.json)** — Arquitetura completa (formato estruturado)
+- **[architecture-refined.html](./architecture-refined.html)** — Visualização HTML
+
+### Cronograma
+```
+Week 1-3: Pilot Phase 4.1-4.2 (Observation)
+  ├─ Phase 4.1: Baseline (Week 1)
+  └─ Phase 4.2: Soft Launch (Weeks 2-3)
+
+Week 4-5: Phase 4.3 (Live Decisions)
+  └─ Gestores approve/reject predictions
+
+Week 6: Phase 4.6 (Analysis & Go/No-Go)
+  └─ Final decision for enterprise rollout
+
+Week 7+: Phase 5 (Enterprise Expansion)
+  ├─ 20 sites online
+  ├─ Neo4j Intelligence Layer
+  └─ Revenue generation
+```
+
+---
+
+## 📝 Documentação Essencial (Cores Phases 1-3)
 
 1. **[ARCHITECTURE_HANDBOOK.md](./ARCHITECTURE_HANDBOOK.md)** — Constituição técnica (leia PRIMEIRO)
 2. **[CLAUDE.md](./CLAUDE.md)** — Padrões de código + desenvolvimento
@@ -182,6 +216,12 @@ gemini/roadmap-persistencia       # Schema PostgreSQL, escalabilidade
 - [x] Database factory + queries
 - [ ] Testes unitários (80% coverage)
 - [ ] Integração PostgreSQL/Neo4j
+
+#### Phase 3: IA & Automation ⏳ PRÓXIMO
+- [ ] Brain Module integration (via REST APIs)
+- [ ] RAG integration (Qdrant)
+- [ ] Recommendation Engine consumption
+- [ ] Decision Store training
 
 ---
 
@@ -210,15 +250,32 @@ gemini/roadmap-persistencia       # Schema PostgreSQL, escalabilidade
 
 ---
 
-### **BUILDLY CORE (Phases 3-4)**
+### **BUILDLY PREMIUM: PILOT VALIDATION & ENTERPRISE (Phase 4-5)**
 
-#### Phase 3: IA & Automation ⏳ PRÓXIMO
-- [ ] Brain Module integration (via REST APIs)
-- [ ] RAG integration (Qdrant)
-- [ ] Recommendation Engine consumption
-- [ ] Decision Store training
+#### Phase 4: Pilot Validation 🟡 ROADMAPS READY
+- [x] Phase 4.1: Baseline establishment (Week 1)
+- [x] Phase 4.2: Soft Launch observation (Weeks 2-3)
+- [x] Phase 4.3: Active Phase decisions (Weeks 4-5) — **[PHASE-4.5-ACTIVE.md](./PHASE-4.5-ACTIVE.md)**
+- [x] Phase 4.6: Analysis & Go/No-Go (Week 6) — **[PHASE-4.6-ANALYSIS.md](./PHASE-4.6-ANALYSIS.md)**
+- [x] Playbook: Complete 6-week guide — **[PILOT-VALIDATION-PLAYBOOK.md](./PILOT-VALIDATION-PLAYBOOK.md)**
 
-#### Phase 4: Enterprise ⏳ FUTURO
+**Expected Results:**
+- Precision: ≥75% (target 81%)
+- Recall: ≥70% (target 76%)
+- ROI: ≥R$ 20k per prevented delay (target R$ 42.7k)
+- Uptime: ≥99.5% (target 99.7%)
+
+#### Phase 5: Enterprise Expansion & Intelligence Layer 🚀 PLANNED
+- [ ] Enterprise rollout (20+ sites)
+- [ ] Neo4j integration
+- [ ] Recommendation engine
+- [ ] Predictive procurement
+- [ ] Automation decisions
+- [ ] Revenue monetization
+
+See **[PHASE-5-ROADMAP.md](./PHASE-5-ROADMAP.md)** for details.
+
+#### Phase 4: Enterprise ⏳ FUTURO (2027+)
 - [ ] Multi-tenancy
 - [ ] Advanced Security
 - [ ] API Pública (GraphQL + REST)
