@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buildly Premium — System Architecture</title>
+  <style>
+    :root {
+      --ground: #0f172a;
+      --ground-light: #1e293b;
+      --paper: #e8e8e8;
+      --paper-dark: #d1d5db;
+      --accent: #ea8c55;
+      --accent-dark: #d97706;
+      --info: #0ea5e9;
+      --success: #10b981;
+      --border: #334155;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --radius: 0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ground: #0f172a;
+        --ground-light: #1e293b;
+        --paper: #1e293b;
+        --paper-dark: #334155;
+        --text: #e8e8e8;
+        --text-light: #94a3b8;
+      }
+    }
+
+    :root[data-theme="light"] {
+      --ground: #f9fafb;
+      --ground-light: #f3f4f6;
+      --paper: #ffffff;
+      --paper-dark: #e5e7eb;
+      --text: #1e293b;
+      --text-light: #64748b;
+    }
+
+    :root[data-theme="dark"] {
+      --ground: #0f172a;
+      --ground-light: #1e293b;
+      --paper: #1e293b;
+      --paper-dark: #334155;
+      --text: #e8e8e8;
+      --text-light: #94a3b8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @font-face {
+      font-family: 'IBM Plex Sans';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: local('IBM Plex Sans'),
+           url('data:font/woff2;base64,d09GMgABAAAAABKIAA8AAAAAAAQ4AAAIyAAAAAAAAAAAAAAAAAAAAAAAAAAAGVQcUHYLYDISbAgqEhJIoE/sRmhkCSKxSC0xtEqvH//8DBU0DAHYqDY7IGdYJ5jE2YjO0J2zQ8v//fyQNg6AEgNRxXN03VlKz0nczxqgKtSSGc8gUgzfE+N0eP6A+QDpnEiXIXpSdKEt0PEZOJQR0PNZXRZX2qppGW0PFoqpGVRXZqhlSGVhVW1UJ0J6raqxGQG1Vw6pGQeWvKqpqppQjNdVUVU2VchQ+VVJuUL6rKQGVQ1U3/v//72+zc2VjL/dW5K0hZT4AAAA=') format('woff2');
+    }
+
+    @font-face {
+      font-family: 'IBM Plex Mono';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: local('IBM Plex Mono'),
+           url('data:font/woff2;base64,d09GMgABAAAAABFsAA8AAAAAAAQ4AAAIrAAAAAAAAAAAAAAAAAAAAAAAAAAAGVQcUHYLYDISbAgqEhJIoE/sRmhkCSKxSC0xtEqvH//8DBU0DAHYqDY7IGdYJ5jE2YjO0J2zQ8v//fyQNg6AEgNRxXN03VlKz0nczxqgKtSSGc8gUgzfE+N0eP6A+QDpnEiXIXpSdKEt0PEZOJQR0PNZXRZX2qppGW0PFoqpGVRXZqhlSGVhVW1UJ0J6raqxGQG1Vw6pGQeWvKqpqppQjNdVUVU2VchQ+VVJuUL6rKQGVQ1U3/v//72+zc2VjL/dW5K0hZT4AAAA=') format('woff2');
+    }
+
+    html {
+      font-family: 'IBM Plex Sans', system-ui, sans-serif;
+      background: var(--ground);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    body {
+      background: var(--ground);
+      color: var(--text);
+    }
+
+    /* Header / Blueprint Title */
+    header {
+      background: linear-gradient(135deg, var(--ground) 0%, var(--ground-light) 100%);
+      border-bottom: 2px solid var(--accent);
+      padding: var(--spacing-xl);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(90deg, transparent 24%, var(--accent) 25%, var(--accent) 26%, transparent 27%, transparent 74%, var(--accent) 75%, var(--accent) 76%, transparent 77%, transparent),
+        linear-gradient(var(--accent) 24%, transparent 25%, transparent 74%, var(--accent) 75%, transparent);
+      background-size: 50px 50px;
+      opacity: 0.02;
+      pointer-events: none;
+    }
+
+    .header-content {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-family: 'IBM Plex Sans Condensed', system-ui, sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--spacing-sm);
+      color: var(--accent);
+    }
+
+    .system-code {
+      font-family: 'IBM Plex Mono';
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin-bottom: var(--spacing-md);
+      letter-spacing: 0.05em;
+    }
+
+    .system-code::before {
+      content: '⊡ ';
+      color: var(--info);
+      margin-right: var(--spacing-sm);
+    }
+
+    .tagline {
+      font-size: 1.1rem;
+      color: var(--text-light);
+      max-width: 600px;
+      margin-bottom: var(--spacing-md);
+    }
+
+    /* Main Grid */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--spacing-xl);
+    }
+
+    /* Sections */
+    section {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    section + section {
+      border-top: 1px solid var(--border);
+      padding-top: var(--spacing-xl);
+    }
+
+    /* Section Headers */
+    h2 {
+      font-family: 'IBM Plex Sans Condensed', system-ui, sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: var(--spacing-lg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    h2::before {
+      content: '';
+      width: 3px;
+      height: 2rem;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    h3 {
+      font-family: 'IBM Plex Sans Condensed', system-ui, sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: var(--spacing-md);
+      color: var(--text);
+    }
+
+    h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* Principles Grid */
+    .principles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .principle {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: var(--spacing-lg);
+      position: relative;
+    }
+
+    .principle::before {
+      content: attr(data-number);
+      position: absolute;
+      top: var(--spacing-md);
+      right: var(--spacing-md);
+      font-family: 'IBM Plex Mono';
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+      opacity: 0.1;
+    }
+
+    .principle h3 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+
+    .principle p {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .principle ul {
+      list-style: none;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .principle li {
+      padding: var(--spacing-xs) 0;
+      padding-left: var(--spacing-md);
+      position: relative;
+    }
+
+    .principle li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--info);
+    }
+
+    /* Architecture Diagram */
+    .architecture-svg {
+      width: 100%;
+      height: auto;
+      min-height: 700px;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      margin: var(--spacing-lg) 0;
+    }
+
+    .arch-tier {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 1.5;
+      stroke-dasharray: 4,4;
+    }
+
+    .arch-tier-label {
+      font-family: 'IBM Plex Mono';
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      fill: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .arch-component {
+      fill: var(--paper);
+      stroke: var(--info);
+      stroke-width: 1.5;
+    }
+
+    .arch-component-label {
+      font-family: 'IBM Plex Sans';
+      font-size: 12px;
+      font-weight: 600;
+      fill: var(--text);
+    }
+
+    .arch-component-tech {
+      font-family: 'IBM Plex Mono';
+      font-size: 9px;
+      fill: var(--text-light);
+    }
+
+    /* Data Model Cards */
+    .data-model {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .model-card {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: var(--spacing-lg);
+    }
+
+    .model-card h3 {
+      color: var(--accent);
+      margin-bottom: var(--spacing-sm);
+      font-size: 1.1rem;
+    }
+
+    .model-card p {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .model-fields {
+      background: var(--ground-light);
+      padding: var(--spacing-md);
+      font-family: 'IBM Plex Mono';
+      font-size: 0.8rem;
+      line-height: 1.8;
+      color: var(--info);
+      border-left: 2px solid var(--accent);
+      overflow-x: auto;
+    }
+
+    /* Sites Grid */
+    .sites {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .site-card {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: var(--spacing-lg);
+      border-left: 3px solid var(--success);
+    }
+
+    .site-card h3 {
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .site-stat {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-md);
+      font-size: 0.85rem;
+      margin-bottom: var(--spacing-sm);
+      padding-bottom: var(--spacing-sm);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .site-stat:last-child {
+      border-bottom: none;
+    }
+
+    .site-stat-label {
+      font-family: 'IBM Plex Mono';
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-light);
+    }
+
+    .site-stat-value {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Metrics */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .metric {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: var(--spacing-lg);
+      text-align: center;
+    }
+
+    .metric-value {
+      font-family: 'IBM Plex Mono';
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .metric-label {
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+
+    /* Timeline */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-lg);
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--info);
+    }
+
+    .timeline-label {
+      font-family: 'IBM Plex Mono';
+      font-weight: 700;
+      color: var(--accent);
+      align-self: center;
+    }
+
+    .timeline-content p {
+      font-size: 0.95rem;
+      color: var(--text-light);
+    }
+
+    /* Tech Stack */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .tech-category {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: var(--spacing-lg);
+    }
+
+    .tech-category h4 {
+      color: var(--info);
+      margin-bottom: var(--spacing-md);
+      font-size: 0.9rem;
+    }
+
+    .tech-list {
+      list-style: none;
+      font-size: 0.9rem;
+    }
+
+    .tech-list li {
+      padding: var(--spacing-xs) 0;
+      color: var(--text);
+      font-family: 'IBM Plex Mono';
+      font-size: 0.85rem;
+    }
+
+    .tech-list li::before {
+      content: '▪ ';
+      color: var(--accent);
+      margin-right: var(--spacing-sm);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--ground-light);
+      border-top: 2px solid var(--accent);
+      padding: var(--spacing-xl);
+      text-align: center;
+      margin-top: var(--spacing-xl);
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+
+    footer p {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    footer p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+      .principles { grid-template-columns: 1fr; }
+      .data-model { grid-template-columns: 1fr; }
+      .sites { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: 1fr; }
+      .timeline-item {
+        grid-template-columns: 1fr;
+      }
+      .architecture-svg {
+        min-height: 400px;
+      }
+    }
+
+    /* Focus & Accessibility */
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1>BUILDLY PREMIUM</h1>
+      <div class="system-code">SISTEMA OPERACIONAL INTEGRADO</div>
+      <p class="tagline">Operating system for heavy infrastructure projects. Registers everything. Understands relationships. Orchestrates processes. Learns over time.</p>
+    </div>
+  </header>
+
+  <main>
+    <!-- Core Principles -->
+    <section>
+      <h2>5 Core Principles</h2>
+      <div class="principles">
+        <div class="principle" data-number="1">
+          <h3>Immutability</h3>
+          <p>Everything is append-only (Event Sourcing)</p>
+          <ul>
+            <li>Complete audit trail</li>
+            <li>Time-travel debugging</li>
+            <li>Event replay capability</li>
+          </ul>
+        </div>
+
+        <div class="principle" data-number="2">
+          <h3>Context</h3>
+          <p>Every action carries complete context</p>
+          <ul>
+            <li>Full traceability</li>
+            <li>Clear relationships</li>
+            <li>No data silos</li>
+          </ul>
+        </div>
+
+        <div class="principle" data-number="3">
+          <h3>Proactivity</h3>
+          <p>System recommends, not just informs</p>
+          <ul>
+            <li>Decision support</li>
+            <li>Intelligent automation</li>
+            <li>Problem anticipation</li>
+          </ul>
+        </div>
+
+        <div class="principle" data-number="4">
+          <h3>Traceability</h3>
+          <p>100% auditable</p>
+          <ul>
+            <li>Regulatory compliance</li>
+            <li>Simplified debugging</li>
+            <li>Clear accountability</li>
+          </ul>
+        </div>
+
+        <div class="principle" data-number="5">
+          <h3>Learning</h3>
+          <p>Decision Store feeds AI</p>
+          <ul>
+            <li>Model improves over time</li>
+            <li>Continuous feedback loop</li>
+            <li>Exponential optimization</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture Tiers -->
+    <section>
+      <h2>Architecture in Layers</h2>
+      <svg class="architecture-svg" viewBox="0 0 1200 750" xmlns="http://www.w3.org/2000/svg">
+        <!-- Presentation -->
+        <rect class="arch-tier" x="50" y="50" width="1100" height="110" />
+        <text class="arch-tier-label" x="60" y="75">PRESENTATION LAYER</text>
+        <rect class="arch-component" x="70" y="90" width="140" height="50" rx="0" />
+        <text class="arch-component-label" x="80" y="115">Web Dashboard</text>
+        <text class="arch-component-tech" x="80" y="130">React/TypeScript</text>
+
+        <rect class="arch-component" x="240" y="90" width="140" height="50" rx="0" />
+        <text class="arch-component-label" x="250" y="115">Mobile App</text>
+        <text class="arch-component-tech" x="250" y="130">React Native</text>
+
+        <rect class="arch-component" x="410" y="90" width="140" height="50" rx="0" />
+        <text class="arch-component-label" x="420" y="115">API Gateway</text>
+        <text class="arch-component-tech" x="420" y="130">Express</text>
+
+        <!-- Application -->
+        <rect class="arch-tier" x="50" y="190" width="1100" height="140" />
+        <text class="arch-tier-label" x="60" y="215">APPLICATION LAYER</text>
+
+        <rect class="arch-component" x="70" y="230" width="130" height="70" rx="0" />
+        <text class="arch-component-label" x="80" y="255">Core API</text>
+        <text class="arch-component-tech" x="80" y="275">NestJS</text>
+
+        <rect class="arch-component" x="230" y="230" width="130" height="70" rx="0" />
+        <text class="arch-component-label" x="240" y="255">IA Engine</text>
+        <text class="arch-component-tech" x="240" y="275">FastAPI</text>
+
+        <rect class="arch-component" x="390" y="230" width="130" height="70" rx="0" />
+        <text class="arch-component-label" x="400" y="255">Buildly Brain</text>
+        <text class="arch-component-tech" x="400" y="275">Node.js/Python</text>
+
+        <rect class="arch-component" x="550" y="230" width="130" height="70" rx="0" />
+        <text class="arch-component-label" x="560" y="255">Event Worker</text>
+        <text class="arch-component-tech" x="560" y="275">Node.js</text>
+
+        <!-- Integration -->
+        <rect class="arch-tier" x="50" y="360" width="1100" height="100" />
+        <text class="arch-tier-label" x="60" y="385">INTEGRATION LAYER</text>
+
+        <rect class="arch-component" x="70" y="400" width="110" height="50" rx="0" />
+        <text class="arch-component-label" x="80" y="420">NATS Bus</text>
+        <text class="arch-component-tech" x="80" y="435">Messaging</text>
+
+        <rect class="arch-component" x="210" y="400" width="110" height="50" rx="0" />
+        <text class="arch-component-label" x="220" y="420">Bull.js</text>
+        <text class="arch-component-tech" x="220" y="435">Job Queue</text>
+
+        <rect class="arch-component" x="350" y="400" width="110" height="50" rx="0" />
+        <text class="arch-component-label" x="360" y="420">Redis</text>
+        <text class="arch-component-tech" x="360" y="435">Cache</text>
+
+        <!-- Persistence -->
+        <rect class="arch-tier" x="50" y="490" width="1100" height="140" />
+        <text class="arch-tier-label" x="60" y="515">PERSISTENCE LAYER</text>
+
+        <rect class="arch-component" x="70" y="530" width="130" height="70" rx="0" />
+        <text class="arch-component-label" x="80" y="555">PostgreSQL</text>
+        <text class="arch-component-tech" x="80" y="575">Event Store</text>
+
+        <rect class="arch-component" x="230" y="530" width="130" height="70" rx="0" />
+        <text class="arch-component-label" x="240" y="555">Neo4j</text>
+        <text class="arch-component-tech" x="240" y="575">Graph DB</text>
+
+        <rect class="arch-component" x="390" y="530" width="130" height="70" rx="0" />
+        <text class="arch-component-label" x="400" y="555">Qdrant</text>
+        <text class="arch-component-tech" x="400" y="575">Vector DB</text>
+
+        <!-- Infrastructure -->
+        <rect class="arch-tier" x="50" y="660" width="1100" height="60" />
+        <text class="arch-tier-label" x="60" y="690">INFRASTRUCTURE: DOCKER COMPOSE (Dev) / KUBERNETES (Prod)</text>
+      </svg>
+    </section>
+
+    <!-- Data Model -->
+    <section>
+      <h2>Core Data Model</h2>
+      <p style="margin-bottom: var(--spacing-lg); color: var(--text-light);">The flow: IEvent → IObjective → IDecision. Immutable, context-rich, learnable.</p>
+      <div class="data-model">
+        <div class="model-card">
+          <h3>IEvent</h3>
+          <p>Immutable record of system change</p>
+          <p style="font-size: 0.8rem; color: var(--text-light);">Stored: PostgreSQL Event Store (append-only)</p>
+          <div class="model-fields">
+            id: UUID<br>
+            type: EventType<br>
+            aggregate_id: UUID<br>
+            context: {obra_id, ...}<br>
+            data: {payload}<br>
+            created_at: ISO 8601
+          </div>
+        </div>
+
+        <div class="model-card">
+          <h3>IObjective</h3>
+          <p>Measurable project goal</p>
+          <p style="font-size: 0.8rem; color: var(--text-light);">Stored: PostgreSQL Objective Store</p>
+          <div class="model-fields">
+            id: UUID<br>
+            obra_id: UUID<br>
+            description: string<br>
+            domain: execução|qualidade<br>
+            primary_metric: {...}<br>
+            start_date: DATE<br>
+            end_date: DATE
+          </div>
+        </div>
+
+        <div class="model-card">
+          <h3>IDecision</h3>
+          <p>Choice record with outcome</p>
+          <p style="font-size: 0.8rem; color: var(--text-light);">Stored: PostgreSQL + Training data for IA</p>
+          <div class="model-fields">
+            id: UUID<br>
+            obra_id: UUID<br>
+            event_id: UUID<br>
+            domain: operacional|estratégico<br>
+            options: [{...}]<br>
+            chosen_option: string<br>
+            roi: numeric
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pilot Validation -->
+    <section>
+      <h2>Pilot Validation — Phase 4.3</h2>
+      <p style="margin-bottom: var(--spacing-lg); color: var(--text-light);">4-6 week validation of Buildly Brain predictions across 5 construction sites in Brazil.</p>
+
+      <h4 style="margin-bottom: var(--spacing-lg);">Success Criteria</h4>
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-value">≥ 75%</div>
+          <div class="metric-label">Precision (TP / TP+FP)</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">≥ 70%</div>
+          <div class="metric-label">Recall (TP / TP+FN)</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">&lt; 10%</div>
+          <div class="metric-label">False Positives</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">≥ R$ 20k</div>
+          <div class="metric-label">ROI per Prevented Delay</div>
+        </div>
+      </div>
+
+      <h4 style="margin-bottom: var(--spacing-lg);">5 Pilot Sites</h4>
+      <div class="sites">
+        <div class="site-card">
+          <h3>São Paulo</h3>
+          <div class="site-stat">
+            <div class="site-stat-label">Cliente</div>
+            <div class="site-stat-value">Camargo Corrêa</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Budget</div>
+            <div class="site-stat-value">R$ 500M</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Records</div>
+            <div class="site-stat-value">950 (24mo)</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Delay Rate</div>
+            <div class="site-stat-value">15%</div>
+          </div>
+        </div>
+
+        <div class="site-card">
+          <h3>Belo Horizonte</h3>
+          <div class="site-stat">
+            <div class="site-stat-label">Cliente</div>
+            <div class="site-stat-value">Odebrecht</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Budget</div>
+            <div class="site-stat-value">R$ 120M</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Records</div>
+            <div class="site-stat-value">650 (18mo)</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Delay Rate</div>
+            <div class="site-stat-value">12%</div>
+          </div>
+        </div>
+
+        <div class="site-card">
+          <h3>Rio de Janeiro</h3>
+          <div class="site-stat">
+            <div class="site-stat-label">Cliente</div>
+            <div class="site-stat-value">Queiroz Galvão</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Budget</div>
+            <div class="site-stat-value">R$ 800M</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Records</div>
+            <div class="site-stat-value">1,200 (30mo)</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Delay Rate</div>
+            <div class="site-stat-value">22%</div>
+          </div>
+        </div>
+
+        <div class="site-card">
+          <h3>Brasília</h3>
+          <div class="site-stat">
+            <div class="site-stat-label">Cliente</div>
+            <div class="site-stat-value">Governo BR</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Budget</div>
+            <div class="site-stat-value">R$ 600M</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Records</div>
+            <div class="site-stat-value">800 (24mo)</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Delay Rate</div>
+            <div class="site-stat-value">18%</div>
+          </div>
+        </div>
+
+        <div class="site-card">
+          <h3>Manaus</h3>
+          <div class="site-stat">
+            <div class="site-stat-label">Cliente</div>
+            <div class="site-stat-value">SUFRAMA</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Budget</div>
+            <div class="site-stat-value">R$ 350M</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Records</div>
+            <div class="site-stat-value">450 (12mo)</div>
+          </div>
+          <div class="site-stat">
+            <div class="site-stat-label">Delay Rate</div>
+            <div class="site-stat-value">28%</div>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-lg);">Data Summary</h4>
+      <div style="background: var(--paper); border: 1px solid var(--border); padding: var(--spacing-lg);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-lg);">
+          <div>
+            <div style="font-family: 'IBM Plex Mono'; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: var(--spacing-sm);">Total Records</div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: var(--text);">4,050</div>
+            <div style="font-size: 0.85rem; color: var(--text-light);">Historical material deliveries across 5 sites</div>
+          </div>
+          <div>
+            <div style="font-family: 'IBM Plex Mono'; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: var(--spacing-sm);">Material Categories</div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: var(--text);">9</div>
+            <div style="font-size: 0.85rem; color: var(--text-light);">Glass, Steel, Cement, etc.</div>
+          </div>
+          <div>
+            <div style="font-family: 'IBM Plex Mono'; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: var(--spacing-sm);">Baseline Predictions</div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: var(--text);">38–43</div>
+            <div style="font-size: 0.85rem; color: var(--text-light);">Generated from historical patterns</div>
+          </div>
+          <div>
+            <div style="font-family: 'IBM Plex Mono'; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: var(--spacing-sm);">Cost Exposure</div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: var(--text);">R$ 58–61M</div>
+            <div style="font-size: 0.85rem; color: var(--text-light);">Total identified risk</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Development Timeline -->
+    <section>
+      <h2>Development Timeline</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-label">Phase 1</div>
+          <div class="timeline-content">
+            <h4>Foundation (In Progress)</h4>
+            <p>4 weeks. Monorepo, interfaces (IEvent/IObjective/IDecision), builders, pilot infrastructure. Event Store and NATS setup pending.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-label">Phase 2</div>
+          <div class="timeline-content">
+            <h4>Intelligence Layer (Planned)</h4>
+            <p>6 weeks. Neo4j Graph DB integration, Event→Graph sync, Digital Twin, Buildly Maturity Index, pathfinding for event causality.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-label">Phase 3</div>
+          <div class="timeline-content">
+            <h4>IA & Automation (Planned)</h4>
+            <p>8 weeks. RAG integration (Qdrant), recommendation engine, decision store training, predictive analytics, automated decision making.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-label">Phase 4</div>
+          <div class="timeline-content">
+            <h4>Enterprise (Planned)</h4>
+            <p>Ongoing. Multi-tenancy, advanced security & RLS, GraphQL API, mobile app, marketplace.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section>
+      <h2>Technology Stack</h2>
+      <div class="tech-grid">
+        <div class="tech-category">
+          <h4>Backend</h4>
+          <ul class="tech-list">
+            <li>NestJS (core-api)</li>
+            <li>FastAPI (ia-engine)</li>
+            <li>Express (api-gateway)</li>
+            <li>Bull.js (job queue)</li>
+          </ul>
+        </div>
+
+        <div class="tech-category">
+          <h4>Frontend</h4>
+          <ul class="tech-list">
+            <li>React (web dashboard)</li>
+            <li>React Native (mobile)</li>
+            <li>TypeScript</li>
+          </ul>
+        </div>
+
+        <div class="tech-category">
+          <h4>Databases</h4>
+          <ul class="tech-list">
+            <li>PostgreSQL 15</li>
+            <li>Neo4j 5.x</li>
+            <li>Redis 7</li>
+            <li>Qdrant (Vector DB)</li>
+          </ul>
+        </div>
+
+        <div class="tech-category">
+          <h4>Messaging</h4>
+          <ul class="tech-list">
+            <li>NATS (event bus)</li>
+            <li>Bull.js (queue)</li>
+            <li>Event stream</li>
+          </ul>
+        </div>
+
+        <div class="tech-category">
+          <h4>Infrastructure</h4>
+          <ul class="tech-list">
+            <li>Docker Compose</li>
+            <li>Kubernetes (Phase 3+)</li>
+            <li>GitHub Actions</li>
+          </ul>
+        </div>
+
+        <div class="tech-category">
+          <h4>Monitoring</h4>
+          <ul class="tech-list">
+            <li>Prometheus</li>
+            <li>Loki</li>
+            <li>Jaeger</li>
+            <li>Grafana</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p><strong>Buildly Premium</strong> — Operating system for heavy infrastructure</p>
+    <p>v0.1.0 — Phase 1 Foundation (In Progress) | Branch: claude/serene-einstein-em23qs</p>
+  </footer>
+</body>
+</html>
