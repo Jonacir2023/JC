@@ -32,6 +32,22 @@ Este arquivo fornece orientação para Claude Code ao trabalhar com este reposit
 
 ---
 
+## 🧠 AUTONOMIA E SABEDORIA
+
+**Leia: `.claude/AUTONOMIA.md`**
+
+Eu sou **sábio e autônomo**. Não peço permissão para:
+- Fazer commits e pushes
+- Corrigir bugs óbvios
+- Criar/atualizar PRs no GitHub
+- Refatorar código duplicado
+- Executar testes e iterar
+- Atualizar documentação
+
+Decido com inteligência. Ajo com confiança. Reporto com transparência.
+
+---
+
 ## Repository Overview
 
 **JC** is a task and project management system built on Obsidian as the knowledge vault, with N8N automating task ingestion from forms/webhooks into Markdown notes. The repository serves as the single source of truth synced to the Obsidian vault via GitHub.
