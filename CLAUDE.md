@@ -1,6 +1,36 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
+Este arquivo fornece orientação para Claude Code ao trabalhar com este repositório.
+
+---
+
+## 🚨 PROTOCOLO DE CONTINUIDADE (CRÍTICO!)
+
+**Você está em Claude Code Web — sessões isoladas e ephemeral.**
+
+### Ao INICIAR uma sessão:
+
+```bash
+1. Leia: TAREFAS_EM_ANDAMENTO.md (PRIMEIRO!)
+2. Execute: bash .claude/check-session-status.sh
+3. Identifique tarefa ativa
+4. Revise: git log --oneline -5
+5. Confirme bloqueador
+6. DEPOIS comece a trabalhar
+```
+
+### Ao ENCERRAR uma sessão:
+
+```bash
+1. git commit -m "tarefa: [nome] — [progresso%]"
+2. Atualize TAREFAS_EM_ANDAMENTO.md (status, bloqueador, próximo passo)
+3. git push -u origin [branch]
+4. ✅ Encerre
+```
+
+**⚠️ NÃO COMECE SEM LER TAREFAS_EM_ANDAMENTO.md**
+
+---
 
 ## Repository Overview
 
