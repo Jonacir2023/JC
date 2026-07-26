@@ -213,11 +213,15 @@ Commands:
   clear-cache             Clear Redis cache
   metrics                 Show Docker resource usage
 
-Pilot Validation (Phase 4.3):
+Pilot Validation (Phase 4):
   pilot-setup             Initialize pilot infrastructure & schema
   pilot-load-data         Load historical material data for 5 sites
-  pilot-generate-baseline Generate baseline predictions from history
+  pilot-generate-baseline Generate baseline predictions (Phase 4.1)
+  pilot-enable-soft-launch Enable Phase 4.2 daily predictions
+  pilot-enable-decisions  Enable Phase 4.3 approval workflow
+  pilot-retrain-model     Retrain model using gestor feedback
   pilot-status            Display pilot sites & metrics status
+  pilot-weekly-report     Generate weekly summary report
   help                    Show this help message
 
 Examples:
@@ -226,7 +230,8 @@ Examples:
   ./scripts/infrastructure.sh pilot-setup
   ./scripts/infrastructure.sh pilot-load-data
   ./scripts/infrastructure.sh pilot-generate-baseline
-  ./scripts/infrastructure.sh pilot-status
+  ./scripts/infrastructure.sh pilot-enable-soft-launch
+  ./scripts/infrastructure.sh pilot-weekly-report
 
 Services:
   - postgres        PostgreSQL database
@@ -292,6 +297,18 @@ main() {
       ;;
     pilot-status)
       cmd_pilot_status
+      ;;
+    pilot-enable-soft-launch)
+      cmd_pilot_enable_soft_launch
+      ;;
+    pilot-enable-decisions)
+      cmd_pilot_enable_decisions
+      ;;
+    pilot-retrain-model)
+      cmd_pilot_retrain_model
+      ;;
+    pilot-weekly-report)
+      cmd_pilot_weekly_report
       ;;
     help|"")
       cmd_help
@@ -385,6 +402,80 @@ EOF
       MAX(delay_days) as max_delay_days
     FROM pilot_material_history;
 EOF
+}
+
+cmd_pilot_enable_soft_launch() {
+  log_info "Enabling Phase 4.2 (Soft Launch) - Daily Predictions..."
+
+  log_info "1. Deploying V012 migration (soft_launch_observations table)..."
+  docker-compose exec -T postgres psql -U buildly_user -d buildly_db -f /docker-entrypoint-initdb.d/V012__init_soft_launch_observations.sql
+
+  log_info "2. Setting up daily prediction cron jobs..."
+  log_info "   • 6:00 AM: generate-daily-predictions.ts"
+  log_info "   • 8:00 PM: collect-daily-observations.ts"
+
+  log_success "Phase 4.2 (Soft Launch) enabled"
+  log_info "Gestores will receive daily predictions starting 2026-08-02 at 6:00 AM"
+}
+
+cmd_pilot_enable_decisions() {
+  log_info "Enabling Phase 4.3 (Active Phase) - Approval Workflow..."
+
+  log_info "1. Deploying V013 migration (approval_decisions + retraining_log tables)..."
+  docker-compose exec -T postgres psql -U buildly_user -d buildly_db -f /docker-entrypoint-initdb.d/V013__init_approval_workflow.sql
+
+  log_info "2. Starting decision recording API (port 3003)..."
+  log_info "   • POST /api/decisions — Record gestor decision"
+  log_info "   • GET  /api/decisions/:siteId — List decisions"
+  log_info "   • PUT  /api/decisions/:decisionId/outcome — Record actual outcome"
+
+  log_info "3. Setting up nightly model retraining cron job..."
+  log_info "   • 11:00 PM: retrain-model-nightly.ts"
+
+  log_success "Phase 4.3 (Active Phase) enabled"
+  log_info "Gestores can now approve/reject predictions starting 2026-08-19"
+}
+
+cmd_pilot_retrain_model() {
+  log_info "Running model retraining with recent gestor feedback..."
+
+  if [ ! -f "scripts/retrain-model-nightly.ts" ]; then
+    log_error "Script not found: scripts/retrain-model-nightly.ts"
+    return 1
+  fi
+
+  npx ts-node scripts/retrain-model-nightly.ts
+
+  if [ $? -eq 0 ]; then
+    log_success "Model retraining completed successfully"
+  else
+    log_error "Model retraining failed"
+    return 1
+  fi
+}
+
+cmd_pilot_weekly_report() {
+  log_info "Generating weekly pilot validation report..."
+
+  docker-compose exec -T postgres psql -U buildly_user -d buildly_db << EOF
+    -- Weekly Summary Report
+    SELECT
+      ps.site_name,
+      (DATE_TRUNC('week', pso.observation_date))::DATE as week_start,
+      COUNT(DISTINCT pso.observation_date) as days_observed,
+      SUM(pso.predictions_generated) as total_predictions,
+      ROUND(AVG(pso.precision_rate)::NUMERIC, 2) as avg_precision,
+      ROUND(AVG(pso.recall_rate)::NUMERIC, 2) as avg_recall,
+      ROUND(AVG(pso.system_uptime_percent)::NUMERIC, 2) as avg_uptime,
+      ROUND(SUM(pso.total_cost_exposure_brl) / 1000000, 2) as cost_exposure_m
+    FROM pilot_soft_launch_observations pso
+    JOIN pilot_sites ps ON pso.site_id = ps.id
+    WHERE pso.observation_date >= CURRENT_DATE - INTERVAL '7 days'
+    GROUP BY ps.id, ps.site_name, DATE_TRUNC('week', pso.observation_date)
+    ORDER BY ps.site_name, week_start DESC;
+EOF
+
+  log_success "Weekly report generated"
 }
 
 main "$@"
