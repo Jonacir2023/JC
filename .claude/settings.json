@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "permissions": {
+    "allow": [
+      "Bash(docker *)",
+      "Bash(docker-compose *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(git *)",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep"
+    ],
+    "defaultMode": "default"
+  },
+  "model": "claude-haiku-4-5-20251001",
+  "alwaysThinkingEnabled": true,
+  "env": {
+    "NODE_ENV": "development",
+    "DEBUG": "buildly:*"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath' | { read -r f; if [[ \"$f\" == *.json ]]; then jq -S . \"$f\" > /tmp/sorted.json && mv /tmp/sorted.json \"$f\" 2>/dev/null; fi; } || true",
+            "statusMessage": "Formatting JSON..."
+          }
+        ]
+      }
+    ]
+  },
+  "respectGitignore": true,
+  "spinnerTipsEnabled": true
+}
