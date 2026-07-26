@@ -252,10 +252,18 @@ Week 7+: Phase 5 (Enterprise Expansion)
 
 ### **BUILDLY PREMIUM: PILOT VALIDATION & ENTERPRISE (Phase 4-5)**
 
-#### Phase 4: Pilot Validation 🟡 ROADMAPS READY
-- [x] Phase 4.1: Baseline establishment (Week 1)
-- [x] Phase 4.2: Soft Launch observation (Weeks 2-3)
+#### Phase 4: Pilot Validation 🟢 INFRASTRUCTURE READY
+- [x] Phase 4.1: Baseline establishment (Week 1) — **[PHASE-4.1-BASELINE.md](./PHASE-4.1-BASELINE.md)**
+  - Migration V011B: pilot_baseline_metrics table
+  - Script: generate-baseline-predictions.ts
+- [x] Phase 4.2: Soft Launch observation (Weeks 2-3) — **[PHASE-4.2-SOFT-LAUNCH.md](./PHASE-4.2-SOFT-LAUNCH.md)**
+  - Migration V012: pilot_soft_launch_observations table
+  - Script: generate-daily-predictions.ts
+  - Script: collect-daily-observations.ts
 - [x] Phase 4.3: Active Phase decisions (Weeks 4-5) — **[PHASE-4.5-ACTIVE.md](./PHASE-4.5-ACTIVE.md)**
+  - Migration V013: pilot_approval_decisions + retraining_log
+  - Script: record-decision.ts (approval API)
+  - Script: retrain-model-nightly.ts (adaptive learning)
 - [x] Phase 4.6: Analysis & Go/No-Go (Week 6) — **[PHASE-4.6-ANALYSIS.md](./PHASE-4.6-ANALYSIS.md)**
 - [x] Playbook: Complete 6-week guide — **[PILOT-VALIDATION-PLAYBOOK.md](./PILOT-VALIDATION-PLAYBOOK.md)**
 
@@ -264,6 +272,20 @@ Week 7+: Phase 5 (Enterprise Expansion)
 - Recall: ≥70% (target 76%)
 - ROI: ≥R$ 20k per prevented delay (target R$ 42.7k)
 - Uptime: ≥99.5% (target 99.7%)
+
+**Pilot Scripts Available:**
+```bash
+# Week 1: Baseline
+npx ts-node scripts/generate-baseline-predictions.ts
+
+# Week 2-3: Observation
+npx ts-node scripts/generate-daily-predictions.ts     # Daily 6:00 AM
+npx ts-node scripts/collect-daily-observations.ts     # Daily 8:00 PM
+
+# Week 4-5: Active decisions
+npx ts-node scripts/record-decision.ts                # Decision API server
+npx ts-node scripts/retrain-model-nightly.ts          # Daily 11:00 PM
+```
 
 #### Phase 5: Enterprise Expansion & Intelligence Layer 🚀 PLANNED
 - [ ] Enterprise rollout (20+ sites)
@@ -441,14 +463,48 @@ git commit -m "feat: implementa neo4j event sync worker
 
 ## 📞 Contato & Status
 
-**Última Atualização:** 2026-07-19  
-**Phase 2 Progress:** 70%  
-**Próxima Sincronização:** 2026-07-21
+**Última Atualização:** 2026-07-26  
+**Phase 4 Progress:** 100% (Infrastructure & Scripts Implemented)  
+**Phase 5 Progress:** 0% (Roadmap Ready)  
+**Próxima Etapa:** Week 1 Baseline Deployment (2026-07-29)
 
 **Colaboradores Ativos:**
-- Claude — Implementador
+- Claude — Implementador (Phase 4 scripts + migrations)
 - ChatGPT — Validador (em andamento)
 - Gemini — Arquiteto (em andamento)
+
+---
+
+## 📊 Pilot Validation Timeline (Phase 4)
+
+```
+2026-07-29 (Week 1)     Phase 4.1: Baseline Establishment
+├─ Deploy V011B migration
+├─ Execute generate-baseline-predictions.ts
+└─ Calculate baseline accuracy (target: 81% precision, 76% recall)
+
+2026-08-02–08-16 (Weeks 2-3)  Phase 4.2: Soft Launch Observation
+├─ Deploy V012 migration
+├─ Daily 6:00 AM: generate-daily-predictions.ts
+├─ Daily 8:00 PM: collect-daily-observations.ts
+└─ Track TP/FP/TN/FN metrics (target: ≥75% precision)
+
+2026-08-19–09-02 (Weeks 4-5)  Phase 4.3: Active Decision Making
+├─ Deploy V013 migration
+├─ Gestores approve/reject predictions via API
+├─ Daily 11:00 PM: retrain-model-nightly.ts
+└─ Calculate ROI & cost prevention (target: R$ 20k per delay)
+
+2026-09-05 (Week 6)     Phase 4.6: Analysis & Go/No-Go
+├─ Aggregate 6-week results
+├─ ROI calculation & validation
+└─ Decision: GO for enterprise rollout or NO-GO with mitigations
+
+2026-09-12+ (Weeks 7+)  Phase 5: Enterprise Expansion
+├─ Scale to 20+ sites
+├─ Neo4j Intelligence Layer activation
+└─ Revenue monetization
+```
 
 ---
 
