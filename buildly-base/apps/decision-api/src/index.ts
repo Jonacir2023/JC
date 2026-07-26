@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { randomUUID } from 'crypto';
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -20,7 +21,7 @@ app.post('/decisions', (req, res) => {
   const { type, context } = req.body;
 
   return res.json({
-    decision_id: crypto.randomUUID(),
+    decision_id: randomUUID(),
     type,
     status: 'pending_review',
     context,
