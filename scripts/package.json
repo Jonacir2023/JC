@@ -1,0 +1,27 @@
+{
+  "name": "jc-buildly-integration",
+  "version": "1.0.0",
+  "description": "Sincronização JC ↔ Buildly: Event Sourcing + Brain ML",
+  "main": "sync-jc-to-buildly.ts",
+  "scripts": {
+    "sync": "ts-node sync-jc-to-buildly.ts",
+    "sync:dev": "BUILDLY_ENV=dev ts-node sync-jc-to-buildly.ts",
+    "sync:prod": "BUILDLY_ENV=prod ts-node sync-jc-to-buildly.ts",
+    "test": "ts-node test-buildly-client.ts",
+    "test:connection": "ts-node -e \"import { BuildlyClient } from './buildly-client'; const c = new BuildlyClient({env:'dev',coreApiUrl:'http://localhost:3001',brainApiUrl:'http://localhost:3002',dbHost:'localhost',dbPort:5432,redisHost:'localhost',redisPort:6379}); c.healthCheck().then(r => console.log(r ? '✅ Conectado' : '❌ Offline'))\"",
+    "build": "tsc --outDir dist/",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0",
+    "eslint": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
