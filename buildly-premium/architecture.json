@@ -1,0 +1,600 @@
+{
+  "system": {
+    "name": "Buildly Premium",
+    "version": "0.1.0",
+    "status": "Phase 1 - Foundation (In Progress)",
+    "description": "Sistema Operacional Integrado para Empreendimentos de Infraestrutura Pesada",
+    "tagline": "Registra tudo • Entende relacionamentos • Orquestra processos • Aprende com tempo"
+  },
+  "core_principles": {
+    "1_immutability": {
+      "name": "Imutabilidade",
+      "description": "Tudo é append-only (Event Sourcing)",
+      "benefits": ["Auditoria completa", "Time-travel debugging", "Event replay"]
+    },
+    "2_context": {
+      "name": "Contexto",
+      "description": "Cada ação carrega contexto completo",
+      "benefits": ["Rastreabilidade", "Relacionamentos claros", "Sem silos"]
+    },
+    "3_proactivity": {
+      "name": "Proatividade",
+      "description": "Sistema recomenda, não só informa",
+      "benefits": ["Decision support", "Automação inteligente", "Antecipação"]
+    },
+    "4_traceability": {
+      "name": "Rastreabilidade",
+      "description": "100% auditável",
+      "benefits": ["Compliance", "Debugging", "Accountability"]
+    },
+    "5_learning": {
+      "name": "Aprendizado",
+      "description": "Decision Store alimenta IA",
+      "benefits": ["Modelo melhora", "Feedback loop", "Otimização contínua"]
+    }
+  },
+  "architecture": {
+    "tiers": {
+      "presentation": {
+        "name": "Presentation Layer",
+        "description": "Interfaces de usuário e integração externa",
+        "components": {
+          "web_app": {
+            "name": "Web Dashboard",
+            "tech": "React/TypeScript",
+            "port": 3000,
+            "features": ["Real-time metrics", "Decision interface", "Approval workflow"]
+          },
+          "mobile_app": {
+            "name": "Mobile App",
+            "tech": "React Native",
+            "status": "Phase 4 (Enterprise)",
+            "features": ["On-site monitoring", "Push notifications", "Offline support"]
+          },
+          "api_gateway": {
+            "name": "API Gateway",
+            "tech": "Express/Node.js",
+            "port": 3100,
+            "features": ["Rate limiting", "Auth", "CORS", "Versioning"]
+          }
+        }
+      },
+      "application": {
+        "name": "Application Layer",
+        "description": "Lógica de negócio e orquestração",
+        "microservices": {
+          "core_api": {
+            "name": "Core API",
+            "description": "Orquestrador principal",
+            "tech": "NestJS/TypeScript",
+            "port": 3001,
+            "responsibilities": [
+              "Event ingestion",
+              "Objective management",
+              "Decision orchestration",
+              "Workflow coordination"
+            ],
+            "endpoints": {
+              "events": "POST /events",
+              "objectives": "GET|POST /objectives",
+              "decisions": "GET|POST /decisions",
+              "approvals": "POST /decisions/:id/approve"
+            }
+          },
+          "ia_engine": {
+            "name": "IA Engine",
+            "description": "Motor de inteligência artificial",
+            "tech": "Python FastAPI",
+            "port": 5000,
+            "responsibilities": [
+              "RAG processing",
+              "Predictions",
+              "Anomaly detection",
+              "Recommendation generation"
+            ],
+            "models": [
+              "Material delay EMA",
+              "Cost impact estimation",
+              "Risk scoring",
+              "Decision recommendations"
+            ]
+          },
+          "worker_events": {
+            "name": "Event Worker",
+            "description": "Processador assíncrono de eventos",
+            "tech": "Node.js",
+            "responsibilities": [
+              "Event processing",
+              "Graph sync",
+              "Cache invalidation",
+              "Job queue management"
+            ]
+          },
+          "brain_ml": {
+            "name": "Buildly Brain",
+            "description": "Módulo complementar de análise",
+            "tech": "Python/Node.js",
+            "port": 3002,
+            "non_orchestrating": true,
+            "responsibilities": [
+              "Document observation",
+              "Pattern detection",
+              "7-day forecast",
+              "Optimization recommendations"
+            ],
+            "features": [
+              "Diário analysis",
+              "Contract parsing",
+              "Schedule anomalies",
+              "Cost optimization"
+            ]
+          }
+        }
+      },
+      "integration": {
+        "name": "Integration Layer",
+        "description": "Padrões de comunicação e integração",
+        "components": {
+          "message_bus": {
+            "name": "NATS",
+            "description": "Message broker para eventos assíncronos",
+            "port": 4222,
+            "topics": [
+              "events.created",
+              "events.processed",
+              "decisions.made",
+              "feedback.recorded"
+            ],
+            "qos": "At-least-once delivery"
+          },
+          "job_queue": {
+            "name": "Bull.js + Redis",
+            "description": "Fila de trabalhos com retry logic",
+            "features": [
+              "Scheduled jobs",
+              "Retry mechanism",
+              "Priority queue",
+              "Concurrency control"
+            ],
+            "jobs": [
+              "daily_predictions",
+              "graph_sync",
+              "model_retraining",
+              "metric_aggregation"
+            ]
+          },
+          "event_bus": {
+            "name": "Internal Event Stream",
+            "description": "Stream de eventos imutável",
+            "pattern": "Event Sourcing",
+            "features": [
+              "Event replay",
+              "Time travel",
+              "Full audit trail",
+              "Multi-subscriber"
+            ]
+          }
+        }
+      },
+      "persistence": {
+        "name": "Persistence Layer",
+        "description": "Armazenamento de dados",
+        "databases": {
+          "event_store": {
+            "name": "PostgreSQL Event Store",
+            "version": "15-alpine",
+            "port": 5432,
+            "purpose": "Append-only event log",
+            "tables": [
+              "events",
+              "event_snapshots",
+              "event_metadata"
+            ],
+            "capacity": "Milhões de eventos/ano",
+            "retention": "Indefinida (immutável)"
+          },
+          "state_store": {
+            "name": "PostgreSQL State DB",
+            "port": 5432,
+            "purpose": "Calculated state (denormalized)",
+            "schemas": [
+              "pilot_sites",
+              "pilot_baseline_predictions",
+              "pilot_soft_launch_observations",
+              "pilot_active_feedback",
+              "pilot_daily_metrics"
+            ]
+          },
+          "graph_db": {
+            "name": "Neo4j",
+            "version": "5.x",
+            "port": 7687,
+            "purpose": "Relacionamentos e graph queries",
+            "node_types": [
+              "Obra (Project)",
+              "Atividade (Activity)",
+              "Recurso (Resource)",
+              "Pessoa (Person)",
+              "Evento (Event)"
+            ],
+            "relationship_types": [
+              "PART_OF (hierarquia)",
+              "DEPENDS_ON (dependência)",
+              "IMPACTED_BY (impacto)",
+              "CAUSED_BY (causalidade)"
+            ],
+            "features": ["Pathfinding", "Community detection", "Real-time updates"]
+          },
+          "vector_db": {
+            "name": "Qdrant",
+            "port": 6333,
+            "purpose": "Vector embeddings para RAG",
+            "collections": [
+              "diarios_embeddings",
+              "contatos_embeddings",
+              "especificacoes_embeddings"
+            ],
+            "dimension": 1536,
+            "distance_metric": "cosine"
+          },
+          "cache_layer": {
+            "name": "Redis",
+            "version": "7-alpine",
+            "port": 6379,
+            "purpose": "Cache de alta velocidade",
+            "ttl": "24 horas",
+            "patterns": [
+              "Prediction cache",
+              "Metric aggregates",
+              "Session storage",
+              "Rate limit counters"
+            ]
+          }
+        }
+      },
+      "infrastructure": {
+        "name": "Infrastructure Layer",
+        "description": "Orquestração, containerização, monitoramento",
+        "components": {
+          "docker_compose": {
+            "name": "Docker Compose",
+            "purpose": "Local orchestration",
+            "services": [
+              "postgres",
+              "neo4j",
+              "redis",
+              "qdrant",
+              "nats",
+              "core-api",
+              "ia-engine",
+              "worker-events",
+              "brain-ml",
+              "pgAdmin"
+            ]
+          },
+          "kubernetes": {
+            "name": "Kubernetes",
+            "status": "Phase 3+ (Future)",
+            "purpose": "Production orchestration"
+          },
+          "monitoring": {
+            "name": "Observability Stack",
+            "components": [
+              "Prometheus (metrics)",
+              "Loki (logs)",
+              "Jaeger (tracing)",
+              "Grafana (dashboards)"
+            ],
+            "status": "Phase 2 (Future)"
+          }
+        }
+      }
+    }
+  },
+  "data_model": {
+    "core_interfaces": {
+      "IEvent": {
+        "description": "Registro imutável de mudança no sistema",
+        "fields": {
+          "id": "UUID",
+          "type": "EventType enum",
+          "aggregate_id": "UUID",
+          "context": "object (obra_id, prioridade, etc)",
+          "data": "object (payload específico)",
+          "metadata": "object (timestamp, actor, version)",
+          "created_at": "ISO 8601",
+          "version": "integer"
+        },
+        "stored_in": "PostgreSQL Event Store (append-only)",
+        "example": "MATERIAL_DELAY: Cimento chegou 15 dias atrasado"
+      },
+      "IObjective": {
+        "description": "Meta mensurável da obra",
+        "fields": {
+          "id": "UUID",
+          "obra_id": "UUID",
+          "description": "string",
+          "domain": "execucao|qualidade|seguranca|custo",
+          "primary_metric": "object (nome, valor_alvo)",
+          "start_date": "DATE",
+          "end_date": "DATE",
+          "status": "active|completed|paused"
+        },
+        "stored_in": "PostgreSQL Objective Store",
+        "example": "Concluir Bloco A até 31 de agosto com 100% qualidade"
+      },
+      "IDecision": {
+        "description": "Registro de uma escolha com contexto, alternativas e resultado",
+        "fields": {
+          "id": "UUID",
+          "obra_id": "UUID",
+          "event_id": "UUID",
+          "domain": "operacional|estrategico|tático",
+          "options": "array of {descricao, custo, prazo, risco}",
+          "chosen_option": "string",
+          "expected_outcome": "object",
+          "actual_outcome": "object (preenchido após outcome)",
+          "roi": "numeric",
+          "confidence": "0-1"
+        },
+        "stored_in": "PostgreSQL Decision Store + Training for IA",
+        "example": "Escolher entre esperar material, importar ou reordenar atividades"
+      }
+    },
+    "event_types": [
+      "MATERIAL_DELAY",
+      "QUALITY_ISSUE",
+      "SAFETY_INCIDENT",
+      "COST_OVERRUN",
+      "SCHEDULE_SLIP",
+      "RESOURCE_CONSTRAINT",
+      "EXTERNAL_FACTOR",
+      "DECISION_MADE",
+      "OBJECTIVE_UPDATED",
+      "FEEDBACK_RECORDED"
+    ]
+  },
+  "workflows": {
+    "material_delay_workflow": {
+      "name": "Material Delay Response",
+      "description": "Fluxo completo: Evento → Objetivo → Decisão",
+      "phase_1_week_1": {
+        "name": "Pilot Validation Week 1",
+        "activities": [
+          "Infrastructure setup (Day 1)",
+          "Load 4,050 historical records (Day 2)",
+          "Generate 38-43 baseline predictions (Day 3)",
+          "Gestor training (Day 4)",
+          "Final validation & Go/No-Go (Day 5)"
+        ]
+      },
+      "phase_2_weeks_2_3": {
+        "name": "Soft Launch - Observation Only",
+        "activities": [
+          "Daily predictions (6:00 AM)",
+          "Gestores observe (no decisions)",
+          "Metrics collected",
+          "False positive rate monitored (target ≤10%)"
+        ]
+      },
+      "phase_3_weeks_4_5": {
+        "name": "Active Phase - Live Decisions",
+        "activities": [
+          "Gestores approve/reject alerts",
+          "Feedback recorded for model learning",
+          "Actual outcomes tracked",
+          "ROI calculated per prevented delay"
+        ]
+      },
+      "phase_4_weeks_5_6": {
+        "name": "Analysis & Validation",
+        "activities": [
+          "Final metrics calculated",
+          "Per-site ROI breakdown",
+          "Model performance report",
+          "Go/No-Go: Enterprise Rollout decision"
+        ]
+      }
+    }
+  },
+  "development_phases": {
+    "phase_1": {
+      "name": "Foundation",
+      "duration": "4 weeks",
+      "status": "In Progress",
+      "deliverables": {
+        "completed": [
+          "✅ Monorepo structure (pnpm workspaces)",
+          "✅ Interfaces: IEvent, IObjective, IDecision",
+          "✅ Builders with validation",
+          "✅ Material delay use case demo"
+        ],
+        "todo": [
+          "Event Store (PostgreSQL migrations)",
+          "NATS Bus setup",
+          "Unit tests",
+          "Pilot infrastructure (Phase 4.3)"
+        ]
+      }
+    },
+    "phase_2": {
+      "name": "Intelligence Layer",
+      "duration": "6 weeks",
+      "status": "Planned",
+      "deliverables": [
+        "Neo4j Graph DB integration",
+        "Event → Graph sync worker",
+        "Digital Twin (Real vs. Planned vs. Forecast)",
+        "BMI (Buildly Maturity Index) calculation",
+        "Pathfinding para causalidade de eventos"
+      ]
+    },
+    "phase_3": {
+      "name": "IA & Automation",
+      "duration": "8 weeks",
+      "status": "Planned",
+      "deliverables": [
+        "RAG integration (Qdrant)",
+        "Recommendation Engine",
+        "Decision Store training",
+        "Predictive Analytics",
+        "Automated Decision Making"
+      ]
+    },
+    "phase_4": {
+      "name": "Enterprise",
+      "duration": "Ongoing",
+      "status": "Planned",
+      "deliverables": [
+        "Multi-tenancy",
+        "Advanced Security & RLS",
+        "API Pública (GraphQL + REST)",
+        "Mobile App",
+        "Marketplace"
+      ]
+    }
+  },
+  "pilot_validation_phase_4_3": {
+    "name": "Phase 4.3 - Pilot Validation",
+    "duration": "4-6 weeks",
+    "target_sites": 5,
+    "sites": {
+      "sp_camargo": {
+        "name": "São Paulo - Camargo Corrêa",
+        "scope": "Commercial complex (50,000m²)",
+        "budget_m": 500,
+        "records": 950,
+        "delay_rate": "15%",
+        "gestor": "João Silva"
+      },
+      "mg_odebrecht": {
+        "name": "Belo Horizonte - Odebrecht",
+        "scope": "Residential complex (80 units)",
+        "budget_m": 120,
+        "records": 650,
+        "delay_rate": "12%",
+        "gestor": "Maria Santos"
+      },
+      "rj_queiroz": {
+        "name": "Rio de Janeiro - Queiroz Galvão",
+        "scope": "Waterfront development (200,000m²)",
+        "budget_m": 800,
+        "records": 1200,
+        "delay_rate": "22%",
+        "gestor": "Carlos Oliveira"
+      },
+      "df_governo": {
+        "name": "Brasília - Governo do Brasil",
+        "scope": "Government offices (100,000m²)",
+        "budget_m": 600,
+        "records": 800,
+        "delay_rate": "18%",
+        "gestor": "Ana Paula Lima"
+      },
+      "am_suframa": {
+        "name": "Manaus - SUFRAMA",
+        "scope": "Industrial complex (150,000m²)",
+        "budget_m": 350,
+        "records": 450,
+        "delay_rate": "28%",
+        "gestor": "Roberto Ferreira"
+      }
+    },
+    "success_criteria": {
+      "precision": "≥ 75%",
+      "recall": "≥ 70%",
+      "false_positives": "< 10%",
+      "roi_per_prevented_delay": "≥ R$ 20k"
+    },
+    "data_loading": {
+      "total_records": 4050,
+      "material_categories": 9,
+      "baseline_predictions": "38-43",
+      "cost_exposure_total": "R$ 58-61M"
+    }
+  },
+  "technology_stack": {
+    "languages": [
+      "TypeScript (primary)",
+      "Python (IA/ML)",
+      "Node.js (runtime)",
+      "SQL (queries)"
+    ],
+    "backend": [
+      "NestJS (core-api)",
+      "FastAPI (ia-engine)",
+      "Express (api-gateway)",
+      "Bull.js (job queue)"
+    ],
+    "frontend": [
+      "React (web dashboard)",
+      "React Native (mobile, Phase 4)"
+    ],
+    "databases": [
+      "PostgreSQL 15 (event store + state)",
+      "Neo4j 5.x (graph)",
+      "Redis 7 (cache)",
+      "Qdrant (vector db)"
+    ],
+    "messaging": [
+      "NATS (message bus)",
+      "Bull.js + Redis (job queue)"
+    ],
+    "infrastructure": [
+      "Docker Compose (local)",
+      "Kubernetes (production, Phase 3+)",
+      "GitHub Actions (CI/CD)"
+    ],
+    "monitoring": [
+      "Prometheus",
+      "Loki",
+      "Jaeger",
+      "Grafana"
+    ]
+  },
+  "code_patterns": {
+    "naming": {
+      "domain_variables": "Portuguese (obra_id, evento_id, atividade_id)",
+      "infrastructure_variables": "English (user_id, timestamp, version)",
+      "interfaces": "Prefix I (IEvent, IObjective, IDecision)",
+      "builders": "Suffix Builder (EventBuilder, ObjectiveBuilder)"
+    },
+    "architecture": {
+      "pattern": "DDD (Domain-Driven Design)",
+      "structure": "Monorepo (pnpm workspaces)",
+      "abstraction": "Event Sourcing + CQRS",
+      "communication": "Event-driven async",
+      "testing": "Unit + Integration + E2E"
+    }
+  },
+  "deployment": {
+    "local_development": {
+      "command": "docker compose up -d",
+      "services": 11,
+      "startup_time": "~30 seconds"
+    },
+    "environments": {
+      "development": "Local Docker Compose",
+      "staging": "Kubernetes (Phase 3+)",
+      "production": "Kubernetes (Phase 3+)"
+    },
+    "scaling": {
+      "current": "Single-server (Phase 1)",
+      "future": "Kubernetes auto-scaling (Phase 3+)"
+    }
+  },
+  "api_overview": {
+    "base_url": "http://localhost:3001",
+    "auth": "JWT Bearer tokens",
+    "versioning": "URL path /v1/, /v2/",
+    "formats": "JSON (REST), GraphQL (Phase 3+)",
+    "rate_limiting": "1000 req/min per API key"
+  },
+  "critical_files": {
+    "architecture": "ARCHITECTURE_HANDBOOK.md",
+    "setup": "buildly-premium/CLAUDE.md",
+    "phase_4_3": "buildly-premium/PHASE-4.3-STATUS.md",
+    "week_1": "buildly-premium/WEEK-1-EXECUTION.md",
+    "phase_4_4": "buildly-premium/PHASE-4.4-SOFT-LAUNCH.md"
+  }
+}
