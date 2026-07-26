@@ -18,13 +18,19 @@
 - **Bloqueador:** Nenhum
 
 ### 2. **buildly** (7h atrás)
-- **Branch:** Nenhuma (não existe no git)
-- **Status:** ⏸️ Pausada/Aberta
-- **Trabalho:** [INVESTIGAR - não há commits, branch ou refs a "buildly" no repo]
-- **Últimos Commits:** N/A
-- **Próximo:** AGUARDANDO CLARIFICAÇÃO
-- **Bloqueador:** ⚠️ Não encontrei buildly no repositório
-- **Nota:** Pode ser: projeto externo, exploração local não commitada, ou teste de autonomia
+- **Tipo:** 🌐 SERVIÇO EXTERNO (não é repositório Git)
+- **Status:** ✅ Production
+- **Infraestrutura:**
+  - PostgreSQL: `postgres-prod.c.buildly.cloud:5432`
+  - Redis Cluster: `redis-prod.c.buildly.cloud:6379`
+  - Core API: `https://api.buildly.app`
+  - Brain ML API: `https://brain.buildly.app`
+- **Configuração:** `.claude/buildly-config.env.example` (template)
+- **Próximo Passo:** ⏳ AGUARDANDO INSTRUÇÃO
+  - Integrar buildly com JC?
+  - Sincronizar dados?
+  - Testar conexão?
+- **Segurança:** ⚠️ Credenciais em `.env.local` (não commitar)
 
 ### 3. **Diário de Obras project context** (5d)
 - **Branch:** `?` (investigar)
