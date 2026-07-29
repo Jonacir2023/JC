@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "O usuário digitou: '$ARGUMENTS'. Isso é um trigger de fim de sessão? Responda apenas com JSON: {\"isSessionEnd\": true} se for 'wrap up', 'save this session', 'end of session', ou '/navaigate-session-brain'. Caso contrário: {\"isSessionEnd\": false}"
+          }
+        ]
+      }
+    ]
+  }
+}
