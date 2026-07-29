@@ -1393,6 +1393,7 @@
   <div class="resumo-periodo-tabs">
     <button class="resumo-ptab active" id="rtabSemana" onclick="setResumoPeriodo('semana')">📅 Semana</button>
     <button class="resumo-ptab" id="rtabMes" onclick="setResumoPeriodo('mes')">📆 Mês</button>
+    <button class="resumo-ptab" id="rtabAno" onclick="setResumoPeriodo('ano')">🗓️ Ano</button>
   </div>
 
   <!-- navegação período -->
@@ -5513,7 +5514,7 @@ function buildRelatorio(day) {
 // ============================================================
 // ABA RESUMO — Semanal / Mensal
 // ============================================================
-let resumoPeriodo = 'semana'; // 'semana' | 'mes'
+let resumoPeriodo = 'semana'; // 'semana' | 'mes' | 'ano'
 let resumoOffset = 0; // 0 = atual, -1 = anterior, etc.
 
 function setResumoPeriodo(p) {
@@ -5521,6 +5522,7 @@ function setResumoPeriodo(p) {
   resumoOffset = 0;
   document.getElementById('rtabSemana').classList.toggle('active', p === 'semana');
   document.getElementById('rtabMes').classList.toggle('active', p === 'mes');
+  document.getElementById('rtabAno').classList.toggle('active', p === 'ano');
   renderResumo();
 }
 
@@ -5543,12 +5545,17 @@ function getResumoDatas() {
     inicio.setDate(hoje.getDate() + diffSeg + resumoOffset * 7);
     fim = new Date(inicio);
     fim.setDate(inicio.getDate() + 5); // segunda + 5 = sábado
-  } else {
+  } else if (resumoPeriodo === 'mes') {
     const mesBase = hoje.getMonth() + resumoOffset;
     const anoBase = hoje.getFullYear() + Math.floor(mesBase / 12);
     const mesReal = ((mesBase % 12) + 12) % 12;
     inicio = new Date(anoBase, mesReal, 1);
     fim = new Date(anoBase, mesReal + 1, 0);
+  } else {
+    // ano
+    const anoBase = hoje.getFullYear() + resumoOffset;
+    inicio = new Date(anoBase, 0, 1);
+    fim = new Date(anoBase, 11, 31);
   }
   // Usar formatação local para evitar problema de fuso horário UTC
   const fmtISO = (d) => {
@@ -5573,11 +5580,15 @@ function renderResumo() {
     const label = resumoOffset === 0 ? 'Semana Atual' : resumoOffset === -1 ? 'Semana Passada' : '';
     document.getElementById('resumoNavLabel').innerHTML =
       `${label ? label + '<br>' : ''}<span style="font-weight:400;font-size:12px;color:var(--ink-faint)">${formatDateBR(isoInicio)} → ${formatDateBR(isoFim)}</span>`;
-  } else {
+  } else if (resumoPeriodo === 'mes') {
     const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     const label = resumoOffset === 0 ? 'Mês Atual' : resumoOffset === -1 ? 'Mês Passado' : '';
     document.getElementById('resumoNavLabel').innerHTML =
       `${label ? label + ' — ' : ''}<strong>${meses[inicio.getMonth()]} ${inicio.getFullYear()}</strong>`;
+  } else {
+    const label = resumoOffset === 0 ? 'Ano Atual' : resumoOffset === -1 ? 'Ano Passado' : '';
+    document.getElementById('resumoNavLabel').innerHTML =
+      `${label ? label + ' — ' : ''}<strong>${inicio.getFullYear()}</strong>`;
   }
 
   // Coletar dias com histórico no período
@@ -5752,7 +5763,9 @@ function buildResumoTexto() {
   // isoInicio e isoFim já são locais (vindos de getResumoDatas com fmtISO)
   const periodoLabel = resumoPeriodo === 'semana'
     ? `Semana ${formatDateBR(isoInicio)} a ${formatDateBR(isoFim)}`
-    : `${meses[inicio.getMonth()]} de ${inicio.getFullYear()}`;
+    : resumoPeriodo === 'mes'
+    ? `${meses[inicio.getMonth()]} de ${inicio.getFullYear()}`
+    : `Ano de ${inicio.getFullYear()}`;
   const divisor = '⸻—————————————————';
   const diasPeriodo = Object.keys(history).filter(d => d >= isoInicio && d <= isoFim).sort();
 
