@@ -2106,6 +2106,7 @@ const EMPTY_DAY = () => ({
 });
 
 let state = loadState();
+ordenarAtividadesPadrao();
 let history = loadHistory();
 let currentDay = null;
 let editingDate = null;
@@ -2119,6 +2120,12 @@ let activeEventoEditIdx = null;
 let opSelectedSource = 'default';
 let opSelectedMat = null;
 let opSelectedNome = null;
+
+function ordenarAtividadesPadrao() {
+  if (Array.isArray(state.atividades)) {
+    state.atividades.sort((a, b) => (a.desc || '').localeCompare(b.desc || '', 'pt-BR'));
+  }
+}
 
 function loadState() {
   try {
@@ -5231,6 +5238,7 @@ function salvarAtividade() {
       state.atividades.push({ id: newId, desc, local, unidade });
     }
 
+    ordenarAtividadesPadrao();
     saveState();
     fecharModal('modalAtividade');
     renderConfigAtiv();
@@ -6136,6 +6144,7 @@ async function restaurarNuvem(silencioso) {
     const dados = JSON.parse(json.conteudo);
     if (dados.state) state = mergeDefaults(dados.state);
     if (dados.history) history = dados.history;
+    ordenarAtividadesPadrao();
     saveState(); saveHistory();
     if (dados.chavesDia) {
       Object.keys(dados.chavesDia).forEach(k => localStorage.setItem(k, dados.chavesDia[k]));
@@ -6174,6 +6183,7 @@ function restaurarAutoBackup() {
       const data = JSON.parse(raw);
       if (data.state) state = mergeDefaults(data.state);
       if (data.history) history = data.history;
+      ordenarAtividadesPadrao();
       saveState(); saveHistory();
       initCurrentDay(todayISO());
       atualizarHeader();
@@ -6218,6 +6228,7 @@ function importarBackup(ev) {
       const data = JSON.parse(e.target.result);
       if (data.state) state = mergeDefaults(data.state);
       if (data.history) history = data.history;
+      ordenarAtividadesPadrao();
       saveState(); saveHistory();
       initCurrentDay(todayISO());
       atualizarHeader();
