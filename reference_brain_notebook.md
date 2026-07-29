@@ -1,13 +1,13 @@
 # AI Brain Notebook Reference
 
-**Notebook ID:** 4c3ad04c-c7dd-4d37-94e7-b4ae19ec8111  
-**Nome:** Jonacir's AI Brain  
+**Notebook ID:** 6fecec8e-7f25-4179-b5ce-b636b2d371f7  
+**Nome:** NotebookLM Memory  
 **Data de Criação:** 2026-07-29  
 **Descrição:** Memória semântica de longo prazo de todas as sessões
 
 Este ID é usado pela skill Session Brain para adicionar resumos de sessão automaticamente.
 
-**URL:** https://notebooklm.google.com/notebook/4c3ad04c-c7dd-4d37-94e7-b4ae19ec8111
+**URL:** https://notebooklm.google.com/notebook/6fecec8e-7f25-4179-b5ce-b636b2d371f7
 
 ---
 
