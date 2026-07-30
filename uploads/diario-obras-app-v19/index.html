@@ -3256,7 +3256,22 @@ async function compartilharPdfRDO() {
       primeira = false;
       try {
         const canvas = await html2canvas(pagina, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-        doc.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, 210, 297);
+        // Ajusta a imagem capturada dentro da página A4 preservando a proporção original
+        // (a altura de .pdf-page na tela não é fixa em 210x297mm, então esticar direto
+        // distorcia o conteúdo). Aqui a imagem é encaixada (contain), nunca esticada.
+        const pageWmm = 210, pageHmm = 297;
+        const canvasRatio = canvas.width / canvas.height;
+        const pageRatio = pageWmm / pageHmm;
+        let w, h;
+        if (canvasRatio > pageRatio) {
+          w = pageWmm;
+          h = pageWmm / canvasRatio;
+        } else {
+          h = pageHmm;
+          w = pageHmm * canvasRatio;
+        }
+        const x = (pageWmm - w) / 2;
+        doc.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', x, 0, w, h);
       } catch (errPagina) {
         console.error('Falha ao capturar página do PDF (provável foto do Drive sem CORS):', errPagina);
         paginasComFalha++;
@@ -3289,7 +3304,9 @@ async function compartilharPdfRDO() {
   } catch (err) {
     if (err && err.name !== 'AbortError') {
       console.error('Erro ao compartilhar PDF:', err);
-      toast('❌ Erro ao gerar PDF: ' + (err.message || 'falha desconhecida'));
+      // alert() em vez de toast() aqui de propósito: o toast some em 2s, tempo curto
+      // demais para ler/anotar um erro técnico e reportar de volta.
+      alert('❌ Erro ao compartilhar (' + (err.name || '?') + '): ' + (err.message || 'falha desconhecida'));
     }
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = textoOriginal; }
