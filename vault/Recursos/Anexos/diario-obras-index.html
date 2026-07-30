@@ -3189,9 +3189,13 @@ function gerarPdfRDO() {
   const btnImprimir = emModoApp
     ? `<button style="background:#f5b334;color:#1a1a1a" onclick="abrirRdoNoSafari()">🖨️ Salvar PDF (abre no Safari)</button>`
     : `<button style="background:#f5b334;color:#1a1a1a" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>`;
+  const btnCompartilhar = (navigator.share)
+    ? `<button id="btnCompartilharPdf" style="background:#25D366;color:#fff" onclick="compartilharPdfRDO()">📤 Compartilhar</button>`
+    : '';
   overlay.innerHTML = `
     <div class="pdf-toolbar">
       ${btnImprimir}
+      ${btnCompartilhar}
       <button style="background:#555;color:#fff" onclick="fecharPdfRDO()">✕ Fechar</button>
     </div>
     <div class="pdf-doc">${h}</div>`;
@@ -3203,6 +3207,93 @@ function fecharPdfRDO() {
   const el = document.getElementById('pdfOverlay');
   if (el) el.remove();
   document.body.classList.remove('pdf-printing');
+}
+
+// Carrega um script externo uma única vez (usado para as libs de geração de PDF sob demanda)
+function carregarScriptUmaVez(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Falha ao carregar ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+// Compartilhamento direto do PDF do RDO (ex.: WhatsApp) via Web Share API.
+// Diferente do botão "Imprimir / Salvar PDF" (que usa a caixa de impressão nativa do
+// navegador/SO), aqui o app gera o arquivo PDF sozinho, em memória, e chama
+// navigator.share() com o arquivo — isso evita o compartilhamento nativo do SO, que em
+// alguns aparelhos falha silenciosamente ao tentar enviar para o WhatsApp direto da
+// caixa de impressão.
+// Limitação conhecida: fotos hospedadas no Google Drive não podem ser "fotografadas"
+// para dentro do PDF por uma restrição de CORS do próprio Drive: quando isso acontece,
+// a página de fotos é substituída por um aviso, mas o restante do RDO é compartilhado
+// normalmente. O botão "Imprimir / Salvar PDF" continua sendo o único que garante as
+// fotos incluídas.
+async function compartilharPdfRDO() {
+  const overlay = document.getElementById('pdfOverlay');
+  if (!overlay) return;
+  const paginas = overlay.querySelectorAll('.pdf-page');
+  if (!paginas.length) { toast('❌ Nada para compartilhar'); return; }
+
+  const btn = document.getElementById('btnCompartilharPdf');
+  const textoOriginal = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Gerando...'; }
+
+  try {
+    await carregarScriptUmaVez('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    await carregarScriptUmaVez('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    let primeira = true;
+    let paginasComFalha = 0;
+
+    for (const pagina of paginas) {
+      if (!primeira) doc.addPage();
+      primeira = false;
+      try {
+        const canvas = await html2canvas(pagina, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+        doc.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, 210, 297);
+      } catch (errPagina) {
+        console.error('Falha ao capturar página do PDF (provável foto do Drive sem CORS):', errPagina);
+        paginasComFalha++;
+        doc.setFontSize(12);
+        doc.text('Não foi possível incluir esta página no compartilhamento rápido', 15, 20);
+        doc.text('(fotos do Google Drive). Use "Imprimir / Salvar PDF" para o', 15, 27);
+        doc.text('relatório completo com fotos.', 15, 34);
+      }
+    }
+
+    const num = numeroRDO(currentDay.data);
+    const nomeArquivo = `RDO-${num}-${currentDay.data}.pdf`;
+    const blob = doc.output('blob');
+    const file = new File([blob], nomeArquivo, { type: 'application/pdf' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: `RDO Nº ${num}`,
+        text: `RDO Nº ${num} · ${state.obra.nome || ''} · ${formatDateBR(currentDay.data)}`
+      });
+      toast(paginasComFalha ? '✓ Compartilhado (fotos não incluídas nesta via)' : '✓ Compartilhado');
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = nomeArquivo; a.click();
+      URL.revokeObjectURL(url);
+      toast('PDF baixado — compartilhe pelo app de Arquivos');
+    }
+  } catch (err) {
+    if (err && err.name !== 'AbortError') {
+      console.error('Erro ao compartilhar PDF:', err);
+      toast('❌ Erro ao gerar PDF: ' + (err.message || 'falha desconhecida'));
+    }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = textoOriginal; }
+  }
 }
 
 function abrirRdoNoSafari() {
