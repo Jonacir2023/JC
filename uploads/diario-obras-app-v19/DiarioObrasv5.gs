@@ -85,6 +85,7 @@ function doPost(e) {
     if (path === 'pauta'   && action === 'atualizar-status') return atualizarStatusPauta(body);
     if (path === 'checkin' && action === 'salvar')           return salvarCheckIn(body);
     if (path === 'diario'  && action === 'salvar')           return salvarDiario(body);
+    if (path === 'ia'      && action === 'perguntar')        return perguntarIA(body);
     return errorResponse('Endpoint não encontrado: ' + path + '/' + action);
   } catch (err) { return errorResponse(err.message); }
 }
@@ -444,6 +445,111 @@ function buscarUltimoBackup(obra) {
     data: mais.getDateCreated().toISOString(),
     arquivo: mais.getName()
   });
+}
+
+// ============================================================
+// PERGUNTAS SOBRE OS DADOS — via API da Anthropic (Claude)
+//
+// Configuração necessária (uma vez só):
+//   No editor do Apps Script → ⚙️ Configurações do projeto → Propriedades do script
+//   → Adicionar propriedade de script: ANTHROPIC_API_KEY = sk-ant-...
+// ============================================================
+
+// Modelo usado para responder perguntas. Trocar aqui se quiser outro.
+var MODELO_IA_PERGUNTAS = 'claude-haiku-4-5-20251001';
+
+function perguntarIA(body) {
+  var pergunta = String(body.pergunta || '').trim();
+  if (!pergunta) return errorResponse('Pergunta vazia');
+
+  var apiKey = PropertiesService.getScriptProperties().getProperty('ANTHROPIC_API_KEY');
+  if (!apiKey) {
+    return successResponse({
+      ok: false,
+      resposta: '⚠️ A chave de API da Anthropic ainda não foi configurada neste Apps Script. ' +
+        'Vá em Configurações do projeto → Propriedades do script e adicione ANTHROPIC_API_KEY.'
+    });
+  }
+
+  try {
+    var contexto = montarContextoParaIA();
+    var resposta = chamarClaude(pergunta, contexto, apiKey);
+    return successResponse({ ok: true, resposta: resposta });
+  } catch (err) {
+    return successResponse({ ok: false, resposta: '❌ Erro ao consultar: ' + err.message });
+  }
+}
+
+// Monta um resumo em JSON de tudo que existe na aba Diário (fonte oficial e mais atual),
+// mais Pauta e CheckIn, para servir de contexto à IA.
+function montarContextoParaIA() {
+  var partes = {};
+
+  var sheetDiario = getSheet(SHEET_NAME_DIARIO);
+  if (sheetDiario) {
+    var vD = sheetDiario.getDataRange().getValues();
+    var hD = vD[0];
+    var rdos = [];
+    for (var i = 1; i < vD.length; i++) {
+      if (!vD[i][0]) continue;
+      var obj = {};
+      hD.forEach(function(h, j) { obj[h] = vD[i][j]; });
+      rdos.push(obj);
+    }
+    rdos.sort(function(a, b) { return String(a['Data']).localeCompare(String(b['Data'])); });
+    partes.rdos_diario = rdos;
+  }
+
+  var sheetPauta = getSheet(SHEET_NAME_PAUTA);
+  if (sheetPauta) {
+    var vP = sheetPauta.getDataRange().getValues();
+    var hP = vP[0];
+    var pautas = [];
+    for (var p = 1; p < vP.length; p++) {
+      if (!vP[p][0]) continue;
+      var op = {};
+      hP.forEach(function(h, j) { op[h] = vP[p][j]; });
+      pautas.push(op);
+    }
+    partes.pautas = pautas;
+  }
+
+  return JSON.stringify(partes);
+}
+
+function chamarClaude(pergunta, contextoJson, apiKey) {
+  var systemPrompt =
+    'Você é um assistente que responde perguntas sobre os Relatórios Diários de Obra (RDO) ' +
+    'de uma obra de construção civil, e sobre pautas/pendências registradas, com base ' +
+    'EXCLUSIVAMENTE nos dados JSON fornecidos abaixo (vindos da planilha "JC - Gestão de Obras"). ' +
+    'Responda sempre em português do Brasil, de forma direta e objetiva, citando datas e números ' +
+    'quando relevante. Se a informação perguntada não estiver nos dados fornecidos, diga claramente ' +
+    'que não encontrou nos dados disponíveis — nunca invente números, datas ou nomes.\n\n' +
+    'Dados disponíveis (JSON):\n' + contextoJson;
+
+  var payload = {
+    model: MODELO_IA_PERGUNTAS,
+    max_tokens: 1024,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: pergunta }]
+  };
+
+  var options = {
+    method: 'post',
+    contentType: 'application/json',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  var resp = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', options);
+  var json = JSON.parse(resp.getContentText());
+  if (json.error) throw new Error(json.error.message || 'Erro desconhecido da API Anthropic');
+  if (json.content && json.content[0] && json.content[0].text) return json.content[0].text;
+  return 'Sem resposta da IA.';
 }
 
 // ============================================================

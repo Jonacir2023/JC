@@ -142,6 +142,22 @@
     border: 2px solid rgba(255,255,255,0.15);
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }
+  .header-ia-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    margin-right: 8px;
+  }
+  .header-ia-btn:active { background: rgba(255,255,255,0.18); }
   .header-logo img { width: 100%; height: 100%; object-fit: contain; }
   .header-date {
     font-size: 10px;
@@ -1119,6 +1135,7 @@
       <div class="header-obra" id="hdrObra">—</div>
       <div id="hdrCidade" style="font-size:12px;color:var(--accent);opacity:0.8;margin-top:2px;display:none"></div>
     </div>
+    <button class="header-ia-btn" onclick="abrirModalPerguntar()" title="Perguntar sobre os dados">🤖</button>
     <div class="header-logo" id="hdrLogo">LOGO</div>
   </div>
   <div class="header-date" id="hdrDate">—</div>
@@ -1804,6 +1821,22 @@
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-ghost" onclick="fecharModal('modalAtividade')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarAtividade()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalPerguntar">
+  <div class="modal">
+    <div class="modal-title">🤖 Perguntar sobre os dados</div>
+    <p style="font-size:12px;color:var(--ink-faint);margin:-6px 0 12px;font-style:italic">
+      Pergunte qualquer coisa sobre os RDOs já salvos na planilha (quantidades, datas, efetivo, pautas...).
+    </p>
+    <textarea id="perguntarInput" placeholder="Ex.: Quantos bags de areia fizemos em julho? Quando foi a última troca de crepinas?" style="min-height:60px"></textarea>
+    <div id="perguntarResposta" style="display:none;margin-top:12px;padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;font-size:14px;line-height:1.5;white-space:pre-wrap;max-height:260px;overflow-y:auto"></div>
+    <div id="perguntarLoading" style="display:none;margin-top:12px;font-size:13px;color:var(--ink-faint)">⏳ Consultando os dados...</div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-ghost" onclick="fecharModal('modalPerguntar')">Fechar</button>
+      <button class="btn btn-primary" id="btnPerguntarEnviar" onclick="enviarPergunta()">Perguntar</button>
     </div>
   </div>
 </div>
@@ -5306,6 +5339,44 @@ function removerEventoCadastro(tipo, id) {
 // ============================================================
 function abrirModal(id) { document.getElementById(id).classList.add('show'); }
 function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function abrirModalPerguntar() {
+  document.getElementById('perguntarInput').value = '';
+  document.getElementById('perguntarResposta').style.display = 'none';
+  document.getElementById('perguntarLoading').style.display = 'none';
+  abrirModal('modalPerguntar');
+}
+
+async function enviarPergunta() {
+  const input = document.getElementById('perguntarInput');
+  const pergunta = input.value.trim();
+  if (!pergunta) { toast('Digite uma pergunta'); return; }
+  if (!APPS_SCRIPT_URL_DIARIO) { toast('❌ URL do Apps Script não configurada'); return; }
+
+  const respostaBox = document.getElementById('perguntarResposta');
+  const loading = document.getElementById('perguntarLoading');
+  const btn = document.getElementById('btnPerguntarEnviar');
+  respostaBox.style.display = 'none';
+  loading.style.display = 'block';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=ia&action=perguntar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ pergunta, obra: state.obra.nome || '' })
+    });
+    const json = await resp.json().catch(() => null);
+    respostaBox.textContent = (json && json.resposta) || '❌ Não foi possível obter resposta.';
+    respostaBox.style.display = 'block';
+  } catch (err) {
+    respostaBox.textContent = '❌ Erro de conexão: ' + err.message;
+    respostaBox.style.display = 'block';
+  } finally {
+    loading.style.display = 'none';
+    btn.disabled = false;
+  }
+}
 
 // Substituição do confirm() nativo (bloqueado no iOS em file://)
 function confirmar(msg, onSim, titulo) {
