@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "UserPromptSubmit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$1\" | grep -iE '(wrap up|save this session|end of session|/navaigate-session-brain)' > /dev/null; then python3 /home/user/JC/session-brain.py; fi",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
