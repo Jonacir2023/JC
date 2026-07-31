@@ -3248,7 +3248,7 @@ async function compartilharPdfRDO() {
     await carregarScriptUmaVez('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
 
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
     let primeira = true;
     let paginasComFalha = 0;
 
@@ -3290,7 +3290,7 @@ async function compartilharPdfRDO() {
           ctx.fillRect(0, 0, fatia.width, fatia.height);
           ctx.drawImage(canvas, 0, y, canvas.width, alturaFatiaPx, 0, 0, canvas.width, alturaFatiaPx);
 
-          if (!primeira) doc.addPage();
+          if (!primeira) doc.addPage('a4', 'portrait');
           primeira = false;
           const alturaFatiaMm = alturaFatiaPx / pxPerMm;
           doc.addImage(fatia.toDataURL('image/jpeg', 0.75), 'JPEG', margemMm, margemMm, areaWmm, alturaFatiaMm);
@@ -3300,7 +3300,7 @@ async function compartilharPdfRDO() {
       } catch (errPagina) {
         console.error('Falha ao capturar página do PDF (provável foto do Drive sem CORS):', errPagina);
         paginasComFalha++;
-        if (!primeira) doc.addPage();
+        if (!primeira) doc.addPage('a4', 'portrait');
         primeira = false;
         doc.setFontSize(12);
         doc.text('Não foi possível incluir esta página no compartilhamento rápido', 15, 20);
