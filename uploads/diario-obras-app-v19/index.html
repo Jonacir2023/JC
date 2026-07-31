@@ -1200,21 +1200,6 @@
   <div class="section">
     <div class="section-title"><div class="section-title-text">🌤️ Condições do Tempo</div></div>
     <div style="margin-bottom:12px">
-      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-soft);margin-bottom:6px">🌌 Madrugada (00h–07h)</div>
-      <div class="tempo-chips" id="tempoChipsMadrugada">
-        <div class="tempo-chip" data-periodo="madrugada" data-tempo="sol">🌙 Limpo</div>
-        <div class="tempo-chip" data-periodo="madrugada" data-tempo="nublado">⛅ Nublado</div>
-        <div class="tempo-chip" data-periodo="madrugada" data-tempo="chuva">🌧️ Chuva</div>
-      </div>
-      <div id="chuvaMadrugadaBox" style="display:none;margin-top:8px">
-        <input type="number" id="chuvaMadrugadaQtd" placeholder="Quantidade de chuva (mm)" min="0" step="0.1" style="width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg-card);font-family:var(--sans);font-size:14px;color:var(--ink)">
-      </div>
-      <div class="tempo-chips" id="pratChipsMadrugada" style="margin-top:8px">
-        <div class="tempo-chip prat-chip" data-periodo="madrugada" data-prat="praticavel">✅ Operação</div>
-        <div class="tempo-chip prat-chip" data-periodo="madrugada" data-prat="impraticavel">⛔ Sem operação</div>
-      </div>
-    </div>
-    <div style="margin-top:12px;margin-bottom:12px">
       <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-soft);margin-bottom:6px">🌅 Manhã (07h–12h)</div>
       <div class="tempo-chips" id="tempoChipsManha">
         <div class="tempo-chip" data-periodo="manha" data-tempo="sol">☀️ Sol</div>
@@ -1244,23 +1229,8 @@
         <div class="tempo-chip prat-chip" data-periodo="tarde" data-prat="impraticavel">⛔ Sem operação</div>
       </div>
     </div>
-    <div style="margin-top:12px;margin-bottom:12px">
-      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-soft);margin-bottom:6px">🌃 Noite (17h–24h)</div>
-      <div class="tempo-chips" id="tempoChipsNoite">
-        <div class="tempo-chip" data-periodo="noite" data-tempo="sol">🌙 Limpo</div>
-        <div class="tempo-chip" data-periodo="noite" data-tempo="nublado">⛅ Nublado</div>
-        <div class="tempo-chip" data-periodo="noite" data-tempo="chuva">🌧️ Chuva</div>
-      </div>
-      <div id="chuvaNoiteBox" style="display:none;margin-top:8px">
-        <input type="number" id="chuvaNoiteQtd" placeholder="Quantidade de chuva (mm)" min="0" step="0.1" style="width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg-card);font-family:var(--sans);font-size:14px;color:var(--ink)">
-      </div>
-      <div class="tempo-chips" id="pratChipsNoite" style="margin-top:8px">
-        <div class="tempo-chip prat-chip" data-periodo="noite" data-prat="praticavel">✅ Operação</div>
-        <div class="tempo-chip prat-chip" data-periodo="noite" data-prat="impraticavel">⛔ Sem operação</div>
-      </div>
-    </div>
   </div>
-  
+
   <div class="section">
     <div class="section-title"><div class="section-title-text">⏰ Jornada de Trabalho</div></div>
     <div class="grid-2" style="gap:6px;align-items:end">
@@ -2904,6 +2874,7 @@ function gerarPdfRDO() {
     const cond = day['tempo' + p.suf];
     const prat = day['prat' + p.suf];
     const mm = mmPeriodo(day, p.suf);
+    if (!cond && !prat && !mm) return; // período sem dado (ex.: Madrugada/Noite não usados mais) não aparece no relatório
     linhasClima += `<tr>
       <td>${p.nome} (${p.faixa})</td>
       <td>${prat === 'praticavel' ? 'Sim' : prat === 'impraticavel' ? 'Não' : '—'}</td>
@@ -3730,26 +3701,29 @@ function renderAtividadesDia() {
     const unid = a.unidade || '';
     const row = document.createElement('div');
     row.className = 'item-row checked';
+    row.style.alignItems = 'flex-start';
     row.innerHTML = `
-      <div class="checkbox"></div>
+      <div class="checkbox" style="margin-top:2px"></div>
       <div class="item-info">
         <div class="item-name">${escapeHtml(a.desc)}</div>
         ${local ? `<div class="item-meta">${escapeHtml(local)}</div>` : ''}
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="number" step="any" min="0" placeholder="Qtd" value="${qtd}"
+              style="width:70px;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)"
+              onclick="event.stopPropagation()"
+              oninput="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
+              onchange="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
+              onblur="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)">
+            ${unid ? `<span style="font-size:11px;color:var(--ink-faint);white-space:nowrap">${escapeHtml(unid)}</span>` : ''}
+          </div>
+          <select onclick="event.stopPropagation()" onchange="event.stopPropagation();salvarStatusAtividade('${a.id}', this.value)"
+            style="flex:1;min-width:0;padding:5px 4px;font-size:12px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)">
+            <option value="andamento" ${(currentDay.atividadesStatus && currentDay.atividadesStatus[a.id]) === 'concluida' ? '' : 'selected'}>Em andamento</option>
+            <option value="concluida" ${(currentDay.atividadesStatus && currentDay.atividadesStatus[a.id]) === 'concluida' ? 'selected' : ''}>Concluída</option>
+          </select>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;gap:4px;min-width:90px">
-        <input type="number" step="any" min="0" placeholder="Qtd" value="${qtd}"
-          style="width:60px;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)"
-          onclick="event.stopPropagation()"
-          oninput="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
-          onchange="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
-          onblur="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)">
-        ${unid ? `<span style="font-size:11px;color:var(--ink-faint);white-space:nowrap">${escapeHtml(unid)}</span>` : ''}
-      </div>
-      <select onclick="event.stopPropagation()" onchange="event.stopPropagation();salvarStatusAtividade('${a.id}', this.value)"
-        style="width:118px;padding:5px 4px;font-size:12px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)">
-        <option value="andamento" ${(currentDay.atividadesStatus && currentDay.atividadesStatus[a.id]) === 'concluida' ? '' : 'selected'}>Em andamento</option>
-        <option value="concluida" ${(currentDay.atividadesStatus && currentDay.atividadesStatus[a.id]) === 'concluida' ? 'selected' : ''}>Concluída</option>
-      </select>
     `;
     cont.appendChild(row);
   });
