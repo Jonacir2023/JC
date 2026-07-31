@@ -563,7 +563,25 @@
   .item-row:last-child { border-bottom: none; }
   .item-row.checked { background: rgba(45, 106, 79, 0.04); }
   .item-row.clickable { cursor: pointer; }
-  
+
+  /* Atividades: item + detalhe (qtd/local) inline quando marcado */
+  .ativ-item-wrap { border-bottom: 1px solid var(--line-soft); }
+  .ativ-item-wrap:last-child { border-bottom: none; }
+  .ativ-item-wrap .item-row { border-bottom: none; }
+  .ativ-detalhe-dia {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 4px 12px 12px;
+    background: rgba(45, 106, 79, 0.04);
+  }
+  .ativ-detalhe-dia label {
+    font-size: 11px;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: 4px;
+  }
+
   .checkbox {
     width: 22px;
     height: 22px;
@@ -1586,23 +1604,18 @@
   <!-- ATIVIDADES -->
   <div class="config-pane" id="pane-atividades">
     <div class="section">
-      <div class="section-title"><div class="section-title-text">🛠️ Atividades Cadastradas</div></div>
+      <div class="section-title"><div class="section-title-text">🛠️ Atividades</div></div>
+      <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
+        Marque as realizadas hoje na caixinha — a quantidade e o local aparecem logo abaixo do item. Use ✏️/🗑️ para editar ou remover do cadastro.
+      </p>
       <button class="add-btn-full" onclick="abrirModalAtividade()">+ Adicionar Atividade Padrão</button>
       <hr class="divider">
-      <div id="configAtivList"></div>
-    </div>
-
-    <div class="section">
-      <div class="section-title"><div class="section-title-text">✓ Atividades do Dia</div></div>
-      <p style="font-size:12px;color:var(--ink-faint);margin-bottom:14px;font-style:italic">
-        Marque as atividades realizadas hoje. Você pode ajustar a quantidade e o local de execução para cada uma.
-      </p>
-      <div class="quick-actions" style="margin-bottom:14px">
+      <div class="quick-actions" style="margin-bottom:10px">
         <button class="quick-btn" onclick="marcarTodasAtividadesCheckbox(true)">✓ Marcar Todas</button>
         <button class="quick-btn" onclick="marcarTodasAtividadesCheckbox(false)">✗ Desmarcar</button>
       </div>
-      <div id="atividadesCheckboxList"></div>
-      <button class="btn btn-primary" style="margin-top:16px;width:100%" onclick="salvarAtividadesDodia()">💾 Salvar Atividades do Dia</button>
+      <div id="configAtivList"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarAtividadesDodia()">💾 Salvar Atividades do Dia</button>
     </div>
   </div>
   
@@ -4499,7 +4512,6 @@ function renderConfig() {
   renderConfigEquip();
   renderConfigVL();
   renderConfigAtiv();
-  renderAtividadesDodiaCadastro();
   renderConfigEventos('seguranca');
   renderConfigEventos('meio_ambiente');
   document.getElementById('histCount').textContent = Object.keys(history).length;
@@ -4700,6 +4712,9 @@ function renderConfigAtiv() {
   const savedAtiv = S.get(`ativDia_${dia}`) || {};
   state.atividades.forEach(a => {
     const checked = !!savedAtiv[a.id];
+    const wrap = document.createElement('div');
+    wrap.className = 'ativ-item-wrap';
+
     const row = document.createElement('div');
     row.className = 'item-row' + (checked ? ' checked' : '');
 
@@ -4716,7 +4731,6 @@ function renderConfigAtiv() {
       }
       S.set(`ativDia_${dia}`, savedAtiv);
       renderConfigAtiv();
-      renderAtividadesDodiaCadastro();
     });
 
     const info = document.createElement('div');
@@ -4741,18 +4755,38 @@ function renderConfigAtiv() {
     const btnEdit = document.createElement('button');
     btnEdit.className = 'icon-btn';
     btnEdit.textContent = '✏️';
-    btnEdit.addEventListener('click', () => editarAtividade(a.id));
+    btnEdit.addEventListener('click', (e) => { e.stopPropagation(); editarAtividade(a.id); });
     const btnDel = document.createElement('button');
     btnDel.className = 'icon-btn';
     btnDel.textContent = '🗑️';
-    btnDel.addEventListener('click', () => removerAtividade(a.id));
+    btnDel.addEventListener('click', (e) => { e.stopPropagation(); removerAtividade(a.id); });
     acts.appendChild(btnEdit);
     acts.appendChild(btnDel);
 
     row.appendChild(checkbox);
     row.appendChild(info);
     row.appendChild(acts);
-    cont.appendChild(row);
+    wrap.appendChild(row);
+
+    if (checked) {
+      const detalhe = document.createElement('div');
+      detalhe.className = 'ativ-detalhe-dia';
+      detalhe.innerHTML = `
+        <div>
+          <label>Quantidade</label>
+          <input type="text" value="${escAttr((savedAtiv[a.id] && savedAtiv[a.id].qty) || '')}" placeholder="Ex: 10"
+            onchange="atualizarQtyLocalAtiv('${a.id}', 'qty', this.value)">
+        </div>
+        <div>
+          <label>Local de Execução</label>
+          <input type="text" value="${escAttr((savedAtiv[a.id] && savedAtiv[a.id].local) || '')}" placeholder="Ex: Bloco A"
+            onchange="atualizarQtyLocalAtiv('${a.id}', 'local', this.value)">
+        </div>
+      `;
+      wrap.appendChild(detalhe);
+    }
+
+    cont.appendChild(wrap);
   });
 }
 
@@ -5055,36 +5089,6 @@ function removerEquipamento(id) {
   });
 }
 
-function renderAtividadesDodiaCadastro(){
-  const cont = document.getElementById('atividadesCheckboxList');
-  const dia = dataAtiva();
-  const savedAtiv = S.get(`ativDia_${dia}`) || {};
-  const selecionadas = state.atividades.filter(a => savedAtiv[a.id]);
-
-  if (selecionadas.length === 0) {
-    cont.innerHTML = '<p style="color:var(--ink-faint);text-align:center;padding:20px">Marque atividades acima para aparecerem aqui</p>';
-    return;
-  }
-
-  cont.innerHTML = selecionadas.map(a => `
-    <div style="border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;background:var(--bg-card)">
-      <div style="font-weight:700;margin-bottom:10px">${a.desc}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div>
-          <label style="font-size:11px;color:var(--ink-faint);display:block;margin-bottom:4px">Quantidade</label>
-          <input type="text" value="${savedAtiv[a.id]?.qty || ''}" placeholder="Ex: 10"
-            onchange="atualizarQtyLocalAtiv('${a.id}', 'qty', this.value);renderAtividadesDodiaCadastro()">
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--ink-faint);display:block;margin-bottom:4px">Local de Execução</label>
-          <input type="text" value="${savedAtiv[a.id]?.local || ''}" placeholder="Ex: Bloco A"
-            onchange="atualizarQtyLocalAtiv('${a.id}', 'local', this.value);renderAtividadesDodiaCadastro()">
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
 function atualizarQtyLocalAtiv(atId, tipo, valor) {
   const dia = dataAtiva();
   let savedAtiv = S.get(`ativDia_${dia}`) || {};
@@ -5115,7 +5119,6 @@ function marcarTodasAtividadesCheckbox(marcar){
   });
   S.set(`ativDia_${dia}`, savedAtiv);
   renderConfigAtiv();
-  renderAtividadesDodiaCadastro();
 }
 
 function abrirAbaAtividades(){
@@ -5302,7 +5305,6 @@ function salvarAtividade() {
     saveState();
     fecharModal('modalAtividade');
     renderConfigAtiv();
-    renderAtividadesDodiaCadastro();
     toast('✓ Atividade salva');
   } catch (e) {
     toast('Erro ao salvar: ' + e.message, 'var(--red)');
@@ -5317,7 +5319,6 @@ function removerAtividade(id) {
     S.set(`ativDia_${dia}`, savedAtiv);
     saveState();
     renderConfigAtiv();
-    renderAtividadesDodiaCadastro();
     toast('Removido');
   });
 }
