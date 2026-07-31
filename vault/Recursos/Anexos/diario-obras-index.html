@@ -2885,15 +2885,6 @@ function gerarPdfRDO() {
     ${linhasClima}
     <tr><th colspan="3">Total acumulado</th><th style="text-align:right">${totalPrecipitacao(day).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mm</th></tr></table></div>`;
 
-  if (day.localObra || day.descricaoLocal) {
-    h += `<div class="pdf-sec"><h2>LOCAL DOS TRABALHOS</h2>
-      <table><tr><td><strong>${escHtml(day.localObra || '')}</strong>${day.descricaoLocal ? '<br>' + escHtml(day.descricaoLocal) : ''}</td></tr></table></div>`;
-  }
-  h += `</div>`; // fecha pdf-page 1 (capa)
-
-  // ================= PÁGINA 2 — Jornada, Efetivo, Equipamentos =================
-  h += `<div class="pdf-page">${pgHeadMini}`;
-
   // Jornada + DSS
   h += `<div class="pdf-sec"><h2>JORNADA · DSS</h2>
     <table><tr><th>Jornada</th><th>DSS</th></tr>
@@ -2901,6 +2892,15 @@ function gerarPdfRDO() {
         <td>Café: ${day.cafeInicio || '--'}–${day.cafeFim || '--'} · Almoço: ${day.almocoInicio || '--'}–${day.almocoFim || '--'} · Encerramento: ${day.encerramento || '--'}</td>
         <td>Horário: ${escHtml(day.dssHorario || '—')} · Ministrante: ${escHtml(day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '—')} · Tema: ${escHtml(day.dssTema || '—')}</td>
       </tr></table></div>`;
+
+  if (day.localObra || day.descricaoLocal) {
+    h += `<div class="pdf-sec"><h2>LOCAL DOS TRABALHOS</h2>
+      <table><tr><td><strong>${escHtml(day.localObra || '')}</strong>${day.descricaoLocal ? '<br>' + escHtml(day.descricaoLocal) : ''}</td></tr></table></div>`;
+  }
+  h += `</div>`; // fecha pdf-page 1 (capa)
+
+  // ================= PÁGINA 2 — Efetivo, Equipamentos, Atividades =================
+  h += `<div class="pdf-page">${pgHeadMini}`;
 
   // Efetivo
   // Efetivo — Mão de obra própria (Função | Qtd por categoria) + Subcontratada (Função | Qtd | Empresa)
@@ -2998,12 +2998,8 @@ function gerarPdfRDO() {
     h += `<div class="pdf-sec"><h2>VEÍCULOS / EQUIPAMENTOS PARADOS — ${equipsParados.length + vlParados.length}</h2>
       <table><tr><th style="width:45%">Item</th><th>Justificativa</th></tr>${linhas}</table></div>`;
   }
-  h += `</div>`; // fecha pdf-page 2
 
-  // ================= PÁGINA 3 — Atividades, Observações, Assinaturas =================
-  h += `<div class="pdf-page">${pgHeadMini}`;
-
-  // Atividades
+  // Atividades (na sequência dos veículos/equipamentos)
   const ativsMarc = state.atividades.filter(a => day.atividadesMarcadas[a.id]);
   const statusAtiv = id => ((day.atividadesStatus || {})[id] === 'concluida') ? 'Concluída' : 'Em andamento';
   const fotosDaAtiv = id => (day.fotos || []).filter(f => f.ativId === id).length;
@@ -3039,6 +3035,10 @@ function gerarPdfRDO() {
     h += `<div class="pdf-sec"><h2>ATIVIDADES PARALISADAS — ${day.atividadesParalisadas.length}</h2>
       <table><tr><th style="width:45%">Atividade</th><th>Justificativa</th></tr>${linhasPar}</table></div>`;
   }
+  h += `</div>`; // fecha pdf-page 2
+
+  // ================= PÁGINA 3 — Observações, Eventos =================
+  h += `<div class="pdf-page">${pgHeadMini}`;
 
   // Observações
   if (day.observacoesDia && day.observacoesDia.trim()) {
@@ -3057,22 +3057,6 @@ function gerarPdfRDO() {
   };
   h += eventos('EVENTOS DE SEGURANÇA', day.eventosSeguranca);
   h += eventos('EVENTOS DE MEIO AMBIENTE', day.eventosAmbiente);
-
-  // Assinaturas (toque na caixa para assinar em tela)
-  const nomeApont = day.apontador || '';
-  const sigs = day.assinaturas || {};
-  const caixaAss = (slot, titulo, subtitulo) => {
-    const img = sigs[slot] ? `<img src="${sigs[slot]}" style="height:56px;display:block;margin:0 auto 2px">` : `<div class="ass-vazia" style="height:56px;display:flex;align-items:flex-end;justify-content:center;color:#999;font-size:10px">Toque para assinar</div>`;
-    return `<div onclick="abrirPadAssinatura('${slot}')" style="cursor:pointer">${img}<div style="border-top:1.5px solid #1a1a1a;padding-top:5px">${escHtml(titulo)}<br><span style="color:#666">${escHtml(subtitulo)}</span></div></div>`;
-  };
-  h += `<div class="pdf-ass" style="margin-top:20px">
-    ${caixaAss('apontador', nomeApont || 'Apontador Responsável', 'Apontador — ' + (state.obra.empresa || ''))}
-    ${caixaAss('fiscal', 'Fiscalização / Cliente', ' ')}
-  </div>`;
-  h += `<div style="margin-top:26px;border-top:1px solid #ccc;padding-top:6px;font-size:9px;color:#777;display:flex;justify-content:space-between">
-    <span>RDO Nº ${num} · ${escHtml(state.obra.nome || '')}</span>
-    <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
-  </div>`;
   h += `</div>`; // fecha pdf-page 3
 
   // ================= PÁGINA(S) 4+ — Registro Fotográfico =================
@@ -3138,6 +3122,22 @@ function gerarPdfRDO() {
   h += `<div class="pdf-page">${pgHeadMini}`;
   h += blocoResumoPeriodo('RESUMO DA SEMANA', `${formatDateBR(isoIniSem)} a ${formatDateBR(isoFimSem)}`, resumoSemana);
   h += blocoResumoPeriodo('RESUMO DO MÊS', `${mesesPdf[iniMesD.getMonth()]} de ${iniMesD.getFullYear()}`, resumoMes);
+
+  // Assinaturas (toque na caixa para assinar em tela) — ao final do relatório
+  const nomeApont = day.apontador || '';
+  const sigs = day.assinaturas || {};
+  const caixaAss = (slot, titulo, subtitulo) => {
+    const img = sigs[slot] ? `<img src="${sigs[slot]}" style="height:56px;display:block;margin:0 auto 2px">` : `<div class="ass-vazia" style="height:56px;display:flex;align-items:flex-end;justify-content:center;color:#999;font-size:10px">Toque para assinar</div>`;
+    return `<div onclick="abrirPadAssinatura('${slot}')" style="cursor:pointer">${img}<div style="border-top:1.5px solid #1a1a1a;padding-top:5px">${escHtml(titulo)}<br><span style="color:#666">${escHtml(subtitulo)}</span></div></div>`;
+  };
+  h += `<div class="pdf-ass" style="margin-top:20px">
+    ${caixaAss('apontador', nomeApont || 'Apontador Responsável', 'Apontador — ' + (state.obra.empresa || ''))}
+    ${caixaAss('fiscal', 'Fiscalização / Cliente', ' ')}
+  </div>`;
+  h += `<div style="margin-top:26px;border-top:1px solid #ccc;padding-top:6px;font-size:9px;color:#777;display:flex;justify-content:space-between">
+    <span>RDO Nº ${num} · ${escHtml(state.obra.nome || '')}</span>
+    <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
+  </div>`;
   h += `</div>`; // fecha pdf-page resumo semana/mês
 
   // Montar overlay
