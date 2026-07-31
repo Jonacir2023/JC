@@ -3208,6 +3208,19 @@ function carregarScriptUmaVez(src) {
 // a página de fotos é substituída por um aviso, mas o restante do RDO é compartilhado
 // normalmente. O botão "Imprimir / Salvar PDF" continua sendo o único que garante as
 // fotos incluídas.
+// O compartilhamento do PDF é feito em DUAS etapas de propósito:
+//   1) compartilharPdfRDO() gera o arquivo (demora alguns segundos — várias páginas,
+//      fotos etc.) e deixa pronto em memória.
+//   2) enviarPdfPreparado() é o clique SEGUINTE, que chama navigator.share() como
+//      primeiríssima instrução do handler.
+// Por quê: o Safari só permite navigator.share() bem "colado" a um toque do usuário
+// (transient activation). Como gerar o PDF é lento, se share() fosse chamado no fim
+// da mesma função assíncrona o Safari já não reconhecia mais aquele toque como
+// recente e recusava com "NotAllowedError: ...possibly because the user denied
+// permission" (mesmo o usuário nunca tendo negado nada). Separar em dois toques
+// resolve isso: o segundo toque é que dispara o share(), já com o arquivo pronto.
+let _pdfParaCompartilhar = null;
+
 async function compartilharPdfRDO() {
   const overlay = document.getElementById('pdfOverlay');
   if (!overlay) return;
@@ -3215,7 +3228,6 @@ async function compartilharPdfRDO() {
   if (!paginas.length) { toast('❌ Nada para compartilhar'); return; }
 
   const btn = document.getElementById('btnCompartilharPdf');
-  const textoOriginal = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Gerando...'; }
 
   try {
@@ -3267,34 +3279,53 @@ async function compartilharPdfRDO() {
     const blob = doc.output('blob');
     const file = new File([blob], nomeArquivo, { type: 'application/pdf' });
     console.log('PDF gerado para compartilhar:', (blob.size / 1024 / 1024).toFixed(1) + ' MB');
-    if (blob.size > 15 * 1024 * 1024) {
-      toast('⚠️ PDF grande (' + (blob.size / 1024 / 1024).toFixed(1) + ' MB) — envio pode falhar');
-    }
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title: `RDO Nº ${num}`,
-        text: `RDO Nº ${num} · ${state.obra.nome || ''} · ${formatDateBR(currentDay.data)}`
-      });
-      toast(paginasComFalha ? '✓ Compartilhado (fotos não incluídas nesta via)' : '✓ Compartilhado');
+      _pdfParaCompartilhar = { file, num, aviso: paginasComFalha ? ' (fotos não incluídas nesta via)' : '' };
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '👉 Toque para enviar';
+        btn.onclick = enviarPdfPreparado;
+      }
+      const avisoTam = blob.size > 15 * 1024 * 1024 ? ` — ⚠️ ${(blob.size / 1024 / 1024).toFixed(1)}MB, envio pode falhar` : '';
+      toast('✓ PDF pronto' + avisoTam);
     } else {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = nomeArquivo; a.click();
       URL.revokeObjectURL(url);
       toast('PDF baixado — compartilhe pelo app de Arquivos');
+      if (btn) { btn.disabled = false; btn.textContent = '📤 Compartilhar'; }
     }
   } catch (err) {
     if (err && err.name !== 'AbortError') {
+      console.error('Erro ao gerar PDF:', err);
+      alert('❌ Erro ao gerar PDF (' + (err.name || '?') + '): ' + (err.message || 'falha desconhecida'));
+    }
+    if (btn) { btn.disabled = false; btn.textContent = '📤 Compartilhar'; }
+  }
+}
+
+// Handler do segundo toque — chama navigator.share() como primeira instrução,
+// sem nenhum await antes, para não perder a "ativação" recente exigida pelo Safari.
+function enviarPdfPreparado() {
+  if (!_pdfParaCompartilhar) return;
+  const { file, num, aviso } = _pdfParaCompartilhar;
+  const btn = document.getElementById('btnCompartilharPdf');
+  navigator.share({
+    files: [file],
+    title: `RDO Nº ${num}`,
+    text: `RDO Nº ${num} · ${state.obra.nome || ''} · ${formatDateBR(currentDay.data)}`
+  }).then(() => {
+    toast('✓ Compartilhado' + aviso);
+    _pdfParaCompartilhar = null;
+    if (btn) { btn.textContent = '📤 Compartilhar'; btn.onclick = compartilharPdfRDO; }
+  }).catch(err => {
+    if (err && err.name !== 'AbortError') {
       console.error('Erro ao compartilhar PDF:', err);
-      // alert() em vez de toast() aqui de propósito: o toast some em 2s, tempo curto
-      // demais para ler/anotar um erro técnico e reportar de volta.
       alert('❌ Erro ao compartilhar (' + (err.name || '?') + '): ' + (err.message || 'falha desconhecida'));
     }
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = textoOriginal; }
-  }
+  });
 }
 
 function abrirRdoNoSafari() {
