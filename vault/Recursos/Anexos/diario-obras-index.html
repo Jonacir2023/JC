@@ -1076,12 +1076,17 @@
   --rdo-ink-faint: #8a8178;
   --rdo-line: #ccc5bc;
 }
-@page { size: A4; margin: 5mm; }
+/* margin:0 no @page de propósito: no iOS/AirPrint um valor não-zero em @page é
+   frequentemente ignorado e substituído pela margem padrão da impressora (~12-13mm),
+   fazendo a página impressa ter recuo bem maior que o configurado aqui. Com margin:0
+   a margem real de 5mm é aplicada via padding de cada .pdf-page (abaixo), o que o
+   iOS respeita corretamente. */
+@page { size: A4; margin: 0; }
 #pdfOverlay { position: fixed; inset: 0; background: #eeeae3; z-index: 9999; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .pdf-toolbar { position: sticky; top: 0; background: #2c2c2c; padding: 10px 14px; display: flex; gap: 10px; z-index: 2; }
 .pdf-toolbar button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
-.pdf-doc { max-width: 800px; margin: 16px auto; padding: 5mm; font-family: 'Barlow', Arial, 'Helvetica Neue', sans-serif; font-size: 8pt; line-height: 1.4; color: var(--rdo-ink); background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.15); }
-.pdf-page { page-break-before: always; }
+.pdf-doc { max-width: 800px; margin: 16px auto; font-family: 'Barlow', Arial, 'Helvetica Neue', sans-serif; font-size: 8pt; line-height: 1.4; color: var(--rdo-ink); background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.15); }
+.pdf-page { page-break-before: always; padding: 5mm; box-sizing: border-box; }
 .pdf-page:first-child { page-break-before: avoid; }
 
 /* Capa */
@@ -3222,9 +3227,13 @@ async function compartilharPdfRDO() {
     let primeira = true;
     let paginasComFalha = 0;
 
-    const pageWmm = 210, pageHmm = 297, margemMm = 5;
-    const areaWmm = pageWmm - margemMm * 2;   // 200mm — mesma margem do PDF oficial (@page margin:5mm)
-    const areaHmm = pageHmm - margemMm * 2;   // 287mm
+    // margemMm = 0 aqui de propósito: a margem de 5mm já é o próprio padding CSS de
+    // cada .pdf-page (box-sizing:border-box), então a imagem capturada já vem com a
+    // margem "dentro" — bastando desenhá-la ocupando a folha A4 inteira (0 a 210x297mm),
+    // sem somar um recuo extra por cima (o que duplicaria a margem nesta cópia).
+    const pageWmm = 210, pageHmm = 297, margemMm = 0;
+    const areaWmm = pageWmm - margemMm * 2;   // 210mm
+    const areaHmm = pageHmm - margemMm * 2;   // 297mm
 
     for (const pagina of paginas) {
       try {
