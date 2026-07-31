@@ -1071,18 +1071,16 @@
 /* ===== PDF do RDO ===== */
 :root {
   --rdo-navy: #1a2b4d;
-  --rdo-green: #5ea966;
-  --rdo-blue: #3a81bf;
   --rdo-ink: #1c1a18;
   --rdo-ink-soft: #4a4540;
   --rdo-ink-faint: #8a8178;
   --rdo-line: #ccc5bc;
 }
-@page { size: A4; margin: 15mm; }
+@page { size: A4; margin: 5mm; }
 #pdfOverlay { position: fixed; inset: 0; background: #eeeae3; z-index: 9999; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .pdf-toolbar { position: sticky; top: 0; background: #2c2c2c; padding: 10px 14px; display: flex; gap: 10px; z-index: 2; }
 .pdf-toolbar button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
-.pdf-doc { max-width: 800px; margin: 16px auto; padding: 15mm; font-family: 'Barlow', Arial, 'Helvetica Neue', sans-serif; font-size: 10pt; line-height: 1.4; color: var(--rdo-ink); background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.15); }
+.pdf-doc { max-width: 800px; margin: 16px auto; padding: 5mm; font-family: 'Barlow', Arial, 'Helvetica Neue', sans-serif; font-size: 8pt; line-height: 1.4; color: var(--rdo-ink); background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.15); }
 .pdf-page { page-break-before: always; }
 .pdf-page:first-child { page-break-before: avoid; }
 
@@ -1090,43 +1088,43 @@
 .pdf-capa-head { display: flex; align-items: flex-end; gap: 14px; border-bottom: 3px solid var(--rdo-navy); padding-bottom: 10px; }
 .pdf-capa-logo { height: 30px; max-width: 140px; width: auto; object-fit: contain; flex-shrink: 0; }
 .pdf-capa-htext { flex: 1; }
-.pdf-capa-titulo { font-size: 12pt; font-weight: 800; letter-spacing: .02em; color: var(--rdo-ink); }
-.pdf-capa-sub { font-size: 10pt; color: var(--rdo-ink-soft); margin-top: 2px; }
+.pdf-capa-titulo { font-size: 10pt; font-weight: 800; letter-spacing: .02em; color: var(--rdo-ink); }
+.pdf-capa-sub { font-size: 8pt; color: var(--rdo-ink-soft); margin-top: 2px; }
 .pdf-capa-rdotag { margin-top: 12px; display: inline-flex; align-items: center; background: rgba(212,84,26,.08); border: 1px solid var(--rdo-navy); border-radius: 3px; padding: 4px 10px; }
-.pdf-capa-rdotag span { font-size: 12pt; font-weight: 800; color: var(--rdo-navy); letter-spacing: .03em; }
-.pdf-capa-obra { font-size: 12pt; font-weight: 700; margin-top: 12px; }
-.pdf-capa-data { font-size: 10pt; color: var(--rdo-ink-soft); margin-top: 3px; }
+.pdf-capa-rdotag span { font-size: 10pt; font-weight: 800; color: var(--rdo-navy); letter-spacing: .03em; }
+.pdf-capa-obra { font-size: 10pt; font-weight: 700; margin-top: 12px; }
+.pdf-capa-data { font-size: 8pt; color: var(--rdo-ink-soft); margin-top: 3px; }
 .pdf-capa-meta { margin-top: 12px; display: flex; gap: 28px; flex-wrap: wrap; }
-.pdf-capa-meta .k { font-size: 10pt; letter-spacing: .08em; text-transform: uppercase; color: var(--rdo-ink-faint); }
-.pdf-capa-meta .v { font-size: 10pt; font-weight: 700; margin-top: 2px; }
+.pdf-capa-meta .k { font-size: 8pt; letter-spacing: .08em; text-transform: uppercase; color: var(--rdo-ink-faint); }
+.pdf-capa-meta .v { font-size: 8pt; font-weight: 700; margin-top: 2px; }
 
 /* Cabecalho das paginas internas */
 .pdf-pg-head { display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--rdo-navy); padding-bottom: 8px; margin-bottom: 12px; }
 .pdf-pg-head img { height: 22px; max-width: 90px; width: auto; object-fit: contain; flex-shrink: 0; }
 .pdf-pg-head .htext { flex: 1; }
-.pdf-pg-head .htext .t { font-size: 12pt; font-weight: 800; }
-.pdf-pg-head .htext .s { font-size: 10pt; color: var(--rdo-ink-soft); }
+.pdf-pg-head .htext .t { font-size: 10pt; font-weight: 800; }
+.pdf-pg-head .htext .s { font-size: 8pt; color: var(--rdo-ink-soft); }
 
-.pdf-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.pdf-card { border: 1px solid var(--rdo-line); border-radius: 4px; text-align: center; padding: 6px 4px; }
-.pdf-card .v { font-size: 12pt; font-weight: 800; color: var(--rdo-ink); }
-.pdf-card .t { font-size: 10pt; color: var(--rdo-ink-faint); margin-top: 2px; }
+.pdf-cards { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.pdf-card { border: 1px solid var(--rdo-line); border-radius: 4px; text-align: center; padding: 5px 2px; }
+.pdf-card .v { font-size: 10pt; font-weight: 800; color: var(--rdo-ink); }
+.pdf-card .t { font-size: 8pt; color: var(--rdo-ink-faint); margin-top: 2px; }
 .pdf-sec { margin-bottom: 10px; page-break-inside: avoid; }
 .pdf-sec h2 {
-  font-size: 12pt; font-weight: 700; letter-spacing: .01em;
-  background: linear-gradient(90deg, var(--rdo-green), var(--rdo-blue));
-  color: var(--rdo-navy); border: 1px solid var(--rdo-navy);
-  padding: 4px 7px; margin: 0 0 6px; border-radius: 3px;
+  font-size: 10pt; font-weight: 700; letter-spacing: .01em;
+  background: var(--rdo-navy);
+  color: #fff; border: 1px solid var(--rdo-navy);
+  padding: 3px 6px; margin: 0 0 6px; border-radius: 3px;
 }
-.pdf-doc table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+.pdf-doc table { width: 100%; border-collapse: collapse; font-size: 8pt; }
 .pdf-doc th, .pdf-doc td { border: 1px solid var(--rdo-line); padding: 4px 7px; text-align: left; vertical-align: top; }
-.pdf-doc th { background: #f0ece4; font-weight: 700; font-size: 10pt; text-transform: uppercase; letter-spacing: .02em; color: var(--rdo-ink-soft); }
+.pdf-doc th { background: #f0ece4; font-weight: 700; font-size: 8pt; text-transform: uppercase; letter-spacing: .02em; color: var(--rdo-ink-soft); }
 .pdf-fotos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .pdf-fotos figure { margin: 0; page-break-inside: avoid; }
 .pdf-fotos img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border: 1px solid var(--rdo-line); border-radius: 3px; }
-.pdf-fotos figcaption { font-size: 10pt; color: var(--rdo-ink-soft); margin-top: 3px; }
+.pdf-fotos figcaption { font-size: 8pt; color: var(--rdo-ink-soft); margin-top: 3px; }
 .pdf-ass { display: flex; gap: 30px; margin-top: 32px; page-break-inside: avoid; }
-.pdf-ass > div { flex: 1; text-align: center; font-size: 10pt; }
+.pdf-ass > div { flex: 1; text-align: center; font-size: 8pt; }
 #padAssOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 16px; }
 #padAssOverlay .pad-box { background: #fff; border-radius: 12px; padding: 14px; width: 100%; max-width: 520px; }
 #padAssOverlay canvas { width: 100%; height: 200px; border: 1.5px dashed #999; border-radius: 8px; touch-action: none; display: block; background: #fff; }
@@ -3223,9 +3221,9 @@ async function compartilharPdfRDO() {
     let primeira = true;
     let paginasComFalha = 0;
 
-    const pageWmm = 210, pageHmm = 297, margemMm = 15;
-    const areaWmm = pageWmm - margemMm * 2;   // 180mm — mesma margem do PDF oficial (@page margin:15mm)
-    const areaHmm = pageHmm - margemMm * 2;   // 267mm
+    const pageWmm = 210, pageHmm = 297, margemMm = 5;
+    const areaWmm = pageWmm - margemMm * 2;   // 200mm — mesma margem do PDF oficial (@page margin:5mm)
+    const areaHmm = pageHmm - margemMm * 2;   // 287mm
 
     for (const pagina of paginas) {
       try {
