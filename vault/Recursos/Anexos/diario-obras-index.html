@@ -1105,10 +1105,10 @@
 .pdf-pg-head .htext .t { font-size: 10pt; font-weight: 800; }
 .pdf-pg-head .htext .s { font-size: 8pt; color: var(--rdo-ink-soft); }
 
-.pdf-cards { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-.pdf-card { border: 1px solid var(--rdo-line); border-radius: 4px; text-align: center; padding: 5px 2px; }
-.pdf-card .v { font-size: 10pt; font-weight: 800; color: var(--rdo-ink); }
-.pdf-card .t { font-size: 8pt; color: var(--rdo-ink-faint); margin-top: 2px; }
+.pdf-resumo-table { table-layout: fixed; }
+.pdf-doc .pdf-resumo-table td { text-align: center; padding: 5px 2px; vertical-align: middle; word-break: break-word; }
+.pdf-resumo-table .v { font-size: 10pt; font-weight: 800; color: var(--rdo-ink); }
+.pdf-resumo-table .t { font-size: 8pt; color: var(--rdo-ink-faint); margin-top: 2px; word-break: break-word; }
 .pdf-sec { margin-bottom: 10px; page-break-inside: avoid; }
 .pdf-sec h2 {
   font-size: 10pt; font-weight: 700; letter-spacing: .01em;
@@ -2854,8 +2854,9 @@ function gerarPdfRDO() {
   const nParal = (day.atividadesParalisadas || []).length;
   const nFotos = (day.fotos || []).length;
   const mmTotal = totalPrecipitacao(day);
-  const card = (v, t) => `<div class="pdf-card"><div class="v">${v}</div><div class="t">${t}</div></div>`;
-  h += `<div class="pdf-sec"><h2>RESUMO GERAL</h2><div class="pdf-cards">
+  const card = (v, t) => `<td><div class="v">${v}</div><div class="t">${t}</div></td>`;
+  h += `<div class="pdf-sec"><h2>RESUMO GERAL</h2>
+    <table class="pdf-resumo-table"><tr>
     ${card(totEfCard, 'Efetivo presente')}
     ${card(nAtiv, 'Atividades')}
     ${card(nEquip, 'Equipamentos')}
@@ -2863,7 +2864,7 @@ function gerarPdfRDO() {
     ${card(nParal, 'Paralisações')}
     ${card(mmTotal.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' mm', 'Precipitação')}
     ${card(nFotos, 'Fotos')}
-  </div></div>`;
+    </tr></table></div>`;
 
   // Condições climáticas — 4 períodos
   const mapCond = { sol: 'Limpo', nublado: 'Nublado', chuva: 'Chuvoso' };
