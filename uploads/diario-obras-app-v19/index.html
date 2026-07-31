@@ -1547,63 +1547,39 @@
   <!-- COLABORADORES -->
   <div class="config-pane" id="pane-colaboradores">
     <div class="section">
-      <div class="section-title"><div class="section-title-text">👷 Colaboradores Presentes Hoje</div></div>
+      <div class="section-title"><div class="section-title-text">👷 Colaboradores</div></div>
       <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
-        Marque os colaboradores presentes neste dia. Eles aparecerão resumidos na aba Diário.
+        Marque quem está presente hoje na caixinha. Use ✏️/🗑️ para editar ou remover do cadastro.
       </p>
-      <div id="configEfetivoDiaList"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarEfetivoDia()">💾 Salvar Efetivo do Dia</button>
-      <hr class="divider" style="margin-top:20px;margin-bottom:20px">
-    </div>
-
-    <div class="section">
-      <div class="section-title"><div class="section-title-text">⚙️ Gerenciar Colaboradores</div></div>
       <button class="add-btn-full" onclick="abrirModalCategoria()">+ Adicionar Categoria</button>
       <hr class="divider">
       <div id="configColabList"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarEfetivoDia()">💾 Salvar Efetivo do Dia</button>
     </div>
   </div>
   
   <!-- EQUIPAMENTOS -->
   <div class="config-pane" id="pane-equipamentos">
     <div class="section">
-      <div class="section-title"><div class="section-title-text">🚜 Equipamentos Utilizados Hoje</div></div>
+      <div class="section-title"><div class="section-title-text">🚜 Equipamentos</div></div>
       <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
-        Marque os equipamentos utilizados neste dia. Eles aparecerão resumidos na aba Diário.
-      </p>
-      <div id="configEquipDiaList"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarEquipDia()">💾 Salvar Equipamentos do Dia</button>
-      <hr class="divider" style="margin-top:20px;margin-bottom:20px">
-    </div>
-
-    <div class="section">
-      <div class="section-title"><div class="section-title-text">⚙️ Equipamentos Cadastrados</div></div>
-      <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
-        Marque "É caminhão / motorista?" para que o app sugira da lista de Motoristas ao selecionar operador no diário.
+        Marque os utilizados hoje na caixinha. Use ✏️/🗑️ para editar ou remover do cadastro.
       </p>
       <button class="add-btn-full" onclick="abrirModalEquipamento()">+ Adicionar Equipamento</button>
       <hr class="divider">
       <div id="configEquipList"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarEquipDia()">💾 Salvar Equipamentos do Dia</button>
     </div>
 
     <div class="section">
-      <div class="section-title"><div class="section-title-text">🚗 Veículos Leves Utilizados Hoje</div></div>
+      <div class="section-title"><div class="section-title-text">🚗 Veículos Leves</div></div>
       <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
-        Marque os veículos leves utilizados neste dia. Eles aparecerão resumidos na aba Diário.
-      </p>
-      <div id="configVLDiaList"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarVLDia()">💾 Salvar Veículos do Dia</button>
-      <hr class="divider" style="margin-top:20px;margin-bottom:20px">
-    </div>
-
-    <div class="section">
-      <div class="section-title"><div class="section-title-text">📋 Frota de Veículos Leves</div></div>
-      <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
-        Cadastre veículos leves da frota (pickups, vans, utilitários). O uso diário é registrado na aba Diário.
+        Marque os utilizados hoje na caixinha. Use ✏️/🗑️ para editar ou remover da frota.
       </p>
       <button class="add-btn-full" onclick="abrirModalVeiculoFrota()">+ Adicionar Veículo Leve</button>
       <hr class="divider">
       <div id="configVLList"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="salvarVLDia()">💾 Salvar Veículos do Dia</button>
     </div>
   </div>
   
@@ -3286,7 +3262,8 @@ async function compartilharPdfRDO() {
     }
 
     const num = numeroRDO(currentDay.data);
-    const nomeArquivo = `RDO-${num}-${currentDay.data}.pdf`;
+    // "/" não é permitido em nome de arquivo — usa "-" no lugar (RDO 163 30-07-2026.pdf)
+    const nomeArquivo = `RDO ${num} ${formatDateBR(currentDay.data).replace(/\//g, '-')}.pdf`;
     const blob = doc.output('blob');
     const file = new File([blob], nomeArquivo, { type: 'application/pdf' });
     console.log('PDF gerado para compartilhar:', (blob.size / 1024 / 1024).toFixed(1) + ' MB');
@@ -4488,11 +4465,8 @@ function renderConfig() {
   renderLogoPreview();
   
   renderConfigColab();
-  renderConfigEfetivoDia();
   renderConfigEquip();
-  renderConfigEquipDia();
   renderConfigVL();
-  renderConfigVLDia();
   renderConfigAtiv();
   renderAtividadesDodiaCadastro();
   renderConfigEventos('seguranca');
@@ -4504,6 +4478,8 @@ function renderConfig() {
 function renderConfigColab() {
   const cont = document.getElementById('configColabList');
   cont.innerHTML = '';
+  const dia = dataAtiva();
+  const savedEfetivo = S.get(`efetivoDia_${dia}`) || {};
 
   const categoriasColab = [...state.colaboradores.categorias].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   categoriasColab.forEach(cat => {
@@ -4559,8 +4535,22 @@ function renderConfigColab() {
     } else {
       const itensColab = [...cat.itens].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
       itensColab.forEach(c => {
+        const checked = !!savedEfetivo[c.id];
         const row = document.createElement('div');
-        row.className = 'item-row';
+        row.className = 'item-row' + (checked ? ' checked' : '');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = checked;
+        checkbox.style.marginRight = '10px';
+        checkbox.style.cursor = 'pointer';
+        checkbox.addEventListener('change', (e) => {
+          e.stopPropagation();
+          if (checkbox.checked) savedEfetivo[c.id] = true;
+          else delete savedEfetivo[c.id];
+          S.set(`efetivoDia_${dia}`, savedEfetivo);
+          renderConfigColab();
+        });
 
         const info = document.createElement('div');
         info.className = 'item-info';
@@ -4581,6 +4571,7 @@ function renderConfigColab() {
 
         rowActions.appendChild(btnEdit);
         rowActions.appendChild(btnDel);
+        row.appendChild(checkbox);
         row.appendChild(info);
         row.appendChild(rowActions);
         body.appendChild(row);
@@ -4603,17 +4594,15 @@ function renderConfigColab() {
   });
 }
 
-function renderConfigEquipDia() {
-  const cont = document.getElementById('configEquipDiaList');
-  if (!cont) return;
+function renderConfigEquip() {
+  const cont = document.getElementById('configEquipList');
   cont.innerHTML = '';
-  const dia = dataAtiva();
-  const savedEquip = S.get(`equipDia_${dia}`) || {};
-
   if (state.equipamentos.length === 0) {
-    cont.innerHTML = '<div class="empty">Nenhum equipamento cadastrado</div>';
+    cont.innerHTML = '<div class="empty">Nenhum equipamento</div>';
     return;
   }
+  const dia = dataAtiva();
+  const savedEquip = S.get(`equipDia_${dia}`) || {};
   state.equipamentos.forEach(eq => {
     const checked = !!savedEquip[eq.id];
     const row = document.createElement('div');
@@ -4628,68 +4617,8 @@ function renderConfigEquipDia() {
       if (checkbox.checked) savedEquip[eq.id] = true;
       else delete savedEquip[eq.id];
       S.set(`equipDia_${dia}`, savedEquip);
-      renderConfigEquipDia();
+      renderConfigEquip();
     });
-
-    const info = document.createElement('div');
-    info.className = 'item-info';
-    info.innerHTML = `<div class="item-name">${escapeHtml(eq.desc)} ${eq.isMotorista ? '🚛' : '🚜'}</div><div class="item-meta"><span class="num">${escapeHtml(eq.numero)}</span></div>`;
-
-    row.appendChild(checkbox);
-    row.appendChild(info);
-    cont.appendChild(row);
-  });
-}
-
-function renderConfigVLDia() {
-  const cont = document.getElementById('configVLDiaList');
-  if (!cont) return;
-  cont.innerHTML = '';
-  const dia = dataAtiva();
-  const savedVL = S.get(`vlDia_${dia}`) || {};
-  const frota = state.veiculosFrota || [];
-
-  if (frota.length === 0) {
-    cont.innerHTML = '<div class="empty">Nenhum veículo leve cadastrado</div>';
-    return;
-  }
-  frota.forEach(v => {
-    const checked = !!savedVL[v.id];
-    const row = document.createElement('div');
-    row.className = 'item-row' + (checked ? ' checked' : '');
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = checked;
-    checkbox.style.marginRight = '10px';
-    checkbox.style.cursor = 'pointer';
-    checkbox.addEventListener('change', () => {
-      if (checkbox.checked) savedVL[v.id] = true;
-      else delete savedVL[v.id];
-      S.set(`vlDia_${dia}`, savedVL);
-      renderConfigVLDia();
-    });
-
-    const info = document.createElement('div');
-    info.className = 'item-info';
-    info.innerHTML = `<div class="item-name">🚗 ${escapeHtml(v.desc)}</div><div class="item-meta">${v.tipo ? escapeHtml(v.tipo) + ' · ' : ''}${v.placa ? escapeHtml(v.placa) : ''}</div>`;
-
-    row.appendChild(checkbox);
-    row.appendChild(info);
-    cont.appendChild(row);
-  });
-}
-
-function renderConfigEquip() {
-  const cont = document.getElementById('configEquipList');
-  cont.innerHTML = '';
-  if (state.equipamentos.length === 0) {
-    cont.innerHTML = '<div class="empty">Nenhum equipamento</div>';
-    return;
-  }
-  state.equipamentos.forEach(eq => {
-    const row = document.createElement('div');
-    row.className = 'item-row';
 
     const info = document.createElement('div');
     info.className = 'item-info';
@@ -4714,14 +4643,15 @@ function renderConfigEquip() {
     const btnEdit = document.createElement('button');
     btnEdit.className = 'icon-btn';
     btnEdit.textContent = '✏️';
-    btnEdit.addEventListener('click', () => editarEquipamento(eq.id));
+    btnEdit.addEventListener('click', (e) => { e.stopPropagation(); editarEquipamento(eq.id); });
     const btnDel = document.createElement('button');
     btnDel.className = 'icon-btn';
     btnDel.textContent = '🗑️';
-    btnDel.addEventListener('click', () => removerEquipamento(eq.id));
+    btnDel.addEventListener('click', (e) => { e.stopPropagation(); removerEquipamento(eq.id); });
     acts.appendChild(btnEdit);
     acts.appendChild(btnDel);
 
+    row.appendChild(checkbox);
     row.appendChild(info);
     row.appendChild(acts);
     cont.appendChild(row);
@@ -4795,66 +4725,6 @@ function renderConfigAtiv() {
   });
 }
 
-function renderConfigEfetivoDia() {
-  const cont = document.getElementById('configEfetivoDiaList');
-  const dia = dataAtiva();
-  const savedEfetivo = S.get(`efetivoDia_${dia}`) || {};
-
-  cont.innerHTML = '';
-
-  const categorias = [...state.colaboradores.categorias].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-  categorias.forEach(cat => {
-    const block = document.createElement('div');
-    block.className = 'cat-block';
-
-    const header = document.createElement('div');
-    header.className = 'cat-header';
-    header.innerHTML = `<span class="cat-icon">${cat.icon || '📁'}</span><span class="cat-name">${escapeHtml(cat.nome)}</span>`;
-    header.onclick = () => block.classList.toggle('collapsed');
-
-    const body = document.createElement('div');
-    body.className = 'cat-body';
-
-    if (cat.itens.length === 0) {
-      body.innerHTML = '<div class="empty">Sem colaboradores</div>';
-    } else {
-      const itens = [...cat.itens].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-      itens.forEach(c => {
-        const checked = !!savedEfetivo[c.id];
-        const row = document.createElement('div');
-        row.className = 'item-row' + (checked ? ' checked' : '');
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = checked;
-        checkbox.style.marginRight = '10px';
-        checkbox.style.cursor = 'pointer';
-        checkbox.addEventListener('change', () => {
-          if (checkbox.checked) {
-            savedEfetivo[c.id] = true;
-          } else {
-            delete savedEfetivo[c.id];
-          }
-          S.set(`efetivoDia_${dia}`, savedEfetivo);
-          renderConfigEfetivoDia();
-        });
-
-        const info = document.createElement('div');
-        info.className = 'item-info';
-        info.innerHTML = `<div class="item-name">${escapeHtml(c.nome)}</div><div class="item-meta"><span class="mat">${escapeHtml(c.mat)}</span> · ${escapeHtml(c.funcao)}</div>`;
-
-        row.appendChild(checkbox);
-        row.appendChild(info);
-        body.appendChild(row);
-      });
-    }
-
-    block.appendChild(header);
-    block.appendChild(body);
-    cont.appendChild(block);
-  });
-}
-
 function renderConfigEventos(tipo) {
   const cont = document.getElementById(tipo === 'seguranca' ? 'configSegList' : 'configAmbList');
   cont.innerHTML = '';
@@ -4921,7 +4791,6 @@ function salvarCategoria() {
   saveState();
   fecharModal('modalCategoria');
   renderConfigColab();
-  renderConfigEfetivoDia();
   toast('Salvo');
 }
 function removerCategoria(id) {
@@ -4929,7 +4798,6 @@ function removerCategoria(id) {
     state.colaboradores.categorias = state.colaboradores.categorias.filter(c => c.id !== id);
     saveState();
     renderConfigColab();
-    renderConfigEfetivoDia();
     toast('Removido');
   });
 }
@@ -4969,7 +4837,6 @@ function salvarColaborador() {
   saveState();
   fecharModal('modalColab');
   renderConfigColab();
-  renderConfigEfetivoDia();
   toast('Salvo');
 }
 function removerColaborador(catId, id) {
@@ -4978,7 +4845,6 @@ function removerColaborador(catId, id) {
     cat.itens = cat.itens.filter(c => c.id !== id);
     saveState();
     renderConfigColab();
-    renderConfigEfetivoDia();
     toast('Removido');
   });
 }
@@ -4990,9 +4856,24 @@ function renderConfigVL() {
   cont.innerHTML = '';
   const frota = state.veiculosFrota || [];
   if (frota.length === 0) { cont.innerHTML = '<div class="empty">Nenhum veículo leve cadastrado</div>'; return; }
+  const dia = dataAtiva();
+  const savedVL = S.get(`vlDia_${dia}`) || {};
   frota.forEach(v => {
+    const checked = !!savedVL[v.id];
     const row = document.createElement('div');
-    row.className = 'item-row';
+    row.className = 'item-row' + (checked ? ' checked' : '');
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = checked;
+    checkbox.style.marginRight = '10px';
+    checkbox.style.cursor = 'pointer';
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) savedVL[v.id] = true;
+      else delete savedVL[v.id];
+      S.set(`vlDia_${dia}`, savedVL);
+      renderConfigVL();
+    });
 
     const info = document.createElement('div');
     info.className = 'item-info';
@@ -5014,14 +4895,15 @@ function renderConfigVL() {
     const btnEdit = document.createElement('button');
     btnEdit.className = 'icon-btn';
     btnEdit.textContent = '✏️';
-    btnEdit.addEventListener('click', () => editarVeiculoFrota(v.id));
+    btnEdit.addEventListener('click', (e) => { e.stopPropagation(); editarVeiculoFrota(v.id); });
     const btnDel = document.createElement('button');
     btnDel.className = 'icon-btn';
     btnDel.textContent = '🗑️';
-    btnDel.addEventListener('click', () => removerVeiculoFrota(v.id));
+    btnDel.addEventListener('click', (e) => { e.stopPropagation(); removerVeiculoFrota(v.id); });
     acts.appendChild(btnEdit);
     acts.appendChild(btnDel);
 
+    row.appendChild(checkbox);
     row.appendChild(info);
     row.appendChild(acts);
     cont.appendChild(row);
@@ -5064,12 +4946,12 @@ function salvarVeiculoFrota() {
   } else {
     state.veiculosFrota.push({ id: uid('vf'), numero, desc, placa });
   }
-  saveState(); fecharModal('modalVeiculoFrota'); renderConfigVL(); renderConfigVLDia(); toast('Salvo');
+  saveState(); fecharModal('modalVeiculoFrota'); renderConfigVL(); toast('Salvo');
 }
 function removerVeiculoFrota(id) {
   confirmar('Remover este veículo da frota?', () => {
     state.veiculosFrota = (state.veiculosFrota || []).filter(v => v.id !== id);
-    saveState(); renderConfigVL(); renderConfigVLDia(); toast('Removido');
+    saveState(); renderConfigVL(); toast('Removido');
   });
 }
 
@@ -5131,7 +5013,6 @@ function salvarEquipamento() {
   saveState();
   fecharModal('modalEquip');
   renderConfigEquip();
-  renderConfigEquipDia();
   toast('Salvo');
 }
 function removerEquipamento(id) {
@@ -5139,7 +5020,6 @@ function removerEquipamento(id) {
     state.equipamentos = state.equipamentos.filter(e => e.id !== id);
     saveState();
     renderConfigEquip();
-    renderConfigEquipDia();
     toast('Removido');
   });
 }
