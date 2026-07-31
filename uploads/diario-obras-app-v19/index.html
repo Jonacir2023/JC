@@ -3252,33 +3252,49 @@ async function compartilharPdfRDO() {
     let primeira = true;
     let paginasComFalha = 0;
 
+    const pageWmm = 210, pageHmm = 297, margemMm = 15;
+    const areaWmm = pageWmm - margemMm * 2;   // 180mm — mesma margem do PDF oficial (@page margin:15mm)
+    const areaHmm = pageHmm - margemMm * 2;   // 267mm
+
     for (const pagina of paginas) {
-      if (!primeira) doc.addPage();
-      primeira = false;
       try {
         // scale 1.5 (não 2) e JPEG 0.75 (não 0.9): reduz bastante o tamanho final do
         // arquivo, já que RDOs com várias fotos geram PDFs pesados que o WhatsApp
         // às vezes falha ao enviar ("Não foi possível enviar a mensagem").
         const canvas = await html2canvas(pagina, { scale: 1.5, useCORS: true, backgroundColor: '#ffffff' });
-        // Ajusta a imagem capturada dentro da página A4 preservando a proporção original
-        // (a altura de .pdf-page na tela não é fixa em 210x297mm, então esticar direto
-        // distorcia o conteúdo). Aqui a imagem é encaixada (contain), nunca esticada.
-        const pageWmm = 210, pageHmm = 297;
-        const canvasRatio = canvas.width / canvas.height;
-        const pageRatio = pageWmm / pageHmm;
-        let w, h;
-        if (canvasRatio > pageRatio) {
-          w = pageWmm;
-          h = pageWmm / canvasRatio;
-        } else {
-          h = pageHmm;
-          w = pageHmm * canvasRatio;
+        // .pdf-page na tela NÃO tem altura fixa de A4 — cresce conforme o conteúdo
+        // (o corte em folhas só existe de verdade na hora de imprimir). Se cada página
+        // fosse simplesmente espremida para caber em 210x297mm, um RDO com muito
+        // conteúdo (várias atividades/observações longas) saía com o texto minúsculo
+        // e desproporcional — "fora do padrão A4". Em vez disso, a imagem entra com a
+        // largura real da área útil (180mm, respeitando a mesma margem de 1,5cm do PDF
+        // oficial) e, se for mais alta que a página, é fatiada em quantas páginas A4
+        // forem necessárias, cada fatia em tamanho real (1:1), sem espremer nada.
+        const pxPerMm = canvas.width / areaWmm;
+        const maxFatiaPx = Math.max(1, Math.floor(areaHmm * pxPerMm));
+        let y = 0;
+        while (y < canvas.height) {
+          const alturaFatiaPx = Math.min(maxFatiaPx, canvas.height - y);
+          const fatia = document.createElement('canvas');
+          fatia.width = canvas.width;
+          fatia.height = alturaFatiaPx;
+          const ctx = fatia.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, fatia.width, fatia.height);
+          ctx.drawImage(canvas, 0, y, canvas.width, alturaFatiaPx, 0, 0, canvas.width, alturaFatiaPx);
+
+          if (!primeira) doc.addPage();
+          primeira = false;
+          const alturaFatiaMm = alturaFatiaPx / pxPerMm;
+          doc.addImage(fatia.toDataURL('image/jpeg', 0.75), 'JPEG', margemMm, margemMm, areaWmm, alturaFatiaMm);
+
+          y += alturaFatiaPx;
         }
-        const x = (pageWmm - w) / 2;
-        doc.addImage(canvas.toDataURL('image/jpeg', 0.75), 'JPEG', x, 0, w, h);
       } catch (errPagina) {
         console.error('Falha ao capturar página do PDF (provável foto do Drive sem CORS):', errPagina);
         paginasComFalha++;
+        if (!primeira) doc.addPage();
+        primeira = false;
         doc.setFontSize(12);
         doc.text('Não foi possível incluir esta página no compartilhamento rápido', 15, 20);
         doc.text('(fotos do Google Drive). Use "Imprimir / Salvar PDF" para o', 15, 27);
