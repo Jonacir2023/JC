@@ -1086,10 +1086,11 @@
 .pdf-toolbar { position: sticky; top: 0; background: #2c2c2c; padding: 10px 14px; display: flex; gap: 10px; z-index: 2; }
 .pdf-toolbar button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
 .pdf-doc { max-width: 800px; margin: 16px auto; font-family: 'Barlow', Arial, 'Helvetica Neue', sans-serif; font-size: 8pt; line-height: 1.4; color: var(--rdo-ink); background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.15); }
-.pdf-doc { counter-reset: page-counter; }
-.pdf-page { padding: 5mm; box-sizing: border-box; break-inside: avoid; counter-increment: page-counter; position: relative; }
-.pdf-page::before { content: 'RDO — Relatório Diário de Obra'; display: block; font-size: 7pt; color: #999; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 8px; }
-.pdf-page::after { content: 'Página ' counter(page-counter); display: block; font-size: 7pt; color: #999; border-top: 1px solid #ddd; padding-top: 4px; margin-top: 12px; text-align: right; }
+.pdf-page { padding: 5mm; box-sizing: border-box; break-inside: avoid; display: flex; flex-direction: column; min-height: 100vh; }
+.pdf-page-header { font-size: 7pt; color: #999; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 8px; line-height: 1.2; }
+.pdf-page-content { flex: 1; }
+.pdf-page-footer { font-size: 7pt; color: #999; border-top: 1px solid #ddd; padding-top: 4px; margin-top: auto; display: flex; justify-content: space-between; align-items: center; line-height: 1.2; }
+.pdf-page-footer-num { text-align: right; }
 
 /* Capa */
 .pdf-capa-head { display: flex; align-items: flex-end; gap: 14px; border-bottom: 3px solid var(--rdo-navy); padding-bottom: 10px; }
@@ -3167,6 +3168,40 @@ function gerarPdfRDO() {
     <div class="pdf-doc">${h}</div>`;
   document.body.appendChild(overlay);
   document.body.classList.add('pdf-printing');
+
+  // Adiciona cabeçalho e rodapé com numeração em cada página
+  adicionarHeaderFooterPDF();
+}
+
+function adicionarHeaderFooterPDF() {
+  const paginas = document.querySelectorAll('.pdf-page');
+  const totalPages = paginas.length;
+
+  paginas.forEach((page, idx) => {
+    const numPag = idx + 1;
+    const header = document.createElement('div');
+    header.className = 'pdf-page-header';
+    header.textContent = 'RDO — Relatório Diário de Obra';
+
+    const footer = document.createElement('div');
+    footer.className = 'pdf-page-footer';
+    footer.innerHTML = `
+      <span>${new Date().toLocaleString('pt-BR')}</span>
+      <span class="pdf-page-footer-num">Página ${numPag} de ${totalPages}</span>
+    `;
+
+    // Envolver conteúdo da página
+    const oldContent = page.innerHTML;
+    page.innerHTML = '';
+
+    const content = document.createElement('div');
+    content.className = 'pdf-page-content';
+    content.innerHTML = oldContent;
+
+    page.appendChild(header);
+    page.appendChild(content);
+    page.appendChild(footer);
+  });
 }
 
 function fecharPdfRDO() {
