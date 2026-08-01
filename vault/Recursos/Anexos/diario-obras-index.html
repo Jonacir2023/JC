@@ -3171,28 +3171,6 @@ function gerarPdfRDO() {
     <div class="pdf-doc">${h}</div>`;
   document.body.appendChild(overlay);
   document.body.classList.add('pdf-printing');
-
-  // Adiciona cabeçalho e rodapé com numeração em cada página
-  adicionarHeaderFooterPDF();
-}
-
-function adicionarHeaderFooterPDF() {
-  const paginas = document.querySelectorAll('.pdf-page');
-  const totalPages = paginas.length;
-
-  paginas.forEach((page, idx) => {
-    const numPag = idx + 1;
-
-    const header = document.createElement('div');
-    header.className = 'pdf-page-header';
-    header.textContent = 'RDO — Relatório Diário de Obra';
-    page.insertBefore(header, page.firstChild);
-
-    const footer = document.createElement('div');
-    footer.className = 'pdf-page-footer';
-    footer.innerHTML = `<span>${new Date().toLocaleString('pt-BR')}</span><span class="pdf-page-footer-num">Página ${numPag} de ${totalPages}</span>`;
-    page.appendChild(footer);
-  });
 }
 
 function fecharPdfRDO() {
