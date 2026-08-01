@@ -1081,15 +1081,12 @@
    fazendo a página impressa ter recuo bem maior que o configurado aqui. Com margin:0
    a margem real de 5mm é aplicada via padding de cada .pdf-page (abaixo), o que o
    iOS respeita corretamente. */
-@page { size: A4; margin: 15mm 5mm; }
+@page { size: A4; margin: 0; }
 #pdfOverlay { position: fixed; inset: 0; background: #eeeae3; z-index: 9999; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .pdf-toolbar { position: sticky; top: 0; background: #2c2c2c; padding: 10px 14px; display: flex; gap: 10px; z-index: 2; }
 .pdf-toolbar button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
 .pdf-doc { max-width: 800px; margin: 16px auto; font-family: 'Barlow', Arial, 'Helvetica Neue', sans-serif; font-size: 8pt; line-height: 1.4; color: var(--rdo-ink); background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.15); }
-.pdf-page { padding: 5mm; box-sizing: border-box; break-inside: avoid; }
-.pdf-page-header { font-size: 7pt; color: #999; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 8px; line-height: 1.2; }
-.pdf-page-footer { font-size: 7pt; color: #999; border-top: 1px solid #ddd; padding-top: 4px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; line-height: 1.2; }
-.pdf-page-footer-num { text-align: right; }
+.pdf-page { padding: 5mm; box-sizing: border-box; }
 
 /* Capa */
 .pdf-capa-head { display: flex; align-items: flex-end; gap: 14px; border-bottom: 3px solid var(--rdo-navy); padding-bottom: 10px; }
@@ -2822,8 +2819,6 @@ function gerarPdfRDO() {
 
   let h = '';
   const logoSrc = state.obra.logo || LOGO_PADRAO;
-  const dataHoraAgora = new Date().toLocaleString('pt-BR');
-  let paginaNum = 0;
   const pgHeadMini = `<div class="pdf-pg-head">
     <img src="${logoSrc}" alt="logo">
     <div class="htext">
@@ -2833,8 +2828,7 @@ function gerarPdfRDO() {
   </div>`;
 
   // ================= PÁGINA 1 — CAPA =================
-  paginaNum++;
-  h += `<div class="pdf-page"><div class="pdf-page-header">RDO — Relatório Diário de Obra</div><div class="pdf-capa-head">
+  h += `<div class="pdf-page"><div class="pdf-capa-head">
     <img src="${logoSrc}" alt="logo" class="pdf-capa-logo">
     <div class="pdf-capa-htext">
       <div class="pdf-capa-titulo">RELATÓRIO DIÁRIO DE OBRA</div>
@@ -2905,11 +2899,10 @@ function gerarPdfRDO() {
     h += `<div class="pdf-sec"><h2>LOCAL DOS TRABALHOS</h2>
       <table><tr><td><strong>${escHtml(day.localObra || '')}</strong>${day.descricaoLocal ? '<br>' + escHtml(day.descricaoLocal) : ''}</td></tr></table></div>`;
   }
-  h += `<div class="pdf-page-footer"><span>${dataHoraAgora}</span><span class="pdf-page-footer-num">Página 1</span></div></div>`; // fecha pdf-page 1 (capa)
+  h += `</div>`; // fecha pdf-page 1 (capa)
 
   // ================= PÁGINA 2 — Efetivo, Equipamentos, Atividades =================
-  paginaNum++;
-  h += `<div class="pdf-page"><div class="pdf-page-header">RDO — Relatório Diário de Obra</div>${pgHeadMini}`;
+  h += `<div class="pdf-page">${pgHeadMini}`;
 
   // Efetivo
   // Efetivo — Mão de obra própria (Função | Qtd por categoria) + Subcontratada (Função | Qtd | Empresa)
@@ -3044,11 +3037,10 @@ function gerarPdfRDO() {
     h += `<div class="pdf-sec"><h2>ATIVIDADES PARALISADAS — ${day.atividadesParalisadas.length}</h2>
       <table><tr><th style="width:45%">Atividade</th><th>Justificativa</th></tr>${linhasPar}</table></div>`;
   }
-  h += `<div class="pdf-page-footer"><span>${dataHoraAgora}</span><span class="pdf-page-footer-num">Página 2</span></div></div>`; // fecha pdf-page 2
+  h += `</div>`; // fecha pdf-page 2
 
   // ================= PÁGINA 3 — Observações, Eventos =================
-  paginaNum++;
-  h += `<div class="pdf-page"><div class="pdf-page-header">RDO — Relatório Diário de Obra</div>${pgHeadMini}`;
+  h += `<div class="pdf-page">${pgHeadMini}`;
 
   // Observações
   if (day.observacoesDia && day.observacoesDia.trim()) {
@@ -3067,7 +3059,7 @@ function gerarPdfRDO() {
   };
   h += eventos('EVENTOS DE SEGURANÇA', day.eventosSeguranca);
   h += eventos('EVENTOS DE MEIO AMBIENTE', day.eventosAmbiente);
-  h += `<div class="pdf-page-footer"><span>${dataHoraAgora}</span><span class="pdf-page-footer-num">Página 3</span></div></div>`; // fecha pdf-page 3
+  h += `</div>`; // fecha pdf-page 3
 
   // ================= PÁGINA(S) 4+ — Registro Fotográfico =================
   // Uma foto do dia é suportada até 20 por RDO; a cada múltiplo de 6, inicia nova página.
@@ -3084,11 +3076,10 @@ function gerarPdfRDO() {
     for (let i = 0; i < day.fotos.length; i += FOTOS_POR_PAGINA) {
       const lote = day.fotos.slice(i, i + FOTOS_POR_PAGINA);
       const primeiraPagina = i === 0;
-      paginaNum++;
-      h += `<div class="pdf-page"><div class="pdf-page-header">RDO — Relatório Diário de Obra</div>${pgHeadMini}
+          h += `<div class="pdf-page">${pgHeadMini}
         <div class="pdf-sec"><h2>REGISTRO FOTOGRÁFICO${primeiraPagina ? ` — ${day.fotos.length}` : ' (continuação)'}</h2>
         <div class="pdf-fotos">${lote.map(figHtml).join('')}</div></div>
-      <div class="pdf-page-footer"><span>${dataHoraAgora}</span><span class="pdf-page-footer-num">Página ${paginaNum}</span></div></div>`;
+      </div>`;
     }
   }
 
@@ -3130,8 +3121,7 @@ function gerarPdfRDO() {
     </div>`;
   };
 
-  paginaNum++;
-  h += `<div class="pdf-page"><div class="pdf-page-header">RDO — Relatório Diário de Obra</div>${pgHeadMini}`;
+  h += `<div class="pdf-page">${pgHeadMini}`;
   h += blocoResumoPeriodo('RESUMO DA SEMANA', `${formatDateBR(isoIniSem)} a ${formatDateBR(isoFimSem)}`, resumoSemana);
   h += blocoResumoPeriodo('RESUMO DO MÊS', `${mesesPdf[iniMesD.getMonth()]} de ${iniMesD.getFullYear()}`, resumoMes);
 
@@ -3150,7 +3140,7 @@ function gerarPdfRDO() {
     <span>RDO Nº ${num} · ${escHtml(state.obra.nome || '')}</span>
     <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
   </div>`;
-  h += `<div class="pdf-page-footer"><span>${dataHoraAgora}</span><span class="pdf-page-footer-num">Página ${paginaNum}</span></div></div>`; // fecha pdf-page resumo semana/mês
+  h += `</div>`; // fecha pdf-page resumo semana/mês
 
   // Montar overlay
   const overlay = document.createElement('div');
