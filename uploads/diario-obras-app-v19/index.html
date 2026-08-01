@@ -1112,10 +1112,6 @@
 .pdf-pg-head .htext .t { font-size: 10pt; font-weight: 800; }
 .pdf-pg-head .htext .s { font-size: 8pt; color: var(--rdo-ink-soft); }
 
-.pdf-resumo-table { table-layout: fixed; }
-.pdf-doc .pdf-resumo-table td { text-align: center; padding: 5px 2px; vertical-align: middle; word-break: break-word; }
-.pdf-resumo-table .v { font-size: 10pt; font-weight: 800; color: var(--rdo-ink); }
-.pdf-resumo-table .t { font-size: 8pt; color: var(--rdo-ink-faint); margin-top: 2px; word-break: break-word; }
 .pdf-sec { margin-bottom: 10px; page-break-inside: avoid; }
 .pdf-sec h2 {
   font-size: 8pt; font-weight: 700; letter-spacing: .01em;
@@ -2861,17 +2857,18 @@ function gerarPdfRDO() {
   const nParal = (day.atividadesParalisadas || []).length;
   const nFotos = (day.fotos || []).length;
   const mmTotal = totalPrecipitacao(day);
-  const card = (v, t) => `<td><div class="v">${v}</div><div class="t">${t}</div></td>`;
   h += `<div class="pdf-sec"><h2>RESUMO GERAL</h2>
-    <table class="pdf-resumo-table"><tr>
-    ${card(totEfCard, 'Efetivo presente')}
-    ${card(nAtiv, 'Atividades')}
-    ${card(nEquip, 'Equipamentos')}
-    ${card(nOcor, 'Ocorrências SSMA')}
-    ${card(nParal, 'Paralisações')}
-    ${card(mmTotal.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' mm', 'Precipitação')}
-    ${card(nFotos, 'Fotos')}
-    </tr></table></div>`;
+    <table>
+      <tr><th style="width:70%">Descrição</th><th style="width:30%;text-align:right">Quantidade</th></tr>
+      <tr><td>Efetivo presente</td><td style="text-align:right"><strong>${totEfCard}</strong></td></tr>
+      <tr><td>Atividades</td><td style="text-align:right"><strong>${nAtiv}</strong></td></tr>
+      <tr><td>Equipamentos</td><td style="text-align:right"><strong>${nEquip}</strong></td></tr>
+      <tr><td>Ocorrências SSMA</td><td style="text-align:right"><strong>${nOcor}</strong></td></tr>
+      <tr><td>Paralisações</td><td style="text-align:right"><strong>${nParal}</strong></td></tr>
+      <tr><td>Precipitação</td><td style="text-align:right"><strong>${mmTotal.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mm</strong></td></tr>
+      <tr><td>Fotos</td><td style="text-align:right"><strong>${nFotos}</strong></td></tr>
+    </table>
+  </div>`;
 
   // Condições climáticas — 4 períodos
   const mapCond = { sol: 'Limpo', nublado: 'Nublado', chuva: 'Chuvoso' };
