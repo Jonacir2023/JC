@@ -1109,13 +1109,32 @@
 .pdf-pg-head .htext .t { font-size: 10pt; font-weight: 800; }
 .pdf-pg-head .htext .s { font-size: 8pt; color: var(--rdo-ink-soft); }
 
-.pdf-sec { margin-bottom: 10px; page-break-inside: avoid; }
+.pdf-sec { margin-bottom: 18px; page-break-inside: avoid; }
 .pdf-sec h2 {
-  font-size: 8pt; font-weight: 700; letter-spacing: .01em;
-  background: var(--rdo-navy);
-  color: #fff; border: 1px solid var(--rdo-navy);
-  padding: 2px 4px; margin: 0 0 6px; border-radius: 3px;
+  font-size: 11pt; font-weight: 700; letter-spacing: .01em;
+  background: #2C3E50;
+  color: #fff; border: none;
+  padding: 12px 15px; margin: 0 0 10px; border-radius: 0;
 }
+
+/* Resumo Geral com números grandes */
+.pdf-resumo-geral { margin-bottom: 20px; page-break-inside: avoid; }
+.pdf-resumo-geral h2 { background: #2C3E50; color: #fff; padding: 12px 15px; margin: 0 0 10px; font-size: 11pt; }
+.pdf-resumo-cards { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.pdf-resumo-card { flex: 1; text-align: center; }
+.pdf-resumo-card .num { font-size: 48pt; font-weight: 700; color: #666; line-height: 1; }
+.pdf-resumo-card .label { font-size: 9pt; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+
+/* Layout lado a lado */
+.pdf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+.pdf-grid-2 > * { page-break-inside: avoid; }
+
+/* Assinaturas lado a lado */
+.pdf-assinaturas { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 40px; }
+.pdf-assin-box { text-align: center; }
+.pdf-assin-linha { border-top: 1px solid #000; height: 40px; margin-bottom: 8px; }
+.pdf-assin-nome { font-size: 9pt; font-weight: 600; }
+.pdf-assin-funcao { font-size: 8pt; color: #666; margin-top: 2px; }
 .pdf-doc table { width: 100%; border-collapse: collapse; font-size: 8pt; }
 .pdf-doc th, .pdf-doc td { border: 1px solid var(--rdo-line); padding: 4px 7px; text-align: left; vertical-align: top; }
 .pdf-doc th { background: #f0ece4; font-weight: 700; font-size: 8pt; text-transform: uppercase; letter-spacing: .02em; color: var(--rdo-ink-soft); }
@@ -2811,40 +2830,62 @@ function calcResumoPeriodoPDF(isoInicio, isoFim) {
 function gerarPdfRDO() {
   const day = currentDay;
   if (!day.data) { toast('❌ Defina a data do diário'); return; }
-  salvarDiarioDia(false); // garantir que a data conste do histórico p/ numeração
+  salvarDiarioDia(false);
 
   const num = numeroRDO(day.data);
   const dataBR = formatDateBR(day.data);
-  const dSemana = diaDaSemana(day.data);
 
   let h = '';
   const logoSrc = state.obra.logo || LOGO_PADRAO;
-  const pgHeadMini = `<div class="pdf-pg-head">
-    <img src="${logoSrc}" alt="logo">
-    <div class="htext">
-      <div class="t">RDO Nº ${num} · ${escHtml((state.obra.nome || '').toUpperCase())}</div>
-      <div class="s">${escHtml(state.obra.local || '')} · ${dataBR}</div>
+
+  // Header para todas as páginas internas
+  const pgHead = `<div style="display:flex;align-items:center;gap:10px;border-bottom:2px solid #2C3E50;padding-bottom:8px;margin-bottom:15px">
+    <img src="${logoSrc}" alt="logo" style="height:24px;max-width:100px;width:auto;object-fit:contain;flex-shrink:0">
+    <div style="flex:1">
+      <div style="font-size:11pt;font-weight:800">RDO Nº ${num} · ${escHtml((state.obra.nome || '').toUpperCase())}</div>
+      <div style="font-size:9pt;color:#666">${escHtml(state.obra.local || '')} · ${dataBR}</div>
     </div>
   </div>`;
 
-  // ================= PÁGINA 1 — CAPA =================
-  h += `<div class="pdf-page"><div class="pdf-capa-head">
-    <img src="${logoSrc}" alt="logo" class="pdf-capa-logo">
-    <div class="pdf-capa-htext">
-      <div class="pdf-capa-titulo">RELATÓRIO DIÁRIO DE OBRA</div>
-      <div class="pdf-capa-sub">${escHtml(state.obra.empresa || '')}</div>
+  // ================= PÁGINA 1 =================
+  h += `<div class="pdf-page" style="padding:20px;box-sizing:border-box">`;
+
+  // Logo + Título + RDO
+  h += `<div style="display:flex;align-items:center;gap:15px;margin-bottom:20px">
+    <img src="${logoSrc}" alt="logo" style="height:50px;max-width:120px;width:auto;object-fit:contain">
+    <div style="flex:1">
+      <div style="font-size:22pt;font-weight:800;color:#1a1a1a">RELATÓRIO DIÁRIO DE OBRA</div>
+      <div style="font-size:11pt;color:#666;margin-top:2px">${escHtml(state.obra.empresa || '')}</div>
     </div>
-  </div>
-  <div class="pdf-capa-rdotag"><span>RDO Nº ${num}</span></div>
-  <div class="pdf-capa-obra">${escHtml(state.obra.nome || '')}</div>
-  <div class="pdf-capa-data">${escHtml(dataPorExtenso(day.data))}</div>
-  <div class="pdf-capa-meta">
-    <div><div class="k">Local</div><div class="v">${escHtml(state.obra.local || '—')}</div></div>
-    ${state.obra.contrato ? `<div><div class="k">Contrato</div><div class="v">${escHtml(state.obra.contrato)}</div></div>` : ''}
-    ${state.obra.cliente ? `<div><div class="k">Cliente</div><div class="v">${escHtml(state.obra.cliente)}</div></div>` : ''}
+    <div style="text-align:center;border-left:2px solid #ddd;padding-left:15px">
+      <div style="font-size:24pt;font-weight:800;color:#2C3E50">${num}</div>
+      <div style="font-size:9pt;color:#666;text-transform:uppercase;letter-spacing:1px">RDO Nº</div>
+    </div>
   </div>`;
 
-  // ================= RESUMO GERAL =================
+  // Informações do projeto (Cliente, Contrato, Local, Frente)
+  h += `<div style="background:#f5f5f5;padding:12px 15px;margin-bottom:20px;border-radius:3px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:20px;font-size:9pt">
+      <div>
+        <div style="color:#999;text-transform:uppercase;font-weight:600;letter-spacing:.05em;margin-bottom:3px">Cliente</div>
+        <div style="font-weight:600">${escHtml(state.obra.cliente || '—')}</div>
+      </div>
+      <div>
+        <div style="color:#999;text-transform:uppercase;font-weight:600;letter-spacing:.05em;margin-bottom:3px">Contrato</div>
+        <div style="font-weight:600">${escHtml(state.obra.contrato || '—')}</div>
+      </div>
+      <div>
+        <div style="color:#999;text-transform:uppercase;font-weight:600;letter-spacing:.05em;margin-bottom:3px">Local</div>
+        <div style="font-weight:600">${escHtml(state.obra.local || '—')}</div>
+      </div>
+      <div>
+        <div style="color:#999;text-transform:uppercase;font-weight:600;letter-spacing:.05em;margin-bottom:3px">Data</div>
+        <div style="font-weight:600">${dataBR}</div>
+      </div>
+    </div>
+  </div>`;
+
+  // ================= RESUMO GERAL (7 números grandes) =================
   let totEfCard = 0;
   state.colaboradores.categorias.forEach(cat => { totEfCard += cat.itens.filter(c => day.efetivo[c.id]).length; });
   const savedEquipCard = S.get(`equipDia_${day.data}`) || {};
@@ -2854,62 +2895,60 @@ function gerarPdfRDO() {
   const nParal = (day.atividadesParalisadas || []).length;
   const nFotos = (day.fotos || []).length;
   const mmTotal = totalPrecipitacao(day);
-  h += `<div class="pdf-sec"><h2>RESUMO GERAL</h2>
-    <table>
-      <tr><th style="width:70%">Descrição</th><th style="width:30%;text-align:right">Quantidade</th></tr>
-      <tr><td>Efetivo presente</td><td style="text-align:right"><strong>${totEfCard}</strong></td></tr>
-      <tr><td>Atividades</td><td style="text-align:right"><strong>${nAtiv}</strong></td></tr>
-      <tr><td>Equipamentos</td><td style="text-align:right"><strong>${nEquip}</strong></td></tr>
-      <tr><td>Ocorrências SSMA</td><td style="text-align:right"><strong>${nOcor}</strong></td></tr>
-      <tr><td>Paralisações</td><td style="text-align:right"><strong>${nParal}</strong></td></tr>
-      <tr><td>Precipitação</td><td style="text-align:right"><strong>${mmTotal.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mm</strong></td></tr>
-      <tr><td>Fotos</td><td style="text-align:right"><strong>${nFotos}</strong></td></tr>
-    </table>
+
+  h += `<div style="margin-bottom:20px;page-break-inside:avoid">
+    <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:10px;font-weight:800;font-size:12pt">RESUMO GERAL</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${totEfCard}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Efetivo</div></div>
+      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${nAtiv}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Atividades</div></div>
+      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${nEquip}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Equip.</div></div>
+      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${nOcor}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">SSMA</div></div>
+      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${nParal}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Paral.</div></div>
+      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${mmTotal.toFixed(1)}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Precip.</div></div>
+      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${nFotos}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Fotos</div></div>
+    </div>
   </div>`;
 
-  // Condições climáticas — 4 períodos
+  // Condições climáticas + Jornada/DSS (lado a lado)
   const mapCond = { sol: 'Limpo', nublado: 'Nublado', chuva: 'Chuvoso' };
   let linhasClima = '';
   PERIODOS_RDO.forEach(p => {
     const cond = day['tempo' + p.suf];
     const prat = day['prat' + p.suf];
     const mm = mmPeriodo(day, p.suf);
-    if (!cond && !prat && !mm) return; // período sem dado (ex.: Madrugada/Noite não usados mais) não aparece no relatório
-    linhasClima += `<tr>
-      <td>${p.nome} (${p.faixa})</td>
-      <td>${prat === 'praticavel' ? 'Sim' : prat === 'impraticavel' ? 'Não' : '—'}</td>
-      <td>${mapCond[cond] || '—'}</td>
-      <td style="text-align:right">${mm.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mm</td>
-    </tr>`;
+    if (!cond && !prat && !mm) return;
+    linhasClima += `<tr><td>${p.nome}</td><td>${prat === 'praticavel' ? 'Sim' : prat === 'impraticavel' ? 'Não' : '—'}</td><td>${mapCond[cond] || '—'}</td><td style="text-align:right">${mm.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}</td></tr>`;
   });
-  h += `<div class="pdf-sec"><h2>CONDIÇÕES CLIMÁTICAS</h2>
-    <table><tr><th>Período</th><th style="width:16%">Operação</th><th style="width:20%">Condição</th><th style="width:18%">Precipitação</th></tr>
-    ${linhasClima}
-    <tr><th colspan="3">Total acumulado</th><th style="text-align:right">${totalPrecipitacao(day).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mm</th></tr></table></div>`;
 
-  // Jornada + DSS
-  h += `<div class="pdf-sec"><h2>JORNADA · DSS</h2>
-    <table><tr><th>Jornada</th><th>DSS</th></tr>
-      <tr>
-        <td>Café: ${day.cafeInicio || '--'}–${day.cafeFim || '--'} · Almoço: ${day.almocoInicio || '--'}–${day.almocoFim || '--'} · Encerramento: ${day.encerramento || '--'}</td>
-        <td>Horário: ${escHtml(day.dssHorario || '—')} · Ministrante: ${escHtml(day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '—')} · Tema: ${escHtml(day.dssTema || '—')}</td>
-      </tr></table></div>`;
-
-  if (day.localObra || day.descricaoLocal) {
-    h += `<div class="pdf-sec"><h2>LOCAL DOS TRABALHOS</h2>
-      <table><tr><td><strong>${escHtml(day.localObra || '')}</strong>${day.descricaoLocal ? '<br>' + escHtml(day.descricaoLocal) : ''}</td></tr></table></div>`;
-  }
-  h += `</div>`; // fecha pdf-page 1 (capa)
-
-  // ================= PÁGINA 2 — Efetivo, Equipamentos, Atividades =================
-  h += `<div class="pdf-page">${pgHeadMini}`;
+  h += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px">
+    <div style="page-break-inside:avoid">
+      <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">CONDIÇÕES CLIMÁTICAS</div>
+      <table style="width:100%;border-collapse:collapse;font-size:8pt">
+        <tr><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Período</th><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Operação</th><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Condição</th><th style="border:1px solid #ddd;padding:5px;text-align:right;background:#f5f5f5;font-weight:600">Precip.</th></tr>
+        ${linhasClima}
+        <tr><th colspan="3" style="border:1px solid #ddd;padding:5px;text-align:left">Total</th><th style="border:1px solid #ddd;padding:5px;text-align:right">${totalPrecipitacao(day).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}</th></tr>
+      </table>
+    </div>
+    <div style="page-break-inside:avoid">
+      <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">JORNADA & DSS</div>
+      <div style="font-size:8pt;line-height:1.6;background:#f5f5f5;padding:10px;border-radius:3px">
+        <div><strong>Jornada:</strong></div>
+        <div style="margin-left:10px">Café: ${day.cafeInicio || '--'}–${day.cafeFim || '--'}</div>
+        <div style="margin-left:10px">Almoço: ${day.almocoInicio || '--'}–${day.almocoFim || '--'}</div>
+        <div style="margin-left:10px">Encerramento: ${day.encerramento || '--'}</div>
+        <div style="margin-top:8px"><strong>DSS:</strong></div>
+        <div style="margin-left:10px">Horário: ${escHtml(day.dssHorario || '—')}</div>
+        <div style="margin-left:10px">Ministrante: ${escHtml(day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '—')}</div>
+        <div style="margin-left:10px">Tema: ${escHtml(day.dssTema || '—')}</div>
+      </div>
+    </div>
+  </div>`;
 
   // Efetivo
-  // Efetivo — Mão de obra própria (Função | Qtd por categoria) + Subcontratada (Função | Qtd | Empresa)
   const empresaPropria = (state.obra.empresa || 'Empresa própria').trim();
   let totalEf = 0, totProprios = 0, totTerceiros = 0;
-  let htmlProprios = '', linhasTerc = '';
-  const tercMap = {}; // 'funcao|empresa' -> qtd
+  let linhasEfetivo = '';
+  const tercMap = {};
 
   state.colaboradores.categorias.forEach(cat => {
     const presentes = cat.itens.filter(c => day.efetivo[c.id]);
@@ -2923,12 +2962,9 @@ function gerarPdfRDO() {
     if (proprios.length) {
       const porFunc = {};
       proprios.forEach(c => { const f = (c.funcao || 'Sem função').trim(); porFunc[f] = (porFunc[f] || 0) + 1; });
-      let linhas = '';
       Object.keys(porFunc).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(f => {
-        linhas += `<tr><td>${escHtml(f)}</td><td style="text-align:right">${porFunc[f]}</td></tr>`;
+        linhasEfetivo += `<tr><td>${escHtml(f)}</td><td style="text-align:right">${porFunc[f]}</td></tr>`;
       });
-      htmlProprios += `<table style="margin-bottom:6px"><tr><th>${escHtml(cat.nome)} — Função</th><th style="width:14%">Qtd</th></tr>${linhas}
-        <tr><th>Subtotal</th><th style="text-align:right">${proprios.length}</th></tr></table>`;
     }
     terceiros.forEach(c => {
       const k = `${(c.funcao || 'Sem função').trim()}|${(c.empresa || '').trim()}`;
@@ -2938,70 +2974,83 @@ function gerarPdfRDO() {
 
   Object.keys(tercMap).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(k => {
     const [f, emp] = k.split('|');
-    linhasTerc += `<tr><td>${escHtml(f)}</td><td style="text-align:right">${tercMap[k]}</td><td>${escHtml(emp)}</td></tr>`;
+    linhasEfetivo += `<tr><td>${escHtml(f)}</td><td style="text-align:right">${tercMap[k]}</td><td>${escHtml(emp)}</td></tr>`;
   });
 
-  h += `<div class="pdf-sec"><h2>EFETIVO — TOTAL: ${totalEf}${totTerceiros > 0 ? ` (Próprios: ${totProprios} · Terceiros: ${totTerceiros})` : ''}</h2>`;
-  if (htmlProprios) {
-    h += `<div style="font-weight:700;font-size:11px;margin:4px 0">Mão de obra própria — ${escHtml(empresaPropria)}</div>${htmlProprios}`;
-  }
-  if (linhasTerc) {
-    h += `<div style="font-weight:700;font-size:11px;margin:8px 0 4px">Mão de obra subcontratada — Terceiros</div>
-      <table><tr><th>Função</th><th style="width:14%">Qtd</th><th style="width:42%">Empresa</th></tr>${linhasTerc}
-      <tr><th colspan="2">Total terceiros</th><th style="text-align:right">${totTerceiros}</th></tr></table>`;
-  }
-  if (!htmlProprios && !linhasTerc) h += `<table><tr><td>—</td></tr></table>`;
-  h += `</div>`;
+  h += `<div style="margin-bottom:20px;page-break-inside:avoid">
+    <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">EFETIVO — TOTAL: ${totalEf}</div>
+    <table style="width:100%;border-collapse:collapse;font-size:8pt">
+      <tr><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Função</th><th style="border:1px solid #ddd;padding:5px;text-align:right;background:#f5f5f5;font-weight:600;width:15%">Qtd</th><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Empresa</th></tr>
+      ${linhasEfetivo || '<tr><td colspan="3" style="border:1px solid #ddd;padding:5px;text-align:center">—</td></tr>'}
+    </table>
+  </div>`;
 
-  // Equipamentos / VL / Parados
+  // Em Operação + Parados (lado a lado)
   const savedEquip = S.get(`equipDia_${day.data}`) || {};
   const savedVL = S.get(`vlDia_${day.data}`) || {};
   const equipsAtivos = state.equipamentos.filter(e => savedEquip[e.id]);
   const vlAtivos = (state.veiculosFrota || []).filter(v => savedVL[v.id]);
-  if (equipsAtivos.length || vlAtivos.length) {
-    let linhas = '';
-    const grupos = {};
-    equipsAtivos.forEach(e => { const k = e.desc.trim(); grupos[k] = (grupos[k] || 0) + 1; });
-    Object.keys(grupos).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(k => {
-      linhas += `<tr><td>Equipamento</td><td>${escHtml(k)}</td><td style="text-align:right">${grupos[k]}</td></tr>`;
-    });
-    const gruposVL = {};
-    vlAtivos.forEach(v => { const k = v.desc.trim(); gruposVL[k] = (gruposVL[k] || 0) + 1; });
-    Object.keys(gruposVL).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(k => {
-      linhas += `<tr><td>Veículo leve</td><td>${escHtml(k)}</td><td style="text-align:right">${gruposVL[k]}</td></tr>`;
-    });
-    h += `<div class="pdf-sec"><h2>EQUIPAMENTOS E VEÍCULOS EM OPERAÇÃO — ${equipsAtivos.length + vlAtivos.length}</h2>
-      <table><tr><th style="width:20%">Tipo</th><th>Descrição</th><th style="width:10%">Qtd</th></tr>${linhas}</table></div>`;
-
-    let linhasHor = '';
-    equipsAtivos.forEach(e => {
-      const hEq = (day.horimetros || {})[e.id];
-      if (!hEq || (!hEq.ini && !hEq.fim)) return;
-      const tot = horimetroTotal(hEq);
-      linhasHor += `<tr><td>${escHtml((e.numero ? e.numero + ' – ' : '') + e.desc)}</td><td style="text-align:right">${escHtml(hEq.ini || '—')}</td><td style="text-align:right">${escHtml(hEq.fim || '—')}</td><td style="text-align:right"><strong>${tot !== null ? tot.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) : '—'}</strong></td></tr>`;
-    });
-    if (linhasHor) {
-      h += `<div class="pdf-sec"><h2>HORÍMETROS</h2>
-        <table><tr><th>Equipamento</th><th style="width:14%">Inicial</th><th style="width:14%">Final</th><th style="width:14%">Total (h)</th></tr>${linhasHor}</table></div>`;
-    }
-  }
-
   const paradosDay = day.veiculosParados || {};
   const equipsParados = state.equipamentos.filter(e => !savedEquip[e.id]);
   const vlParados = (state.veiculosFrota || []).filter(v => !savedVL[v.id]);
-  if (equipsParados.length || vlParados.length) {
-    let linhas = '';
-    equipsParados.forEach(e => {
-      linhas += `<tr><td>${escHtml((e.numero ? e.numero + ' – ' : '') + e.desc)}</td><td>${escHtml(paradosDay[e.id] || 'Sem justificativa')}</td></tr>`;
-    });
-    vlParados.forEach(v => {
-      linhas += `<tr><td>${escHtml(v.desc + (v.placa ? ' (' + v.placa + ')' : ''))}</td><td>${escHtml(paradosDay[v.id] || 'Sem justificativa')}</td></tr>`;
-    });
-    h += `<div class="pdf-sec"><h2>VEÍCULOS / EQUIPAMENTOS PARADOS — ${equipsParados.length + vlParados.length}</h2>
-      <table><tr><th style="width:45%">Item</th><th>Justificativa</th></tr>${linhas}</table></div>`;
+
+  if (equipsAtivos.length || vlAtivos.length || equipsParados.length || vlParados.length) {
+    let linhasOp = '', linhasParados = '';
+
+    if (equipsAtivos.length || vlAtivos.length) {
+      const grupos = {};
+      equipsAtivos.forEach(e => { const k = e.desc.trim(); grupos[k] = (grupos[k] || 0) + 1; });
+      Object.keys(grupos).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(k => {
+        linhasOp += `<tr><td>Equip</td><td>${escHtml(k)}</td><td style="text-align:right">${grupos[k]}</td></tr>`;
+      });
+      const gruposVL = {};
+      vlAtivos.forEach(v => { const k = v.desc.trim(); gruposVL[k] = (gruposVL[k] || 0) + 1; });
+      Object.keys(gruposVL).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(k => {
+        linhasOp += `<tr><td>Veíc</td><td>${escHtml(k)}</td><td style="text-align:right">${gruposVL[k]}</td></tr>`;
+      });
+    }
+
+    if (equipsParados.length || vlParados.length) {
+      equipsParados.forEach(e => {
+        linhasParados += `<tr><td>${escHtml((e.numero ? e.numero + ' – ' : '') + e.desc)}</td><td>${escHtml(paradosDay[e.id] || 'Sem just.')}</td></tr>`;
+      });
+      vlParados.forEach(v => {
+        linhasParados += `<tr><td>${escHtml(v.desc + (v.placa ? ' (' + v.placa + ')' : ''))}</td><td>${escHtml(paradosDay[v.id] || 'Sem just.')}</td></tr>`;
+      });
+    }
+
+    h += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px">`;
+
+    if (linhasOp) {
+      h += `<div style="page-break-inside:avoid">
+        <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">EM OPERAÇÃO — ${equipsAtivos.length + vlAtivos.length}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:8pt">
+          <tr><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600;width:18%">Tipo</th><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Descrição</th><th style="border:1px solid #ddd;padding:5px;text-align:right;background:#f5f5f5;font-weight:600;width:12%">Qtd</th></tr>
+          ${linhasOp}
+        </table>
+      </div>`;
+    }
+
+    if (linhasParados) {
+      h += `<div style="page-break-inside:avoid">
+        <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">PARADOS — ${equipsParados.length + vlParados.length}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:8pt">
+          <tr><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Item</th><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Justificativa</th></tr>
+          ${linhasParados}
+        </table>
+      </div>`;
+    }
+
+    h += `</div>`;
   }
 
-  // Atividades (na sequência dos veículos/equipamentos)
+  h += `</div>`; // fecha pdf-page 1
+
+  // ================= PÁGINA 2 — ATIVIDADES + OBSERVAÇÕES =================
+  h += `<div class="pdf-page" style="padding:20px;box-sizing:border-box">`;
+  h += pgHead;
+
+  // Atividades
   const ativsMarc = state.atividades.filter(a => day.atividadesMarcadas[a.id]);
   const statusAtiv = id => ((day.atividadesStatus || {})[id] === 'concluida') ? 'Concluída' : 'Em andamento';
   const fotosDaAtiv = id => (day.fotos || []).filter(f => f.ativId === id).length;
@@ -3011,79 +3060,39 @@ function gerarPdfRDO() {
     numA++;
     const q = qtdAtividadeDia(day, a.id);
     const nFa = fotosDaAtiv(a.id);
-    linhasAtiv += `<tr><td style="text-align:center">${String(numA).padStart(2, '0')}</td><td>${escHtml(a.desc)}${q > 0 ? ` — <strong>${q.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ${escHtml(a.unidade || '')}</strong>` : ''}</td><td>${escHtml(a.local || (day.atividadesMarcadas[a.id] && day.atividadesMarcadas[a.id].local) || '')}</td><td>${statusAtiv(a.id)}</td><td style="text-align:center">${nFa ? nFa + ' arq.' : '—'}</td></tr>`;
+    const badgeStatus = statusAtiv(a.id) === 'Concluída' ? '<span style="background:#D4EDDA;color:#155724;padding:2px 6px;border-radius:3px;font-size:7pt;font-weight:600">Concluída</span>' : '';
+    linhasAtiv += `<tr><td style="text-align:center;width:8%">${String(numA).padStart(2, '0')}</td><td>${escHtml(a.desc)}${q > 0 ? ` — <strong>${q.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ${escHtml(a.unidade || '')}</strong>` : ''}</td><td style="width:18%">${escHtml(a.local || '')}</td><td style="width:15%;text-align:center">${badgeStatus}</td><td style="width:8%;text-align:center">${nFa ? nFa + ' arq.' : '—'}</td></tr>`;
   });
   (day.atividadesAvulsas || []).forEach(a => {
     numA++;
-    linhasAtiv += `<tr><td style="text-align:center">${String(numA).padStart(2, '0')}</td><td>${escHtml(a.desc)}</td><td>${escHtml(a.local || '')}</td><td>Em andamento</td><td style="text-align:center">—</td></tr>`;
+    linhasAtiv += `<tr><td style="text-align:center;width:8%">${String(numA).padStart(2, '0')}</td><td>${escHtml(a.desc)}</td><td style="width:18%">${escHtml(a.local || '')}</td><td style="width:15%;text-align:center"></td><td style="width:8%;text-align:center">—</td></tr>`;
   });
-  if (day.atividadesExtra) {
-    day.atividadesExtra.split('\n').filter(x => x.trim()).forEach(l => {
-      numA++;
-      linhasAtiv += `<tr><td style="text-align:center">${String(numA).padStart(2, '0')}</td><td colspan="4">${escHtml(l)}</td></tr>`;
-    });
-  }
+
   if (linhasAtiv) {
-    h += `<div class="pdf-sec"><h2>ATIVIDADES</h2>
-      <table><tr><th style="width:6%">#</th><th>Descrição</th><th style="width:20%">Local</th><th style="width:15%">Status</th><th style="width:10%">Anexos</th></tr>${linhasAtiv}</table></div>`;
+    h += `<div style="margin-bottom:20px;page-break-inside:avoid">
+      <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">ATIVIDADES DO DIA</div>
+      <table style="width:100%;border-collapse:collapse;font-size:8pt">
+        <tr><th style="border:1px solid #ddd;padding:5px;text-align:center;background:#f5f5f5;font-weight:600;width:8%">#</th><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Descrição</th><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600;width:18%">Local</th><th style="border:1px solid #ddd;padding:5px;text-align:center;background:#f5f5f5;font-weight:600;width:15%">Status</th><th style="border:1px solid #ddd;padding:5px;text-align:center;background:#f5f5f5;font-weight:600;width:8%">Anexos</th></tr>
+        ${linhasAtiv}
+      </table>
+    </div>`;
   }
-
-  // Atividades Paralisadas
-  if ((day.atividadesParalisadas || []).length) {
-    let linhasPar = '';
-    day.atividadesParalisadas.forEach(p => {
-      linhasPar += `<tr><td>${escHtml(p.desc)}</td><td>${escHtml(p.just || 'Sem justificativa')}</td></tr>`;
-    });
-    h += `<div class="pdf-sec"><h2>ATIVIDADES PARALISADAS — ${day.atividadesParalisadas.length}</h2>
-      <table><tr><th style="width:45%">Atividade</th><th>Justificativa</th></tr>${linhasPar}</table></div>`;
-  }
-  h += `</div>`; // fecha pdf-page 2
-
-  // ================= PÁGINA 3 — Observações, Eventos =================
-  h += `<div class="pdf-page">${pgHeadMini}`;
 
   // Observações
   if (day.observacoesDia && day.observacoesDia.trim()) {
-    h += `<div class="pdf-sec"><h2>OBSERVAÇÕES DO DIA</h2>
-      <table><tr><td style="white-space:pre-wrap">${escHtml(day.observacoesDia.trim())}</td></tr></table></div>`;
+    h += `<div style="margin-bottom:20px;page-break-inside:avoid">
+      <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">OBSERVAÇÕES DO DIA</div>
+      <div style="background:#f9f9f9;padding:10px;border-radius:3px;font-size:8pt;line-height:1.5;white-space:pre-wrap;max-height:150px;overflow:hidden">${escHtml(day.observacoesDia.trim())}</div>
+    </div>`;
   }
 
-  // Eventos
-  const eventos = (tipo, lista) => {
-    if (!lista || !lista.length) return '';
-    let linhas = '';
-    lista.forEach((ev, i) => {
-      linhas += `<tr><td style="width:5%">${i + 1}</td><td style="width:25%">${escHtml(ev.tipo)} (${escHtml(ev.gravidade)})</td><td>${escHtml(ev.desc || '')}${ev.acao ? '<br><em>Ação: ' + escHtml(ev.acao) + '</em>' : ''}</td></tr>`;
-    });
-    return `<div class="pdf-sec"><h2>${tipo} — ${lista.length}</h2><table>${linhas}</table></div>`;
-  };
-  h += eventos('EVENTOS DE SEGURANÇA', day.eventosSeguranca);
-  h += eventos('EVENTOS DE MEIO AMBIENTE', day.eventosAmbiente);
-  h += `</div>`; // fecha pdf-page 3
+  h += `</div>`; // fecha pdf-page 2
 
-  // ================= PÁGINA(S) 4+ — Registro Fotográfico =================
-  // Uma foto do dia é suportada até 20 por RDO; a cada múltiplo de 6, inicia nova página.
-  if ((day.fotos || []).length) {
-    const figHtml = f => {
-      const ativ = ativsMarc.find(a => a.id === f.ativId);
-      const legenda = f.legenda ? f.legenda : (ativ ? ativ.desc : '');
-      return `<figure>
-        <img src="https://drive.google.com/thumbnail?id=${f.fileId}&sz=w800" onerror="this.parentElement.style.display='none'">
-        <figcaption>${legenda ? escHtml(legenda) : '&nbsp;'}</figcaption>
-      </figure>`;
-    };
-    const FOTOS_POR_PAGINA = 6;
-    for (let i = 0; i < day.fotos.length; i += FOTOS_POR_PAGINA) {
-      const lote = day.fotos.slice(i, i + FOTOS_POR_PAGINA);
-      const primeiraPagina = i === 0;
-          h += `<div class="pdf-page">${pgHeadMini}
-        <div class="pdf-sec"><h2>REGISTRO FOTOGRÁFICO${primeiraPagina ? ` — ${day.fotos.length}` : ' (continuação)'}</h2>
-        <div class="pdf-fotos">${lote.map(figHtml).join('')}</div></div>
-      </div>`;
-    }
-  }
+  // ================= PÁGINA 3 — RESUMO + FOTOS + ASSINATURAS =================
+  h += `<div class="pdf-page" style="padding:20px;box-sizing:border-box">`;
+  h += pgHead;
 
-  // ================= PÁGINA FINAL — RESUMO DA SEMANA E DO MÊS =================
+  // Resumo Semana + Mês
   const fmtISOlocalPdf = d => {
     const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${dd}`;
@@ -3106,41 +3115,61 @@ function gerarPdfRDO() {
     const ativsComDado = state.atividades.filter(a => r.acum[a.id]);
     let linhasServ = '';
     if (ativsComDado.length === 0) {
-      linhasServ = `<tr><td colspan="2">Nenhum serviço com quantidade registrada no período.</td></tr>`;
+      linhasServ = `<tr><td colspan="2" style="border:1px solid #ddd;padding:5px;text-align:center">—</td></tr>`;
     } else {
       ativsComDado.forEach(a => {
         const unid = a.unidade ? ' ' + a.unidade : '';
-        linhasServ += `<tr><td>${escHtml(a.desc)}</td><td style="text-align:right"><strong>${r.acum[a.id].toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${unid}</strong></td></tr>`;
+        linhasServ += `<tr><td style="border:1px solid #ddd;padding:5px">${escHtml(a.desc)}</td><td style="border:1px solid #ddd;padding:5px;text-align:right"><strong>${r.acum[a.id].toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${unid}</strong></td></tr>`;
       });
     }
     const mediaEf = r.diasComEfetivo > 0 ? Math.round(r.somaEfetivo / r.diasComEfetivo) : 0;
-    return `<div class="pdf-sec"><h2>${titulo} — ${periodoLabel}</h2>
-      <table><tr><th>Dias com registro</th><th>Efetivo médio/dia</th></tr>
-      <tr><td style="text-align:center">${r.dias.length}</td><td style="text-align:center">${mediaEf || '—'}</td></tr></table>
-      <table style="margin-top:6px"><tr><th>Serviço</th><th style="width:30%">Total no período</th></tr>${linhasServ}</table>
+    return `<div style="margin-bottom:16px;page-break-inside:avoid">
+      <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">${titulo}</div>
+      <div style="font-size:8pt;margin-bottom:8px"><strong>Período:</strong> ${periodoLabel} | <strong>Dias com registro:</strong> ${r.dias.length} | <strong>Efetivo médio/dia:</strong> ${mediaEf || '—'}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:8pt">
+        <tr><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Serviço</th><th style="border:1px solid #ddd;padding:5px;text-align:right;background:#f5f5f5;font-weight:600;width:20%">Total</th></tr>
+        ${linhasServ}
+      </table>
     </div>`;
   };
 
-  h += `<div class="pdf-page">${pgHeadMini}`;
   h += blocoResumoPeriodo('RESUMO DA SEMANA', `${formatDateBR(isoIniSem)} a ${formatDateBR(isoFimSem)}`, resumoSemana);
   h += blocoResumoPeriodo('RESUMO DO MÊS', `${mesesPdf[iniMesD.getMonth()]} de ${iniMesD.getFullYear()}`, resumoMes);
 
-  // Assinaturas (toque na caixa para assinar em tela) — ao final do relatório
+  // Fotos (se houver)
+  if ((day.fotos || []).length) {
+    h += `<div style="margin-bottom:16px;page-break-inside:avoid">
+      <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">REGISTRO FOTOGRÁFICO — ${day.fotos.length}</div>
+      <div style="font-size:8pt;color:#666">Fotos disponíveis para consulta.</div>
+    </div>`;
+  }
+
+  // Assinaturas (lado a lado)
   const nomeApont = day.apontador || '';
   const sigs = day.assinaturas || {};
-  const caixaAss = (slot, titulo, subtitulo) => {
-    const img = sigs[slot] ? `<img src="${sigs[slot]}" style="height:56px;display:block;margin:0 auto 2px">` : `<div class="ass-vazia" style="height:56px;display:flex;align-items:flex-end;justify-content:center;color:#999;font-size:10px">Toque para assinar</div>`;
-    return `<div onclick="abrirPadAssinatura('${slot}')" style="cursor:pointer">${img}<div style="border-top:1.5px solid #1a1a1a;padding-top:5px">${escHtml(titulo)}<br><span style="color:#666">${escHtml(subtitulo)}</span></div></div>`;
-  };
-  h += `<div class="pdf-ass" style="margin-top:20px">
-    ${caixaAss('apontador', nomeApont || 'Apontador Responsável', 'Apontador — ' + (state.obra.empresa || ''))}
-    ${caixaAss('fiscal', 'Fiscalização / Cliente', ' ')}
+  const assinImg = (slot) => sigs[slot] ? `<img src="${sigs[slot]}" style="height:50px;display:block;margin:0 auto 4px">` : '';
+
+  h += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:60px">
+    <div style="text-align:center">
+      ${assinImg('apontador')}
+      <div style="border-top:1.5px solid #000;height:40px;margin-bottom:8px"></div>
+      <div style="font-size:9pt;font-weight:600">${escHtml(nomeApont || 'Apontador Responsável')}</div>
+      <div style="font-size:8pt;color:#666">Apontador — ${escHtml(state.obra.empresa || '')}</div>
+    </div>
+    <div style="text-align:center">
+      ${assinImg('fiscal')}
+      <div style="border-top:1.5px solid #000;height:40px;margin-bottom:8px"></div>
+      <div style="font-size:9pt;font-weight:600">Fiscalização / Cliente</div>
+      <div style="font-size:8pt;color:#666">${escHtml(state.obra.cliente || '')}</div>
+    </div>
   </div>`;
-  h += `<div style="margin-top:26px;border-top:1px solid #ccc;padding-top:6px;font-size:9px;color:#777;display:flex;justify-content:space-between">
+
+  h += `<div style="margin-top:40px;border-top:1px solid #ccc;padding-top:8px;font-size:8pt;color:#999;display:flex;justify-content:space-between;text-align:center">
     <span>RDO Nº ${num} · ${escHtml(state.obra.nome || '')}</span>
-    <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
+    <span>Página 3 de 3</span>
   </div>`;
-  h += `</div>`; // fecha pdf-page resumo semana/mês
+
+  h += `</div>`; // fecha pdf-page 3
 
   // Montar overlay
   const overlay = document.createElement('div');
@@ -3158,7 +3187,7 @@ function gerarPdfRDO() {
       ${btnCompartilhar}
       <button style="background:#555;color:#fff" onclick="fecharPdfRDO()">✕ Fechar</button>
     </div>
-    <div class="pdf-doc">${h}</div>`;
+    <div class="pdf-doc" style="max-width:900px;margin:16px auto;font-family:'Barlow',Arial,'Helvetica Neue',sans-serif;font-size:10pt;line-height:1.4;color:#1a1a1a;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.15)">${h}</div>`;
   document.body.appendChild(overlay);
   document.body.classList.add('pdf-printing');
 }
