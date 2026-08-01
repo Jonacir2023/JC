@@ -2822,6 +2822,8 @@ function gerarPdfRDO() {
 
   let h = '';
   const logoSrc = state.obra.logo || LOGO_PADRAO;
+  const dataHoraAgora = new Date().toLocaleString('pt-BR');
+  let paginaNum = 0;
   const pgHeadMini = `<div class="pdf-pg-head">
     <img src="${logoSrc}" alt="logo">
     <div class="htext">
@@ -2831,7 +2833,8 @@ function gerarPdfRDO() {
   </div>`;
 
   // ================= PÁGINA 1 — CAPA =================
-  h += `<div class="pdf-page"><div class="pdf-capa-head">
+  paginaNum++;
+  h += `<div class="pdf-page"><div class="pdf-page-header">RDO — Relatório Diário de Obra</div><div class="pdf-capa-head">
     <img src="${logoSrc}" alt="logo" class="pdf-capa-logo">
     <div class="pdf-capa-htext">
       <div class="pdf-capa-titulo">RELATÓRIO DIÁRIO DE OBRA</div>
@@ -2902,10 +2905,11 @@ function gerarPdfRDO() {
     h += `<div class="pdf-sec"><h2>LOCAL DOS TRABALHOS</h2>
       <table><tr><td><strong>${escHtml(day.localObra || '')}</strong>${day.descricaoLocal ? '<br>' + escHtml(day.descricaoLocal) : ''}</td></tr></table></div>`;
   }
-  h += `</div>`; // fecha pdf-page 1 (capa)
+  h += `<div class="pdf-page-footer"><span>${dataHoraAgora}</span><span class="pdf-page-footer-num">Página 1</span></div></div>`; // fecha pdf-page 1 (capa)
 
   // ================= PÁGINA 2 — Efetivo, Equipamentos, Atividades =================
-  h += `<div class="pdf-page">${pgHeadMini}`;
+  paginaNum++;
+  h += `<div class="pdf-page"><div class="pdf-page-header">RDO — Relatório Diário de Obra</div>${pgHeadMini}`;
 
   // Efetivo
   // Efetivo — Mão de obra própria (Função | Qtd por categoria) + Subcontratada (Função | Qtd | Empresa)
@@ -3040,10 +3044,11 @@ function gerarPdfRDO() {
     h += `<div class="pdf-sec"><h2>ATIVIDADES PARALISADAS — ${day.atividadesParalisadas.length}</h2>
       <table><tr><th style="width:45%">Atividade</th><th>Justificativa</th></tr>${linhasPar}</table></div>`;
   }
-  h += `</div>`; // fecha pdf-page 2
+  h += `<div class="pdf-page-footer"><span>${dataHoraAgora}</span><span class="pdf-page-footer-num">Página 2</span></div></div>`; // fecha pdf-page 2
 
   // ================= PÁGINA 3 — Observações, Eventos =================
-  h += `<div class="pdf-page">${pgHeadMini}`;
+  paginaNum++;
+  h += `<div class="pdf-page"><div class="pdf-page-header">RDO — Relatório Diário de Obra</div>${pgHeadMini}`;
 
   // Observações
   if (day.observacoesDia && day.observacoesDia.trim()) {
@@ -3062,7 +3067,7 @@ function gerarPdfRDO() {
   };
   h += eventos('EVENTOS DE SEGURANÇA', day.eventosSeguranca);
   h += eventos('EVENTOS DE MEIO AMBIENTE', day.eventosAmbiente);
-  h += `</div>`; // fecha pdf-page 3
+  h += `<div class="pdf-page-footer"><span>${dataHoraAgora}</span><span class="pdf-page-footer-num">Página 3</span></div></div>`; // fecha pdf-page 3
 
   // ================= PÁGINA(S) 4+ — Registro Fotográfico =================
   // Uma foto do dia é suportada até 20 por RDO; a cada múltiplo de 6, inicia nova página.
@@ -3079,10 +3084,11 @@ function gerarPdfRDO() {
     for (let i = 0; i < day.fotos.length; i += FOTOS_POR_PAGINA) {
       const lote = day.fotos.slice(i, i + FOTOS_POR_PAGINA);
       const primeiraPagina = i === 0;
-      h += `<div class="pdf-page">${pgHeadMini}
+      paginaNum++;
+      h += `<div class="pdf-page"><div class="pdf-page-header">RDO — Relatório Diário de Obra</div>${pgHeadMini}
         <div class="pdf-sec"><h2>REGISTRO FOTOGRÁFICO${primeiraPagina ? ` — ${day.fotos.length}` : ' (continuação)'}</h2>
         <div class="pdf-fotos">${lote.map(figHtml).join('')}</div></div>
-      </div>`;
+      <div class="pdf-page-footer"><span>${dataHoraAgora}</span><span class="pdf-page-footer-num">Página ${paginaNum}</span></div></div>`;
     }
   }
 
@@ -3124,7 +3130,8 @@ function gerarPdfRDO() {
     </div>`;
   };
 
-  h += `<div class="pdf-page">${pgHeadMini}`;
+  paginaNum++;
+  h += `<div class="pdf-page"><div class="pdf-page-header">RDO — Relatório Diário de Obra</div>${pgHeadMini}`;
   h += blocoResumoPeriodo('RESUMO DA SEMANA', `${formatDateBR(isoIniSem)} a ${formatDateBR(isoFimSem)}`, resumoSemana);
   h += blocoResumoPeriodo('RESUMO DO MÊS', `${mesesPdf[iniMesD.getMonth()]} de ${iniMesD.getFullYear()}`, resumoMes);
 
@@ -3143,7 +3150,7 @@ function gerarPdfRDO() {
     <span>RDO Nº ${num} · ${escHtml(state.obra.nome || '')}</span>
     <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
   </div>`;
-  h += `</div>`; // fecha pdf-page resumo semana/mês
+  h += `<div class="pdf-page-footer"><span>${dataHoraAgora}</span><span class="pdf-page-footer-num">Página ${paginaNum}</span></div></div>`; // fecha pdf-page resumo semana/mês
 
   // Montar overlay
   const overlay = document.createElement('div');
