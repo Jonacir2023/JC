@@ -1081,13 +1081,15 @@
    fazendo a página impressa ter recuo bem maior que o configurado aqui. Com margin:0
    a margem real de 5mm é aplicada via padding de cada .pdf-page (abaixo), o que o
    iOS respeita corretamente. */
-@page { size: A4; margin: 0; }
+@page { size: A4; margin: 15mm 5mm; }
 #pdfOverlay { position: fixed; inset: 0; background: #eeeae3; z-index: 9999; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .pdf-toolbar { position: sticky; top: 0; background: #2c2c2c; padding: 10px 14px; display: flex; gap: 10px; z-index: 2; }
 .pdf-toolbar button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
 .pdf-doc { max-width: 800px; margin: 16px auto; font-family: 'Barlow', Arial, 'Helvetica Neue', sans-serif; font-size: 8pt; line-height: 1.4; color: var(--rdo-ink); background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.15); }
-.pdf-page { page-break-before: always; padding: 5mm; box-sizing: border-box; }
-.pdf-page:first-child { page-break-before: avoid; }
+.pdf-doc { counter-reset: page-counter; }
+.pdf-page { padding: 5mm; box-sizing: border-box; break-inside: avoid; counter-increment: page-counter; position: relative; }
+.pdf-page::before { content: 'RDO — Relatório Diário de Obra'; display: block; font-size: 7pt; color: #999; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 8px; }
+.pdf-page::after { content: 'Página ' counter(page-counter); display: block; font-size: 7pt; color: #999; border-top: 1px solid #ddd; padding-top: 4px; margin-top: 12px; text-align: right; }
 
 /* Capa */
 .pdf-capa-head { display: flex; align-items: flex-end; gap: 14px; border-bottom: 3px solid var(--rdo-navy); padding-bottom: 10px; }
