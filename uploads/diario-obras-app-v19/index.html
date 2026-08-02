@@ -3169,9 +3169,13 @@ function gerarPdfRDO() {
   window.addEventListener('orientationchange', ajustarEscalaPdf);
 }
 
+// Fração da largura disponível ocupada pela folha na visualização. Abaixo de 1
+// para sobrar margem nas laterais e as bordas da página ficarem visíveis.
+const ZOOM_VISUALIZACAO_PDF = 0.8;
+
 // Reduz o documento (largura fixa de A4) para caber na largura da tela,
-// mantendo a proporção de uma página real. Em telas largas não amplia:
-// para em 1:1 e centraliza.
+// mantendo a proporção de uma página real. Em telas largas não amplia além
+// do tamanho real; sempre centraliza.
 function ajustarEscalaPdf() {
   const overlay = document.getElementById('pdfOverlay');
   if (!overlay) return;
@@ -3186,12 +3190,11 @@ function ajustarEscalaPdf() {
   const disponivel = stage.clientWidth;
   if (!larguraDoc || !disponivel) return;
 
-  const escala = Math.min(1, disponivel / larguraDoc);
+  // 80% do que caberia: deixa folga nas laterais para enxergar as bordas da folha
+  const escala = Math.min(1, disponivel / larguraDoc) * ZOOM_VISUALIZACAO_PDF;
   doc.style.transform = `scale(${escala})`;
   stage.style.height = Math.ceil(alturaDoc * escala) + 'px';
-  doc.style.marginLeft = escala === 1
-    ? Math.max(0, (disponivel - larguraDoc) / 2) + 'px'
-    : '0px';
+  doc.style.marginLeft = Math.max(0, (disponivel - larguraDoc * escala) / 2) + 'px';
 }
 
 function fecharPdfRDO() {
