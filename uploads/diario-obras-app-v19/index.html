@@ -1122,7 +1122,8 @@
 .stats-grid { display: table; width: 100%; margin-bottom: 22px; border-collapse: collapse; }
 .stat-row { display: table-row; }
 .stat-box { display: table-cell; width: 50%; padding: 10px 12px; border: 1px solid #dee2e6; text-align: left; vertical-align: middle; }
-.stat-box:nth-child(2n) { text-align: right; font-weight: 800; }
+.stat-box:nth-child(2n) { text-align: center; font-weight: 800; }
+.stat-head .stat-box { background: #f8f9fa; text-align: center; font-weight: 800; color: #495057; font-size: 12pt; text-transform: uppercase; letter-spacing: 0.5px; }
 .stat-num { font-size: 12pt; font-weight: 800; color: #495057; line-height: 1; }
 .stat-label { font-size: 12pt; font-weight: 600; color: #495057; letter-spacing: 0px; }
 
@@ -3067,6 +3068,7 @@ function gerarPdfRDO() {
 
         <div class="section-title">RESUMO GERAL</div>
         <div class="stats-grid">
+            <div class="stat-row stat-head"><div class="stat-box">Descrição</div><div class="stat-box">Quantidade</div></div>
             <div class="stat-row"><div class="stat-box"><div class="stat-label">Efetivo</div></div><div class="stat-box"><div class="stat-num">${totEfCard}</div></div></div>
             <div class="stat-row"><div class="stat-box"><div class="stat-label">Atividades</div></div><div class="stat-box"><div class="stat-num">${nAtiv}</div></div></div>
             <div class="stat-row"><div class="stat-box"><div class="stat-label">Equipamentos</div></div><div class="stat-box"><div class="stat-num">${nEquip}</div></div></div>
