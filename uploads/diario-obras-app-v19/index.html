@@ -1177,8 +1177,16 @@ table.fotos-table td { width: 50%; vertical-align: top; padding-bottom: 12px; }
   #pdfOverlay { position: static !important; overflow: visible !important; }
   .pdf-toolbar { display: none !important; }
   .ass-vazia { visibility: hidden !important; }
-  .pdf-stage { height: auto !important; overflow: visible !important; padding: 0 !important; }
-  .pdf-doc { max-width: none !important; width: auto !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; transform: none !important; }
+  /* O app é um PWA estreito: body tem max-width de 480px. Na impressão isso
+     espremia o relatório a 127mm em vez dos 190mm úteis da folha, quebrando o
+     título em duas linhas e sobrepondo texto nas tabelas. Aqui a folha volta a
+     ter a largura da página. */
+  html, body { max-width: none !important; width: auto !important; margin: 0 !important; padding: 0 !important; }
+  .pdf-stage { height: auto !important; overflow: visible !important; padding: 0 !important; width: auto !important; max-width: none !important; }
+  /* 190mm = 210mm da folha menos os 10mm de margem do @page de cada lado.
+     Mesma largura de conteúdo da visualização, para a impressão sair idêntica.
+     O max-width evita estouro caso o navegador imponha margem maior que 10mm. */
+  .pdf-doc { width: 190mm !important; max-width: 100% !important; margin: 0 auto !important; padding: 0 !important; box-shadow: none !important; transform: none !important; }
 }
 </style>
 </head>
