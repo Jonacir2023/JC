@@ -1077,7 +1077,15 @@
 #pdfOverlay { position: fixed; inset: 0; background: #eeeae3; z-index: 9999; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .pdf-toolbar { position: sticky; top: 0; background: #2c2c2c; padding: 10px 14px; display: flex; gap: 10px; z-index: 2; }
 .pdf-toolbar button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
+/* Palco da visualização: o documento tem largura fixa de A4 (210mm) e é
+   reduzido por transform para caber na largura da tela. Sem isso, em telas
+   estreitas o documento encolhia até a largura do aparelho enquanto as fontes
+   continuavam em 12pt, dando a impressão de zoom altíssimo. */
+.pdf-stage { overflow: hidden; padding: 16px 0; }
 .pdf-doc {
+    width: 210mm;
+    padding: 12mm;
+    transform-origin: top left;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -1162,7 +1170,8 @@ table.fotos-table td { width: 50%; vertical-align: top; padding-bottom: 12px; }
   #pdfOverlay { position: static !important; overflow: visible !important; }
   .pdf-toolbar { display: none !important; }
   .ass-vazia { visibility: hidden !important; }
-  .pdf-doc { max-width: none !important; width: auto !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
+  .pdf-stage { height: auto !important; overflow: visible !important; padding: 0 !important; }
+  .pdf-doc { max-width: none !important; width: auto !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; transform: none !important; }
 }
 </style>
 </head>
@@ -3152,15 +3161,45 @@ function gerarPdfRDO() {
       ${btnCompartilhar}
       <button style="background:#555;color:#fff" onclick="fecharPdfRDO()">✕ Fechar</button>
     </div>
-    <div class="pdf-doc" style="max-width:900px;margin:16px auto;font-family:'Barlow',Arial,'Helvetica Neue',sans-serif;font-size:10pt;line-height:1.4;color:#1a1a1a;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.15)">${h}</div>`;
+    <div class="pdf-stage"><div class="pdf-doc" style="font-family:'Barlow',Arial,'Helvetica Neue',sans-serif;font-size:10pt;line-height:1.4;color:#1a1a1a;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.15)">${h}</div></div>`;
   document.body.appendChild(overlay);
   document.body.classList.add('pdf-printing');
+  ajustarEscalaPdf();
+  window.addEventListener('resize', ajustarEscalaPdf);
+  window.addEventListener('orientationchange', ajustarEscalaPdf);
+}
+
+// Reduz o documento (largura fixa de A4) para caber na largura da tela,
+// mantendo a proporção de uma página real. Em telas largas não amplia:
+// para em 1:1 e centraliza.
+function ajustarEscalaPdf() {
+  const overlay = document.getElementById('pdfOverlay');
+  if (!overlay) return;
+  const stage = overlay.querySelector('.pdf-stage');
+  const doc = overlay.querySelector('.pdf-doc');
+  if (!stage || !doc) return;
+
+  doc.style.transform = 'none';
+  doc.style.marginLeft = '0px';
+  const larguraDoc = doc.offsetWidth;
+  const alturaDoc = doc.offsetHeight;
+  const disponivel = stage.clientWidth;
+  if (!larguraDoc || !disponivel) return;
+
+  const escala = Math.min(1, disponivel / larguraDoc);
+  doc.style.transform = `scale(${escala})`;
+  stage.style.height = Math.ceil(alturaDoc * escala) + 'px';
+  doc.style.marginLeft = escala === 1
+    ? Math.max(0, (disponivel - larguraDoc) / 2) + 'px'
+    : '0px';
 }
 
 function fecharPdfRDO() {
   const el = document.getElementById('pdfOverlay');
   if (el) el.remove();
   document.body.classList.remove('pdf-printing');
+  window.removeEventListener('resize', ajustarEscalaPdf);
+  window.removeEventListener('orientationchange', ajustarEscalaPdf);
 }
 
 // Carrega um script externo uma única vez (usado para as libs de geração de PDF sob demanda)
@@ -3207,6 +3246,16 @@ async function compartilharPdfRDO() {
 
   const btn = document.getElementById('btnCompartilharPdf');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Gerando...'; }
+
+  // A visualização fica reduzida por transform para caber na tela; o
+  // html2canvas captura errado sob um ancestral escalado, então voltamos o
+  // documento ao tamanho real (A4) durante a captura e restauramos depois.
+  const docEl = overlay.querySelector('.pdf-doc');
+  const stageEl = overlay.querySelector('.pdf-stage');
+  const transformAnterior = docEl ? docEl.style.transform : '';
+  const alturaStageAnterior = stageEl ? stageEl.style.height : '';
+  if (docEl) docEl.style.transform = 'none';
+  if (stageEl) stageEl.style.height = 'auto';
 
   try {
     await carregarScriptUmaVez('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
@@ -3288,6 +3337,9 @@ async function compartilharPdfRDO() {
       alert('❌ Erro ao gerar PDF (' + (err.name || '?') + '): ' + (err.message || 'falha desconhecida'));
     }
     if (btn) { btn.disabled = false; btn.textContent = '📤 Compartilhar'; }
+  } finally {
+    if (docEl) docEl.style.transform = transformAnterior;
+    if (stageEl) stageEl.style.height = alturaStageAnterior;
   }
 }
 
