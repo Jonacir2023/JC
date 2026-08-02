@@ -2835,97 +2835,281 @@ function gerarPdfRDO() {
   const num = numeroRDO(day.data);
   const dataBR = formatDateBR(day.data);
 
-  let h = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><style>
-    @page { size: A4; margin: 15mm 15mm; background-color: #ffffff; }
-    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; color: #1c1a18; font-size: 9pt; line-height: 1.4; }
+  let h = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+    /* Configuração da Página para Impressão/PDF */
+    @page {
+        size: A4;
+        margin: 15mm 15mm;
+        background-color: #ffffff;
+    }
+
+    body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #1c1a18;
+        font-size: 9pt;
+        line-height: 1.4;
+    }
+
     *, *::before, *::after { box-sizing: border-box; }
-    .header-table { width: 100%; border-bottom: 3px solid #1a2b4d; padding-bottom: 12px; margin-bottom: 15px; }
-    .header-left { width: 70%; vertical-align: bottom; }
-    .header-right { width: 30%; text-align: right; vertical-align: bottom; }
-    .header h1 { margin: 0 0 2px 0; font-size: 20pt; color: #1a1a1a; font-weight: 800; text-transform: uppercase; }
-    .header .sub { color: #666; font-size: 10pt; font-weight: 600; }
-    .header-right .num { font-size: 22pt; font-weight: 800; color: #2C3E50; line-height: 1; }
-    .header-right .rdo-label { font-size: 9pt; color: #666; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
-    .info-grid { display: table; width: 100%; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; margin-bottom: 20px; }
+
+    /* CABEÇALHO (Uso de table para evitar quebras em conversores PDF) */
+    .header-table {
+        width: 100%;
+        border-bottom: 3px solid #1a2b4d;
+        padding-bottom: 12px;
+        margin-bottom: 15px;
+    }
+    .header-left {
+        width: 70%;
+        vertical-align: bottom;
+    }
+    .header-right {
+        width: 30%;
+        text-align: right;
+        vertical-align: bottom;
+    }
+    .header h1 {
+        margin: 0 0 2px 0;
+        font-size: 20pt;
+        color: #1a1a1a;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .header .sub {
+        color: #666;
+        font-size: 10pt;
+        font-weight: 600;
+    }
+    .header-right .num {
+        font-size: 22pt;
+        font-weight: 800;
+        color: #2C3E50;
+        line-height: 1;
+    }
+    .header-right .rdo-label {
+        font-size: 9pt;
+        color: #666;
+        text-transform: uppercase;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    /* GRID DE INFORMAÇÕES DA OBRA */
+    .info-grid {
+        display: table;
+        width: 100%;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
     .info-row { display: table-row; }
-    .info-col { display: table-cell; width: 25%; padding: 12px 15px; border-right: 1px solid #e9ecef; }
+    .info-col {
+        display: table-cell;
+        width: 25%;
+        padding: 12px 15px;
+        border-right: 1px solid #e9ecef;
+    }
     .info-col:last-child { border-right: none; }
-    .info-label { color: #868e96; text-transform: uppercase; font-weight: 800; font-size: 7.5pt; letter-spacing: 0.5px; margin-bottom: 4px; }
-    .info-val { font-weight: 700; font-size: 10pt; color: #343a40; }
-    .section-title { background: #2C3E50; color: #ffffff; padding: 8px 15px; font-weight: 800; font-size: 10.5pt; letter-spacing: 0.5px; margin-bottom: 12px; border-radius: 2px; page-break-after: avoid; }
-    .stats-grid { display: table; width: 100%; margin-bottom: 22px; text-align: center; }
+    .info-label {
+        color: #868e96;
+        text-transform: uppercase;
+        font-weight: 800;
+        font-size: 7.5pt;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .info-val {
+        font-weight: 700;
+        font-size: 10pt;
+        color: #343a40;
+    }
+
+    /* TÍTULOS DE SEÇÃO */
+    .section-title {
+        background: #2C3E50;
+        color: #ffffff;
+        padding: 8px 15px;
+        font-weight: 800;
+        font-size: 10.5pt;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        border-radius: 2px;
+        page-break-after: avoid;
+    }
+
+    /* NÚMEROS DO RESUMO GERAL */
+    .stats-grid {
+        display: table;
+        width: 100%;
+        margin-bottom: 22px;
+        text-align: center;
+    }
     .stat-row { display: table-row; }
-    .stat-box { display: table-cell; width: 14.28%; padding: 5px; }
-    .stat-num { font-size: 26pt; font-weight: 800; color: #495057; line-height: 1; margin-bottom: 4px; }
-    .stat-label { font-size: 7.5pt; text-transform: uppercase; font-weight: 800; color: #868e96; letter-spacing: 0.5px; }
-    table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 22px; }
-    table.data-table th, table.data-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; vertical-align: middle; }
-    table.data-table th { background: #f8f9fa; font-weight: 800; color: #495057; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
-    table.data-table td { font-size: 9pt; color: #212529; }
-    table.data-table tr:nth-child(even) td { background-color: #fdfdfd; }
-    .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 7.5pt; font-weight: bold; text-transform: uppercase; }
+    .stat-box {
+        display: table-cell;
+        width: 14.28%;
+        padding: 5px;
+    }
+    .stat-num {
+        font-size: 26pt;
+        font-weight: 800;
+        color: #495057;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+    .stat-label {
+        font-size: 7.5pt;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: #868e96;
+        letter-spacing: 0.5px;
+    }
+
+    /* ESTILO PADRÃO DE TABELAS */
+    table.data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 22px;
+    }
+    table.data-table th, table.data-table td {
+        border: 1px solid #dee2e6;
+        padding: 8px 12px;
+        text-align: left;
+        vertical-align: middle;
+    }
+    table.data-table th {
+        background: #f8f9fa;
+        font-weight: 800;
+        color: #495057;
+        font-size: 8.5pt;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    table.data-table td {
+        font-size: 9pt;
+        color: #212529;
+    }
+    table.data-table tr:nth-child(even) td {
+        background-color: #fdfdfd;
+    }
+
+    /* BADGES PARA STATUS */
+    .badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 7.5pt;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
     .badge-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .badge-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-    .split-grid { display: table; width: 100%; margin-bottom: 22px; table-layout: fixed; }
-    .split-col { display: table-cell; width: 50%; padding: 0 10px; }
-    .split-col:first-child { padding-right: 10px; padding-left: 0; }
-    .split-col:last-child { padding-left: 10px; padding-right: 0; }
-    .jornada-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 4px; font-size: 8.5pt; }
+
+    /* LAYOUT LADO A LADO (CLIMA E JORNADA) */
+    .split-grid {
+        display: table;
+        width: 100%;
+        margin-bottom: 22px;
+        table-layout: fixed;
+    }
+    .split-col {
+        display: table-cell;
+        width: 50%;
+    }
+    .split-col:first-child { padding-right: 10px; }
+    .split-col:last-child { padding-left: 10px; }
+
+    .jornada-box {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        padding: 12px;
+        border-radius: 4px;
+        font-size: 8.5pt;
+    }
     .jornada-box strong { color: #343a40; display: block; margin-bottom: 4px; }
     .jornada-box div { margin-bottom: 2px; color: #495057; }
-    .signature-grid { display: table; width: 100%; margin-top: 50px; text-align: center; page-break-inside: avoid; }
+
+    /* ASSINATURAS */
+    .signature-grid {
+        display: table;
+        width: 100%;
+        margin-top: 50px;
+        text-align: center;
+        page-break-inside: avoid;
+    }
     .sig-row { display: table-row; }
-    .sig-box { display: table-cell; width: 50%; padding: 0 30px; }
-    .sig-line { border-top: 1px solid #212529; margin-bottom: 8px; margin-top: 50px; }
-    .footer { margin-top: 30px; text-align: center; font-size: 8pt; color: #adb5bd; border-top: 1px solid #e9ecef; padding-top: 10px; }
-    .pdf-page { page-break-after: always; padding: 0; margin: 0; }
-    .pdf-page:last-child { page-break-after: avoid; }
-  </style></head><body>`;
+    .sig-box {
+        display: table-cell;
+        width: 50%;
+        padding: 0 30px;
+    }
+    .sig-line {
+        border-top: 1px solid #212529;
+        margin-bottom: 8px;
+        margin-top: 50px;
+    }
 
-  const logoSrc = state.obra.logo || LOGO_PADRAO;
+    /* RODAPÉ */
+    .footer {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 8pt;
+        color: #adb5bd;
+        border-top: 1px solid #e9ecef;
+        padding-top: 10px;
+    }
+</style>
+</head>
+<body>
+    <!-- CABEÇALHO -->
+    <table class="header-table">
+        <tr>
+            <td class="header-left">
+                <div class="header">
+                    <h1>Relatório Diário de Obra</h1>
+                    <div class="sub">${escHtml(state.obra.empresa || '')}</div>
+                </div>
+            </td>
+            <td class="header-right">
+                <div class="num">${num}</div>
+                <div class="rdo-label">RDO</div>
+            </td>
+        </tr>
+    </table>
 
-  // ================= PÁGINA 1 =================
-  h += `<div class="pdf-page">`;
-
-  // CABEÇALHO com table
-  h += `<table class="header-table" style="border-collapse:collapse">
-    <tr>
-      <td class="header-left" style="width:70%;vertical-align:bottom">
-        <div class="header">
-          <h1>Relatório Diário de Obra</h1>
-          <div class="sub">${escHtml(state.obra.empresa || '')}</div>
+    <!-- GRID DE INFORMAÇÕES GERAIS -->
+    <div class="info-grid">
+        <div class="info-row">
+            <div class="info-col">
+                <div class="info-label">Cliente</div>
+                <div class="info-val">${escHtml(state.obra.cliente || '—')}</div>
+            </div>
+            <div class="info-col">
+                <div class="info-label">Contrato</div>
+                <div class="info-val">${escHtml(state.obra.contrato || '—')}</div>
+            </div>
+            <div class="info-col">
+                <div class="info-label">Local / Frente</div>
+                <div class="info-val">${escHtml(state.obra.local || '—')}</div>
+            </div>
+            <div class="info-col">
+                <div class="info-label">Data</div>
+                <div class="info-val">${dataBR}</div>
+            </div>
         </div>
-      </td>
-      <td class="header-right" style="width:30%;text-align:right;vertical-align:bottom">
-        <div class="num">${num}</div>
-        <div class="rdo-label">RDO</div>
-      </td>
-    </tr>
-  </table>`;
+    </div>`;
 
-  // GRID DE INFORMAÇÕES (usando display:table)
-  h += `<div class="info-grid">
-    <div class="info-row">
-      <div class="info-col">
-        <div class="info-label">Cliente</div>
-        <div class="info-val">${escHtml(state.obra.cliente || '—')}</div>
-      </div>
-      <div class="info-col">
-        <div class="info-label">Contrato</div>
-        <div class="info-val">${escHtml(state.obra.contrato || '—')}</div>
-      </div>
-      <div class="info-col">
-        <div class="info-label">Local / Frente</div>
-        <div class="info-val">${escHtml(state.obra.local || '—')}</div>
-      </div>
-      <div class="info-col">
-        <div class="info-label">Data</div>
-        <div class="info-val">${dataBR}</div>
-      </div>
-    </div>
-  </div>`;
+    <!-- RESUMO DE NÚMEROS -->
+    <div class="section-title">RESUMO GERAL</div>
+    <div class="stats-grid">`;
 
-  // ================= RESUMO GERAL (7 números grandes) =================
   let totEfCard = 0;
   state.colaboradores.categorias.forEach(cat => { totEfCard += cat.itens.filter(c => day.efetivo[c.id]).length; });
   const savedEquipCard = S.get(`equipDia_${day.data}`) || {};
@@ -2936,22 +3120,23 @@ function gerarPdfRDO() {
   const nFotos = (day.fotos || []).length;
   const mmTotal = totalPrecipitacao(day);
 
-  h += `<div style="margin-bottom:15px;page-break-inside:avoid">
-    <div class="section-title">RESUMO GERAL</div>
-    <div class="stats-grid">
-      <div class="stat-row">
-        <div class="stat-box"><div class="stat-num">${totEfCard}</div><div class="stat-label">Efetivo</div></div>
-        <div class="stat-box"><div class="stat-num">${nAtiv}</div><div class="stat-label">Ativ.</div></div>
-        <div class="stat-box"><div class="stat-num">${nEquip}</div><div class="stat-label">Equip</div></div>
-        <div class="stat-box"><div class="stat-num">${nOcor}</div><div class="stat-label">SSMA</div></div>
-        <div class="stat-box"><div class="stat-num">${nParal}</div><div class="stat-label">Parados</div></div>
-        <div class="stat-box"><div class="stat-num">${mmTotal.toFixed(1)}</div><div class="stat-label">Precip.</div></div>
-        <div class="stat-box"><div class="stat-num">${nFotos}</div><div class="stat-label">Fotos</div></div>
-      </div>
-    </div>
-  </div>`;
+  h += `<div class="stat-row">
+            <div class="stat-box"><div class="stat-num">${totEfCard}</div><div class="stat-label">Efetivo</div></div>
+            <div class="stat-box"><div class="stat-num">${nAtiv}</div><div class="stat-label">Ativ.</div></div>
+            <div class="stat-box"><div class="stat-num">${nEquip}</div><div class="stat-label">Equip</div></div>
+            <div class="stat-box"><div class="stat-num">${nOcor}</div><div class="stat-label">SSMA</div></div>
+            <div class="stat-box"><div class="stat-num">${nParal}</div><div class="stat-label">Parados</div></div>
+            <div class="stat-box"><div class="stat-num">${mmTotal.toFixed(1)}</div><div class="stat-label">Precip.</div></div>
+            <div class="stat-box"><div class="stat-num">${nFotos}</div><div class="stat-label">Fotos</div></div>
+        </div>
+    </div>`;
 
-  // Condições climáticas + Jornada/DSS (lado a lado com table)
+    <!-- CLIMA E JORNADA LADO A LADO -->
+    <div class="split-grid">
+        <div class="split-col">
+            <div class="section-title">CONDIÇÕES CLIMÁTICAS</div>
+            <table class="data-table" style="margin-bottom:0;">`;
+
   const mapCond = { sol: 'Limpo', nublado: 'Nublado', chuva: 'Chuvoso' };
   let linhasClima = '';
   PERIODOS_RDO.forEach(p => {
@@ -2962,29 +3147,26 @@ function gerarPdfRDO() {
     linhasClima += `<tr><td>${p.nome}</td><td>${prat === 'praticavel' ? 'Sim' : prat === 'impraticavel' ? 'Não' : '—'}</td><td>${mapCond[cond] || '—'}</td><td style="text-align:right">${mm.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}</td></tr>`;
   });
 
-  h += `<div class="split-grid" style="margin-bottom:20px">
-    <div class="split-col" style="page-break-inside:avoid">
-      <div class="section-title">CONDIÇÕES CLIMÁTICAS</div>
-      <table class="data-table" style="margin-bottom:0">
-        <tr><th style="width:25%">Período</th><th>Operação</th><th>Condição</th><th style="text-align:right">mm</th></tr>
-        ${linhasClima}
-        <tr><th colspan="3">Total</th><th style="text-align:right">${totalPrecipitacao(day).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}</th></tr>
-      </table>
-    </div>
-    <div class="split-col" style="page-break-inside:avoid">
-      <div class="section-title">JORNADA E DSS</div>
-      <div class="jornada-box">
-        <strong>Jornada de Trabalho:</strong>
-        <div>Café: ${day.cafeInicio || '--'} – ${day.cafeFim || '--'} &nbsp;|&nbsp; Almoço: ${day.almocoInicio || '--'} – ${day.almocoFim || '--'}</div>
-        <div>Encerramento Padrão: ${day.encerramento || '--'}</div>
-        <strong style="margin-top:10px">Diálogo Diário de Segurança (DSS):</strong>
-        <div>Horário: ${escHtml(day.dssHorario || '—')} &nbsp;|&nbsp; Ministrante: ${escHtml(day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '—')}</div>
-        <div>Tema: ${escHtml(day.dssTema || '—')}</div>
-      </div>
-    </div>
-  </div>`;
+  h += `<tr><th style="width: 25%;">Período</th><th>Operação</th><th>Condição</th><th style="text-align:right;">mm</th></tr>
+                ${linhasClima}
+            </table>
+        </div>
+        <div class="split-col">
+            <div class="section-title">JORNADA E DSS</div>
+            <div class="jornada-box">
+                <strong>Jornada de Trabalho:</strong>
+                <div>Café: ${day.cafeInicio || '--'} – ${day.cafeFim || '--'} &nbsp;|&nbsp; Almoço: ${day.almocoInicio || '--'} – ${day.almocoFim || '--'}</div>
+                <div>Encerramento Padrão: ${day.encerramento || '--'}</div>
+                <strong style="margin-top: 10px;">Diálogo Diário de Segurança (DSS):</strong>
+                <div>Horário: ${escHtml(day.dssHorario || '—')} &nbsp;|&nbsp; Ministrante: ${escHtml(day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '—')}</div>
+                <div>Tema: ${escHtml(day.dssTema || '—')}</div>
+            </div>
+        </div>
+    </div>`;
 
-  // Efetivo
+    <!-- EFETIVO -->
+    <div class="section-title">EFETIVO — TOTAL: `;
+
   const empresaPropria = (state.obra.empresa || 'Empresa própria').trim();
   let totalEf = 0, totProprios = 0, totTerceiros = 0;
   let linhasEfetivo = '';
@@ -3003,7 +3185,7 @@ function gerarPdfRDO() {
       const porFunc = {};
       proprios.forEach(c => { const f = (c.funcao || 'Sem função').trim(); porFunc[f] = (porFunc[f] || 0) + 1; });
       Object.keys(porFunc).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(f => {
-        linhasEfetivo += `<tr><td>${escHtml(f)}</td><td>${escHtml(empresaPropria)}</td><td style="text-align:right">${porFunc[f]}</td></tr>`;
+        linhasEfetivo += `<tr><td>${escHtml(f)}</td><td>${escHtml(empresaPropria)}</td><td style="text-align: right;">${porFunc[f]}</td></tr>`;
       });
     }
     terceiros.forEach(c => {
@@ -3014,18 +3196,17 @@ function gerarPdfRDO() {
 
   Object.keys(tercMap).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(k => {
     const [f, emp] = k.split('|');
-    linhasEfetivo += `<tr><td>${escHtml(f)}</td><td>${escHtml(emp)}</td><td style="text-align:right">${tercMap[k]}</td></tr>`;
+    linhasEfetivo += `<tr><td>${escHtml(f)}</td><td>${escHtml(emp)}</td><td style="text-align: right;">${tercMap[k]}</td></tr>`;
   });
 
-  h += `<div style="margin-bottom:15px;page-break-inside:avoid">
-    <div class="section-title">EFETIVO — TOTAL: ${totalEf}</div>
+  h += `${totalEf}</div>
     <table class="data-table">
-      <tr><th>Função</th><th>Empresa</th><th style="width:15%;text-align:right">Qtd</th></tr>
-      ${linhasEfetivo || '<tr><td colspan="3" style="text-align:center">—</td></tr>'}
-    </table>
-  </div>`;
+        <tr><th>Função</th><th>Empresa</th><th style="width: 15%; text-align: right;">Qtd</th></tr>
+        ${linhasEfetivo || '<tr><td colspan="3" style="text-align:center">—</td></tr>'}
+    </table>`;
 
-  // Em Operação + Parados (lado a lado com table)
+    <!-- MÁQUINAS E EQUIPAMENTOS -->`;
+
   const savedEquip = S.get(`equipDia_${day.data}`) || {};
   const savedVL = S.get(`vlDia_${day.data}`) || {};
   const equipsAtivos = state.equipamentos.filter(e => savedEquip[e.id]);
@@ -3041,12 +3222,12 @@ function gerarPdfRDO() {
       const grupos = {};
       equipsAtivos.forEach(e => { const k = e.desc.trim(); grupos[k] = (grupos[k] || 0) + 1; });
       Object.keys(grupos).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(k => {
-        linhasOp += `<tr><td>Equip</td><td>${escHtml(k)}</td><td style="text-align:right">${grupos[k]}</td></tr>`;
+        linhasOp += `<tr><td>Equipamento</td><td>${escHtml(k)}</td><td style="text-align: right;">${grupos[k]} un.</td></tr>`;
       });
       const gruposVL = {};
       vlAtivos.forEach(v => { const k = v.desc.trim(); gruposVL[k] = (gruposVL[k] || 0) + 1; });
       Object.keys(gruposVL).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(k => {
-        linhasOp += `<tr><td>Veíc</td><td>${escHtml(k)}</td><td style="text-align:right">${gruposVL[k]}</td></tr>`;
+        linhasOp += `<tr><td>Veículo</td><td>${escHtml(k)}</td><td style="text-align: right;">${gruposVL[k]} un.</td></tr>`;
       });
     }
 
@@ -3059,24 +3240,24 @@ function gerarPdfRDO() {
       });
     }
 
-    h += `<div class="split-grid" style="margin-bottom:20px">`;
+    h += `<div class="split-grid">`;
 
     if (linhasOp) {
-      h += `<div class="split-col" style="page-break-inside:avoid">
+      h += `<div class="split-col">
         <div class="section-title">EM OPERAÇÃO — ${equipsAtivos.length + vlAtivos.length}</div>
-        <table class="data-table" style="margin-bottom:0">
-          <tr><th style="width:15%;text-align:center">Tipo</th><th>Descrição</th><th style="width:15%;text-align:right">Qtd</th></tr>
-          ${linhasOp}
+        <table class="data-table" style="margin-bottom:0;">
+            <tr><th style="width: 15%;">Tipo</th><th>Descrição</th><th style="width: 25%; text-align: right;">Status</th><th style="width: 15%; text-align: right;">Qtd</th></tr>
+            ${linhasOp}
         </table>
       </div>`;
     }
 
     if (linhasParados) {
-      h += `<div class="split-col" style="page-break-inside:avoid">
+      h += `<div class="split-col">
         <div class="section-title">PARADOS — ${equipsParados.length + vlParados.length}</div>
-        <table class="data-table" style="margin-bottom:0">
-          <tr><th>Item</th><th>Justificativa</th></tr>
-          ${linhasParados}
+        <table class="data-table" style="margin-bottom:0;">
+            <tr><th>Item</th><th>Justificativa</th></tr>
+            ${linhasParados}
         </table>
       </div>`;
     }
@@ -3084,12 +3265,12 @@ function gerarPdfRDO() {
     h += `</div>`;
   }
 
-  h += `</div>`; // fecha pdf-page 1
+  h += `
+</body>
+</html>`;
 
-  // ================= PÁGINA 2 — ATIVIDADES + OBSERVAÇÕES =================
-  h += `<div class="pdf-page">`;
 
-  // Atividades
+
   const ativsMarc = state.atividades.filter(a => day.atividadesMarcadas[a.id]);
   const statusAtiv = id => ((day.atividadesStatus || {})[id] === 'concluida') ? 'Concluída' : 'Em andamento';
   const fotosDaAtiv = id => (day.fotos || []).filter(f => f.ativId === id).length;
@@ -3100,147 +3281,93 @@ function gerarPdfRDO() {
     const q = qtdAtividadeDia(day, a.id);
     const nFa = fotosDaAtiv(a.id);
     const badgeStatus = statusAtiv(a.id) === 'Concluída' ? '<span class="badge badge-success">Concluída</span>' : '<span class="badge badge-warning">Em andamento</span>';
-    linhasAtiv += `<tr><td style="text-align:center;width:5%">${String(numA).padStart(2, '0')}</td><td>${escHtml(a.desc)}${q > 0 ? ` — <strong>${q.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ${escHtml(a.unidade || '')}</strong>` : ''}</td><td style="width:15%">${escHtml(a.local || '')}</td><td style="width:15%;text-align:center">${badgeStatus}</td><td style="width:12%;text-align:center">${nFa ? nFa + ' arq.' : '—'}</td></tr>`;
+    linhasAtiv += `<tr>
+            <td style="text-align: center;">${String(numA).padStart(2, '0')}</td>
+            <td>${escHtml(a.desc)}${q > 0 ? ` — <strong>${q.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ${escHtml(a.unidade || '')}</strong>` : ''}</td>
+            <td style="text-align: center;">${escHtml(a.local || '')}</td>
+            <td style="text-align: center;">${badgeStatus}</td>
+            <td style="text-align: center;">${nFa ? nFa + ' arq.' : '—'}</td>
+        </tr>`;
   });
   (day.atividadesAvulsas || []).forEach(a => {
     numA++;
-    linhasAtiv += `<tr><td style="text-align:center;width:5%">${String(numA).padStart(2, '0')}</td><td>${escHtml(a.desc)}</td><td style="width:15%">${escHtml(a.local || '')}</td><td style="width:15%;text-align:center"></td><td style="width:12%;text-align:center">—</td></tr>`;
+    linhasAtiv += `<tr>
+            <td style="text-align: center;">${String(numA).padStart(2, '0')}</td>
+            <td>${escHtml(a.desc)}</td>
+            <td style="text-align: center;">${escHtml(a.local || '')}</td>
+            <td style="text-align: center;"></td>
+            <td style="text-align: center;">—</td>
+        </tr>`;
   });
 
   if (linhasAtiv) {
-    h += `<div style="margin-bottom:20px;page-break-inside:avoid">
-      <div class="section-title">ATIVIDADES DO DIA</div>
-      <table class="data-table">
-        <tr><th style="width:5%;text-align:center">#</th><th>Descrição</th><th style="width:15%">Local</th><th style="width:15%;text-align:center">Status</th><th style="width:12%;text-align:center">Anexos</th></tr>
+    h += `
+    <!-- ATIVIDADES -->
+    <div class="section-title">ATIVIDADES DO DIA</div>
+    <table class="data-table">
+        <tr><th style="width: 5%; text-align: center;">#</th><th>Descrição</th><th style="width: 15%; text-align: center;">Local</th><th style="width: 15%; text-align: center;">Status</th><th style="width: 12%; text-align: center;">Fotos</th></tr>
         ${linhasAtiv}
-      </table>
-    </div>`;
+    </table>`;
   }
 
-  // Observações
   if (day.observacoesDia && day.observacoesDia.trim()) {
-    h += `<div style="margin-bottom:20px;page-break-inside:avoid">
-      <div class="section-title">OBSERVAÇÕES DO DIA</div>
-      <div style="background:#fdfdfd;padding:12px;border:1px solid #dee2e6;border-radius:4px;font-size:8.5pt;line-height:1.5;white-space:pre-wrap">${escHtml(day.observacoesDia.trim())}</div>
+    h += `
+    <!-- OBSERVAÇÕES -->
+    <div class="section-title" style="page-break-before: auto;">OBSERVAÇÕES DO DIA</div>
+    <div style="background: #fdfdfd; padding: 12px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 9pt; min-height: 60px;">
+        ${escHtml(day.observacoesDia.trim())}
     </div>`;
   }
 
-  h += `</div>`; // fecha pdf-page 2
-
-  // ================= PÁGINA 3 — RESUMO + FOTOS + ASSINATURAS =================
-  h += `<div class="pdf-page">`;
-
-  // Resumo Semana + Mês
-  const fmtISOlocalPdf = d => {
-    const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${dd}`;
-  };
-  const dRefPdf = new Date(day.data + 'T00:00:00');
-  const dowPdf = dRefPdf.getDay();
-  const diffSegPdf = (dowPdf === 0) ? -6 : 1 - dowPdf;
-  const iniSemD = new Date(dRefPdf); iniSemD.setDate(dRefPdf.getDate() + diffSegPdf);
-  const fimSemD = new Date(iniSemD); fimSemD.setDate(iniSemD.getDate() + 5);
-  const isoIniSem = fmtISOlocalPdf(iniSemD), isoFimSem = fmtISOlocalPdf(fimSemD);
-  const iniMesD = new Date(dRefPdf.getFullYear(), dRefPdf.getMonth(), 1);
-  const fimMesD = new Date(dRefPdf.getFullYear(), dRefPdf.getMonth() + 1, 0);
-  const isoIniMes = fmtISOlocalPdf(iniMesD), isoFimMes = fmtISOlocalPdf(fimMesD);
-
-  const resumoSemana = calcResumoPeriodoPDF(isoIniSem, isoFimSem);
-  const resumoMes = calcResumoPeriodoPDF(isoIniMes, isoFimMes);
-  const mesesPdf = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
-  const blocoResumoPeriodo = (titulo, periodoLabel, r) => {
-    const ativsComDado = state.atividades.filter(a => r.acum[a.id]);
-    let linhasServ = '';
-    if (ativsComDado.length === 0) {
-      linhasServ = `<tr><td colspan="2" style="text-align:center">—</td></tr>`;
-    } else {
-      ativsComDado.forEach(a => {
-        const unid = a.unidade ? ' ' + a.unidade : '';
-        linhasServ += `<tr><td>${escHtml(a.desc)}</td><td style="text-align:right"><strong>${r.acum[a.id].toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${unid}</strong></td></tr>`;
-      });
-    }
-    const mediaEf = r.diasComEfetivo > 0 ? Math.round(r.somaEfetivo / r.diasComEfetivo) : 0;
-    return `<div style="margin-bottom:12px;page-break-inside:avoid">
-      <div class="section-title">${titulo}</div>
-      <div class="stats-grid" style="margin-bottom:8px">
-        <div class="stat-row">
-          <div class="stat-box"><div class="stat-num">${r.dias.length}</div><div class="stat-label">Dias com Registro</div></div>
-          <div class="stat-box"><div class="stat-num">${mediaEf || '—'}</div><div class="stat-label">Ef. Médio/dia</div></div>
-        </div>
-      </div>
-      <table class="data-table" style="margin-bottom:0">
-        <tr><th>Serviço</th><th style="width:20%;text-align:right">Total</th></tr>
-        ${linhasServ}
-      </table>
-    </div>`;
-  };
-
-  h += blocoResumoPeriodo('RESUMO DA SEMANA', `${formatDateBR(isoIniSem)} a ${formatDateBR(isoFimSem)}`, resumoSemana);
-  h += blocoResumoPeriodo('RESUMO DO MÊS', `${mesesPdf[iniMesD.getMonth()]} de ${iniMesD.getFullYear()}`, resumoMes);
-
-  // Fotos (se houver)
-  if ((day.fotos || []).length) {
-    h += `<div style="margin-bottom:16px;page-break-inside:avoid">
-      <div class="section-title">REGISTRO FOTOGRÁFICO — ${day.fotos.length}</div>
-      <div style="font-size:8.5pt;color:#666">Fotos disponíveis para consulta.</div>
-    </div>`;
-  }
-
-  // Assinaturas (lado a lado com table)
+  // Assinaturas
   const nomeApont = day.apontador || '';
   const sigs = day.assinaturas || {};
   const assinImg = (slot) => sigs[slot] ? `<img src="${sigs[slot]}" style="height:50px;display:block;margin:0 auto 4px">` : '';
 
-  h += `<table class="signature-grid" style="border-collapse:collapse;margin-top:60px">
-    <tr class="sig-row">
-      <td class="sig-box">
-        ${assinImg('apontador')}
-        <div class="sig-line"></div>
-        <strong style="font-size:9pt">${escHtml(nomeApont || 'Apontador Responsável')}</strong><br>
-        <span style="color:#666;font-size:8.5pt">Apontador</span><br>
-        <span style="color:#868e96;font-size:7.5pt">${escHtml(state.obra.empresa || '')}</span>
-      </td>
-      <td class="sig-box">
-        ${assinImg('fiscal')}
-        <div class="sig-line"></div>
-        <strong style="font-size:9pt">Fiscalização / Cliente</strong><br>
-        <span style="color:#666;font-size:8.5pt">${escHtml(state.obra.cliente || '')}</span>
-      </td>
-    </tr>
-  </table>`;
+  h += `
+    <!-- ASSINATURAS -->
+    <table class="signature-grid">
+        <tr class="sig-row">
+            <td class="sig-box">
+                <div class="sig-line"></div>
+                <strong>${escHtml(nomeApont || 'Apontador Responsável')}</strong><br>
+                <span style="color:#666;font-size:8.5pt;">Eng. Civil e Gerente de Obras</span><br>
+                <span style="color:#868e96;font-size:7.5pt;">Apontador Responsável</span>
+            </td>
+            <td class="sig-box">
+                <div class="sig-line"></div>
+                <strong>Fiscalização / Cliente</strong><br>
+                <span style="color:#666;font-size:8.5pt;">${escHtml(state.obra.cliente || '')}</span>
+            </td>
+        </tr>
+    </table>
 
-  h += `<div class="footer">
-    RDO Nº ${num} · ${escHtml(state.obra.nome || '')} · Gerado pelo App Diário de Obras
-  </div>`;
+    <!-- RODAPÉ -->
+    <div class="footer">
+        RDO Nº ${num} · ${escHtml(state.obra.nome || '')}
+    </div>
+</body>
+</html>`;
 
-  h += `</div>`; // fecha pdf-page 3
-  h += `</body></html>`;
-
-  // Montar overlay com iframe
+  // Montar overlay
   const overlay = document.createElement('div');
   overlay.id = 'pdfOverlay';
   const emModoApp = (navigator.standalone === true);
   const btnImprimir = emModoApp
-    ? `<button style="background:#f5b334;color:#1a1a1a;padding:8px 16px;border:none;border-radius:4px;cursor:pointer;font-weight:600" onclick="abrirRdoNoSafari()">🖨️ Salvar PDF (abre no Safari)</button>`
-    : `<button style="background:#f5b334;color:#1a1a1a;padding:8px 16px;border:none;border-radius:4px;cursor:pointer;font-weight:600" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>`;
+    ? `<button style="background:#f5b334;color:#1a1a1a" onclick="abrirRdoNoSafari()">🖨️ Salvar PDF (abre no Safari)</button>`
+    : `<button style="background:#f5b334;color:#1a1a1a" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>`;
   const btnCompartilhar = (navigator.share)
-    ? `<button id="btnCompartilharPdf" style="background:#25D366;color:#fff;padding:8px 16px;border:none;border-radius:4px;cursor:pointer;font-weight:600" onclick="compartilharPdfRDO()">📤 Compartilhar</button>`
+    ? `<button id="btnCompartilharPdf" style="background:#25D366;color:#fff" onclick="compartilharPdfRDO()">📤 Compartilhar</button>`
     : '';
   overlay.innerHTML = `
-    <div class="pdf-toolbar" style="background:#2C3E50;padding:12px 20px;display:flex;gap:12px;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:1001">
+    <div class="pdf-toolbar">
       ${btnImprimir}
       ${btnCompartilhar}
-      <button style="background:#555;color:#fff;padding:8px 16px;border:none;border-radius:4px;cursor:pointer;font-weight:600;margin-left:auto" onclick="fecharPdfRDO()">✕ Fechar</button>
+      <button style="background:#555;color:#fff" onclick="fecharPdfRDO()">✕ Fechar</button>
     </div>
-    <div id="pdfContainer" style="max-width:900px;margin:16px auto;background:#fff"></div>`;
+    <div class="pdf-doc" style="max-width:900px;margin:16px auto;font-family:'Barlow',Arial,'Helvetica Neue',sans-serif;font-size:10pt;line-height:1.4;color:#1a1a1a;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.15)">${h}</div>`;
   document.body.appendChild(overlay);
   document.body.classList.add('pdf-printing');
-
-  const ifrm = document.createElement('iframe');
-  ifrm.style.cssText = 'width:100%;height:calc(100vh - 80px);border:none;box-shadow:0 4px 24px rgba(0,0,0,.15)';
-  ifrm.srcdoc = h;
-  document.getElementById('pdfContainer').appendChild(ifrm);
 }
 
 function fecharPdfRDO() {
