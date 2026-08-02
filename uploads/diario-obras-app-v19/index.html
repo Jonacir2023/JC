@@ -1093,10 +1093,12 @@
     padding-bottom: 12px;
     margin-bottom: 15px;
 }
-.header-left { width: 70%; vertical-align: bottom; }
+.header-logo-cell { width: 90px; vertical-align: bottom; padding-right: 14px; }
+.header-logo-cell img { height: 38px; max-width: 90px; width: auto; object-fit: contain; display: block; }
+.header-left { vertical-align: bottom; }
 .header-right { width: 30%; text-align: right; vertical-align: bottom; }
-.header h1 { margin: 0 0 2px 0; font-size: 20pt; color: #1a1a1a; font-weight: 800; text-transform: uppercase; }
-.header .sub { color: #666; font-size: 10pt; font-weight: 600; }
+.rdo-head h1 { margin: 0 0 2px 0; font-size: 20pt; color: #1a1a1a; font-weight: 800; text-transform: uppercase; }
+.rdo-head .sub { color: #666; font-size: 10pt; font-weight: 600; }
 .header-right .num { font-size: 22pt; font-weight: 800; color: #2C3E50; line-height: 1; }
 .header-right .rdo-label { font-size: 9pt; color: #666; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
 
@@ -1130,6 +1132,12 @@ table.data-table tr:nth-child(even) td { background-color: #fdfdfd; }
 .split-col { display: table-cell; width: 50%; }
 .split-col:first-child { padding-right: 10px; }
 .split-col:last-child { padding-left: 10px; }
+
+table.fotos-table { width: 100%; border-collapse: separate; border-spacing: 10px 0; table-layout: fixed; margin-bottom: 22px; }
+table.fotos-table td { width: 50%; vertical-align: top; padding-bottom: 12px; }
+.pdf-foto { margin: 0; page-break-inside: avoid; }
+.pdf-foto img { width: 100%; height: 150px; object-fit: cover; border: 1px solid #dee2e6; border-radius: 3px; display: block; }
+.pdf-foto figcaption { font-size: 12pt; color: #495057; margin-top: 4px; line-height: 1.3; }
 
 .jornada-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 4px; font-size: 12pt; margin-bottom: 22px; }
 .jornada-box strong { color: #343a40; display: block; margin-bottom: 6px; font-weight: 800; }
@@ -2940,6 +2948,68 @@ function gerarPdfRDO() {
   }
   if (!linhasOp) linhasOp = '<tr><td colspan="4" style="text-align:center">Nenhum equipamento registrado</td></tr>';
 
+  // Registro fotográfico — grade de imagens (miniaturas do Drive)
+  let blocoFotos = '';
+  if ((day.fotos || []).length) {
+    const descAtiv = id => (state.atividades.find(a => a.id === id) || {}).desc || '';
+    const cels = day.fotos.map((f, i) => {
+      const legenda = f.legenda || descAtiv(f.ativId) || `Foto ${i + 1}`;
+      return `<figure class="pdf-foto">
+          <img src="https://drive.google.com/thumbnail?id=${escHtml(f.fileId)}&sz=w400" alt="Foto ${i + 1}" crossorigin="anonymous">
+          <figcaption>${i + 1}. ${escHtml(legenda)}</figcaption>
+        </figure>`;
+    });
+    // 2 fotos por linha, usando tabela (o html2canvas lida melhor com tabela que com grid)
+    let linhasFotos = '';
+    for (let i = 0; i < cels.length; i += 2) {
+      linhasFotos += `<tr><td>${cels[i]}</td><td>${cels[i + 1] || ''}</td></tr>`;
+    }
+    blocoFotos = `
+        <div class="section-title">REGISTRO FOTOGRÁFICO — ${day.fotos.length}</div>
+        <table class="fotos-table">${linhasFotos}</table>`;
+  }
+
+  // Resumos acumulados da semana e do mês
+  const fmtISOlocalPdf = (d) => {
+    const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  };
+  const dRefPdf = new Date(day.data + 'T00:00:00');
+  const dowPdf = dRefPdf.getDay();
+  const diffSegPdf = (dowPdf === 0) ? -6 : 1 - dowPdf;
+  const iniSemD = new Date(dRefPdf); iniSemD.setDate(dRefPdf.getDate() + diffSegPdf);
+  const fimSemD = new Date(iniSemD); fimSemD.setDate(iniSemD.getDate() + 5);
+  const isoIniSem = fmtISOlocalPdf(iniSemD), isoFimSem = fmtISOlocalPdf(fimSemD);
+  const iniMesD = new Date(dRefPdf.getFullYear(), dRefPdf.getMonth(), 1);
+  const fimMesD = new Date(dRefPdf.getFullYear(), dRefPdf.getMonth() + 1, 0);
+  const isoIniMes = fmtISOlocalPdf(iniMesD), isoFimMes = fmtISOlocalPdf(fimMesD);
+
+  const resumoSemana = calcResumoPeriodoPDF(isoIniSem, isoFimSem);
+  const resumoMes = calcResumoPeriodoPDF(isoIniMes, isoFimMes);
+  const mesesPdf = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+  const blocoResumoPeriodo = (titulo, periodoLabel, r) => {
+    const ativsComDado = state.atividades.filter(a => r.acum[a.id]);
+    let linhasServ = '';
+    ativsComDado.forEach(a => {
+      const unid = a.unidade ? ' ' + a.unidade : '';
+      const total = r.acum[a.id].toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+      linhasServ += `<tr><td>${escHtml(a.desc)}</td><td style="text-align:right"><strong>${total}${escHtml(unid)}</strong></td></tr>`;
+    });
+    if (!linhasServ) linhasServ = '<tr><td colspan="2" style="text-align:center">Nenhum serviço lançado no período</td></tr>';
+    const mediaEf = r.diasComEfetivo > 0 ? Math.round(r.somaEfetivo / r.diasComEfetivo) : 0;
+    return `
+        <div class="section-title">${titulo} — ${escHtml(periodoLabel)}</div>
+        <div class="stats-grid">
+            <div class="stat-row"><div class="stat-box"><div class="stat-label">Dias com registro</div></div><div class="stat-box"><div class="stat-num">${r.dias.length}</div></div></div>
+            <div class="stat-row"><div class="stat-box"><div class="stat-label">Efetivo médio/dia</div></div><div class="stat-box"><div class="stat-num">${mediaEf || '—'}</div></div></div>
+        </div>
+        <table class="data-table">
+            <tr><th>Serviço</th><th style="width: 25%; text-align: right;">Total acumulado</th></tr>
+            ${linhasServ}
+        </table>`;
+  };
+
   // Assinaturas
   const nomeApont = day.apontador || '';
   const sigs = day.assinaturas || {};
@@ -2949,8 +3019,11 @@ function gerarPdfRDO() {
     <div class="pdf-page" style="padding:0;box-sizing:border-box">
         <table class="header-table">
             <tr>
+                <td class="header-logo-cell">
+                    <img src="${state.obra.logo || LOGO_PADRAO}" alt="logo">
+                </td>
                 <td class="header-left">
-                    <div class="header">
+                    <div class="rdo-head">
                         <h1>Relatório Diário de Obra</h1>
                         <div class="sub">${escHtml(state.obra.empresa || '')}</div>
                     </div>
@@ -3033,6 +3106,12 @@ function gerarPdfRDO() {
         <div style="background: #fdfdfd; padding: 12px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 9pt; min-height: 60px;">
             ${escHtml(day.observacoesDia.trim())}
         </div>` : ''}
+
+        ${blocoFotos}
+
+        ${blocoResumoPeriodo('RESUMO DA SEMANA', `${formatDateBR(isoIniSem)} a ${formatDateBR(isoFimSem)}`, resumoSemana)}
+
+        ${blocoResumoPeriodo('RESUMO DO MÊS', `${mesesPdf[iniMesD.getMonth()]} de ${iniMesD.getFullYear()}`, resumoMes)}
 
         <table class="signature-grid">
             <tr class="sig-row">
