@@ -3144,35 +3144,17 @@ async function compartilharPdfRDO() {
     let primeira = true;
     let paginasComFalha = 0;
 
-    // margemMm = 0 aqui de propósito: a margem de 5mm já é o próprio padding CSS de
-    // cada .pdf-page (box-sizing:border-box), então a imagem capturada já vem com a
-    // margem "dentro" — bastando desenhá-la ocupando a folha A4 inteira (0 a 210x297mm),
-    // sem somar um recuo extra por cima (o que duplicaria a margem nesta cópia).
     const pageWmm = 210, pageHmm = 297, margemMm = 0;
-    const areaWmm = pageWmm - margemMm * 2;   // 210mm
-    const areaHmm = pageHmm - margemMm * 2;   // 297mm
+    const areaWmm = pageWmm - margemMm * 2;
+    const areaHmm = pageHmm - margemMm * 2;
 
     for (const pagina of paginas) {
       try {
-        // scale 1.5 (não 2) e JPEG 0.75 (não 0.9): reduz bastante o tamanho final do
-        // arquivo, já que RDOs com várias fotos geram PDFs pesados que o WhatsApp
-        // às vezes falha ao enviar ("Não foi possível enviar a mensagem").
-        // windowWidth/scrollX/scrollY: força o clone interno do html2canvas a usar a
-        // MESMA largura da página real; sem isso, tabelas largas (ex.: Atividades, com
-        // 5 colunas) às vezes recalculam a largura no clone e ficam cortadas na borda.
         const canvas = await html2canvas(pagina, {
           scale: 1.5, useCORS: true, backgroundColor: '#ffffff',
           windowWidth: pagina.scrollWidth, width: pagina.scrollWidth,
           scrollX: 0, scrollY: 0
         });
-        // .pdf-page na tela NÃO tem altura fixa de A4 — cresce conforme o conteúdo
-        // (o corte em folhas só existe de verdade na hora de imprimir). Se cada página
-        // fosse simplesmente espremida para caber em 210x297mm, um RDO com muito
-        // conteúdo (várias atividades/observações longas) saía com o texto minúsculo
-        // e desproporcional — "fora do padrão A4". Em vez disso, a imagem entra com a
-        // largura real da área útil (180mm, respeitando a mesma margem de 1,5cm do PDF
-        // oficial) e, se for mais alta que a página, é fatiada em quantas páginas A4
-        // forem necessárias, cada fatia em tamanho real (1:1), sem espremer nada.
         const pxPerMm = canvas.width / areaWmm;
         const maxFatiaPx = Math.max(1, Math.floor(areaHmm * pxPerMm));
         let y = 0;
@@ -3194,7 +3176,7 @@ async function compartilharPdfRDO() {
           y += alturaFatiaPx;
         }
       } catch (errPagina) {
-        console.error('Falha ao capturar página do PDF (provável foto do Drive sem CORS):', errPagina);
+        console.error('Falha ao capturar página do PDF:', errPagina);
         paginasComFalha++;
         if (!primeira) doc.addPage('a4', 'portrait');
         primeira = false;
@@ -3206,11 +3188,9 @@ async function compartilharPdfRDO() {
     }
 
     const num = numeroRDO(currentDay.data);
-    // "/" não é permitido em nome de arquivo — usa "-" no lugar (RDO 163 30-07-2026.pdf)
     const nomeArquivo = `RDO ${num} ${formatDateBR(currentDay.data).replace(/\//g, '-')}.pdf`;
     const blob = doc.output('blob');
     const file = new File([blob], nomeArquivo, { type: 'application/pdf' });
-    console.log('PDF gerado para compartilhar:', (blob.size / 1024 / 1024).toFixed(1) + ' MB');
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       _pdfParaCompartilhar = { file, num, aviso: paginasComFalha ? ' (fotos não incluídas nesta via)' : '' };
@@ -3238,8 +3218,6 @@ async function compartilharPdfRDO() {
   }
 }
 
-// Handler do segundo toque — chama navigator.share() como primeira instrução,
-// sem nenhum await antes, para não perder a "ativação" recente exigida pelo Safari.
 function enviarPdfPreparado() {
   if (!_pdfParaCompartilhar) return;
   const { file, num, aviso } = _pdfParaCompartilhar;
@@ -3261,7 +3239,6 @@ function enviarPdfPreparado() {
 }
 
 function abrirRdoNoSafari() {
-  // iOS bloqueia window.print() em apps da tela de início; no Safari funciona
   const url = location.origin + location.pathname + '?rdo=' + encodeURIComponent(currentDay.data);
   window.open(url, '_blank');
 }
