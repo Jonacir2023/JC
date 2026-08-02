@@ -5651,6 +5651,50 @@ function buildRelatorio(day) {
     txt += `*📝 Observações do Dia*\n${day.observacoesDia.trim()}\n`;
   }
 
+  // Resumos acumulados — semana, mês e ano do dia do relatório (não de "hoje"),
+  // para que um RDO de data passada traga os acumulados daquele período
+  const fmtISOwa = (d) => {
+    const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  };
+  const dRefWa = new Date(day.data + 'T00:00:00');
+  const dowWa = dRefWa.getDay();
+  const iniSemWa = new Date(dRefWa); iniSemWa.setDate(dRefWa.getDate() + ((dowWa === 0) ? -6 : 1 - dowWa));
+  const fimSemWa = new Date(iniSemWa); fimSemWa.setDate(iniSemWa.getDate() + 5);
+  const iniMesWa = new Date(dRefWa.getFullYear(), dRefWa.getMonth(), 1);
+  const fimMesWa = new Date(dRefWa.getFullYear(), dRefWa.getMonth() + 1, 0);
+  const iniAnoWa = new Date(dRefWa.getFullYear(), 0, 1);
+  const fimAnoWa = new Date(dRefWa.getFullYear(), 11, 31);
+  const mesesWa = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+  const blocoResumoWa = (emoji, titulo, periodoLabel, ini, fim) => {
+    const r = calcResumoPeriodoPDF(fmtISOwa(ini), fmtISOwa(fim));
+    if (!r.dias.length) return '';
+    const mediaEf = r.diasComEfetivo > 0 ? Math.round(r.somaEfetivo / r.diasComEfetivo) : 0;
+    let s = `*${emoji} ${titulo} — ${periodoLabel}*\n`;
+    s += `• Dias com registro: *${r.dias.length}*\n`;
+    s += `• Efetivo médio/dia: *${mediaEf || '—'}*\n`;
+    const ativs = state.atividades.filter(a => r.acum[a.id]);
+    if (ativs.length) {
+      s += `\n_Serviços acumulados_\n`;
+      ativs.forEach(a => {
+        const unid = a.unidade ? ' ' + a.unidade : '';
+        s += `• ${a.desc}: *${r.acum[a.id].toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${unid}*\n`;
+      });
+    }
+    return s;
+  };
+
+  const resumosWa = [
+    blocoResumoWa('📅', 'Resumo da Semana', `${formatDateBR(fmtISOwa(iniSemWa))} a ${formatDateBR(fmtISOwa(fimSemWa))}`, iniSemWa, fimSemWa),
+    blocoResumoWa('🗓️', 'Resumo do Mês', `${mesesWa[iniMesWa.getMonth()]} de ${iniMesWa.getFullYear()}`, iniMesWa, fimMesWa),
+    blocoResumoWa('📈', 'Resumo do Ano', `${iniAnoWa.getFullYear()}`, iniAnoWa, fimAnoWa)
+  ].filter(Boolean);
+
+  if (resumosWa.length) {
+    txt += `\n${divisor}\n\n` + resumosWa.join(`\n${divisor}\n\n`);
+  }
+
   return txt;
 }
 
