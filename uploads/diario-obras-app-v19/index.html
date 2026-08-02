@@ -2838,28 +2838,19 @@ function gerarPdfRDO() {
   let h = '';
   const logoSrc = state.obra.logo || LOGO_PADRAO;
 
-  // Header para todas as páginas internas
-  const pgHead = `<div style="display:flex;align-items:center;gap:10px;border-bottom:2px solid #2C3E50;padding-bottom:8px;margin-bottom:15px">
-    <img src="${logoSrc}" alt="logo" style="height:24px;max-width:100px;width:auto;object-fit:contain;flex-shrink:0">
-    <div style="flex:1">
-      <div style="font-size:11pt;font-weight:800">RDO Nº ${num} · ${escHtml((state.obra.nome || '').toUpperCase())}</div>
-      <div style="font-size:9pt;color:#666">${escHtml(state.obra.local || '')} · ${dataBR}</div>
-    </div>
-  </div>`;
-
   // ================= PÁGINA 1 =================
   h += `<div class="pdf-page" style="padding:20px;box-sizing:border-box">`;
 
   // Logo + Título + RDO
-  h += `<div style="display:flex;align-items:center;gap:15px;margin-bottom:20px">
-    <img src="${logoSrc}" alt="logo" style="height:50px;max-width:120px;width:auto;object-fit:contain">
+  h += `<div style="display:flex;align-items:center;gap:15px;margin-bottom:15px">
+    <img src="${logoSrc}" alt="logo" style="height:35px;max-width:100px;width:auto;object-fit:contain">
     <div style="flex:1">
-      <div style="font-size:22pt;font-weight:800;color:#1a1a1a">RELATÓRIO DIÁRIO DE OBRA</div>
-      <div style="font-size:11pt;color:#666;margin-top:2px">${escHtml(state.obra.empresa || '')}</div>
+      <div style="font-size:18pt;font-weight:700;color:#1a1a1a">Relatório Diário de Obra</div>
+      <div style="font-size:10pt;color:#666;margin-top:1px">${escHtml(state.obra.empresa || '')}</div>
     </div>
-    <div style="text-align:center;border-left:2px solid #ddd;padding-left:15px">
-      <div style="font-size:24pt;font-weight:800;color:#2C3E50">${num}</div>
-      <div style="font-size:9pt;color:#666;text-transform:uppercase;letter-spacing:1px">RDO Nº</div>
+    <div style="text-align:right">
+      <div style="font-size:18pt;font-weight:800;color:#2C3E50">${num}</div>
+      <div style="font-size:8pt;color:#666;text-transform:uppercase;letter-spacing:1px">RDO</div>
     </div>
   </div>`;
 
@@ -2896,16 +2887,16 @@ function gerarPdfRDO() {
   const nFotos = (day.fotos || []).length;
   const mmTotal = totalPrecipitacao(day);
 
-  h += `<div style="margin-bottom:20px;page-break-inside:avoid">
-    <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:10px;font-weight:800;font-size:12pt">RESUMO GERAL</div>
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${totEfCard}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Efetivo</div></div>
-      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${nAtiv}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Atividades</div></div>
-      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${nEquip}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Equip.</div></div>
-      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${nOcor}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">SSMA</div></div>
-      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${nParal}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Paral.</div></div>
-      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${mmTotal.toFixed(1)}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Precip.</div></div>
-      <div style="flex:1;text-align:center"><div style="font-size:48pt;font-weight:800;color:#666;line-height:1">${nFotos}</div><div style="font-size:9pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">Fotos</div></div>
+  h += `<div style="margin-bottom:15px;page-break-inside:avoid">
+    <div style="background:#2C3E50;color:#fff;padding:10px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">RESUMO GERAL</div>
+    <div style="display:flex;justify-content:space-around;align-items:center;gap:6px">
+      <div style="text-align:center"><div style="font-size:28pt;font-weight:800;color:#666;line-height:1">${totEfCard}</div><div style="font-size:8pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin-top:2px">Efetivo</div></div>
+      <div style="text-align:center"><div style="font-size:28pt;font-weight:800;color:#666;line-height:1">${nAtiv}</div><div style="font-size:8pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin-top:2px">Ativ.</div></div>
+      <div style="text-align:center"><div style="font-size:28pt;font-weight:800;color:#666;line-height:1">${nEquip}</div><div style="font-size:8pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin-top:2px">Equip</div></div>
+      <div style="text-align:center"><div style="font-size:28pt;font-weight:800;color:#666;line-height:1">${nOcor}</div><div style="font-size:8pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin-top:2px">SSMA</div></div>
+      <div style="text-align:center"><div style="font-size:28pt;font-weight:800;color:#666;line-height:1">${nParal}</div><div style="font-size:8pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin-top:2px">Par.</div></div>
+      <div style="text-align:center"><div style="font-size:28pt;font-weight:800;color:#666;line-height:1">${mmTotal.toFixed(1)}</div><div style="font-size:8pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin-top:2px">mm</div></div>
+      <div style="text-align:center"><div style="font-size:28pt;font-weight:800;color:#666;line-height:1">${nFotos}</div><div style="font-size:8pt;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin-top:2px">Fotos</div></div>
     </div>
   </div>`;
 
@@ -2963,7 +2954,7 @@ function gerarPdfRDO() {
       const porFunc = {};
       proprios.forEach(c => { const f = (c.funcao || 'Sem função').trim(); porFunc[f] = (porFunc[f] || 0) + 1; });
       Object.keys(porFunc).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(f => {
-        linhasEfetivo += `<tr><td>${escHtml(f)}</td><td style="text-align:right">${porFunc[f]}</td></tr>`;
+        linhasEfetivo += `<tr><td>${escHtml(f)}</td><td>${escHtml(empresaPropria)}</td><td style="text-align:right">${porFunc[f]}</td></tr>`;
       });
     }
     terceiros.forEach(c => {
@@ -2974,14 +2965,14 @@ function gerarPdfRDO() {
 
   Object.keys(tercMap).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(k => {
     const [f, emp] = k.split('|');
-    linhasEfetivo += `<tr><td>${escHtml(f)}</td><td style="text-align:right">${tercMap[k]}</td><td>${escHtml(emp)}</td></tr>`;
+    linhasEfetivo += `<tr><td>${escHtml(f)}</td><td>${escHtml(emp)}</td><td style="text-align:right">${tercMap[k]}</td></tr>`;
   });
 
-  h += `<div style="margin-bottom:20px;page-break-inside:avoid">
-    <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">EFETIVO — TOTAL: ${totalEf}</div>
+  h += `<div style="margin-bottom:15px;page-break-inside:avoid">
+    <div style="background:#2C3E50;color:#fff;padding:10px 15px;margin-bottom:6px;font-weight:800;font-size:10pt">EFETIVO — TOTAL: ${totalEf}</div>
     <table style="width:100%;border-collapse:collapse;font-size:8pt">
-      <tr><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Função</th><th style="border:1px solid #ddd;padding:5px;text-align:right;background:#f5f5f5;font-weight:600;width:15%">Qtd</th><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Empresa</th></tr>
-      ${linhasEfetivo || '<tr><td colspan="3" style="border:1px solid #ddd;padding:5px;text-align:center">—</td></tr>'}
+      <tr><th style="border:1px solid #ddd;padding:4px 6px;text-align:left;background:#f5f5f5;font-weight:600">Função</th><th style="border:1px solid #ddd;padding:4px 6px;text-align:left;background:#f5f5f5;font-weight:600;width:40%">Empresa</th><th style="border:1px solid #ddd;padding:4px 6px;text-align:right;background:#f5f5f5;font-weight:600;width:12%">Qtd</th></tr>
+      ${linhasEfetivo || '<tr><td colspan="3" style="border:1px solid #ddd;padding:4px 6px;text-align:center">—</td></tr>'}
     </table>
   </div>`;
 
@@ -3048,7 +3039,6 @@ function gerarPdfRDO() {
 
   // ================= PÁGINA 2 — ATIVIDADES + OBSERVAÇÕES =================
   h += `<div class="pdf-page" style="padding:20px;box-sizing:border-box">`;
-  h += pgHead;
 
   // Atividades
   const ativsMarc = state.atividades.filter(a => day.atividadesMarcadas[a.id]);
@@ -3090,7 +3080,6 @@ function gerarPdfRDO() {
 
   // ================= PÁGINA 3 — RESUMO + FOTOS + ASSINATURAS =================
   h += `<div class="pdf-page" style="padding:20px;box-sizing:border-box">`;
-  h += pgHead;
 
   // Resumo Semana + Mês
   const fmtISOlocalPdf = d => {
@@ -3123,11 +3112,20 @@ function gerarPdfRDO() {
       });
     }
     const mediaEf = r.diasComEfetivo > 0 ? Math.round(r.somaEfetivo / r.diasComEfetivo) : 0;
-    return `<div style="margin-bottom:16px;page-break-inside:avoid">
-      <div style="background:#2C3E50;color:#fff;padding:12px 15px;margin-bottom:8px;font-weight:800;font-size:11pt">${titulo}</div>
-      <div style="font-size:8pt;margin-bottom:8px"><strong>Período:</strong> ${periodoLabel} | <strong>Dias com registro:</strong> ${r.dias.length} | <strong>Efetivo médio/dia:</strong> ${mediaEf || '—'}</div>
+    return `<div style="margin-bottom:12px;page-break-inside:avoid">
+      <div style="background:#2C3E50;color:#fff;padding:10px 15px;margin-bottom:8px;font-weight:800;font-size:10pt">${titulo}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;font-size:8pt">
+        <div style="text-align:center;background:#f5f5f5;padding:8px;border-radius:3px">
+          <div style="font-size:22pt;font-weight:800;color:#2C3E50;line-height:1">${r.dias.length}</div>
+          <div style="color:#666;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Dias com Registro</div>
+        </div>
+        <div style="text-align:center;background:#f5f5f5;padding:8px;border-radius:3px">
+          <div style="font-size:22pt;font-weight:800;color:#2C3E50;line-height:1">${mediaEf || '—'}</div>
+          <div style="color:#666;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Ef. Médio/dia</div>
+        </div>
+      </div>
       <table style="width:100%;border-collapse:collapse;font-size:8pt">
-        <tr><th style="border:1px solid #ddd;padding:5px;text-align:left;background:#f5f5f5;font-weight:600">Serviço</th><th style="border:1px solid #ddd;padding:5px;text-align:right;background:#f5f5f5;font-weight:600;width:20%">Total</th></tr>
+        <tr><th style="border:1px solid #ddd;padding:4px 6px;text-align:left;background:#f5f5f5;font-weight:600">Serviço</th><th style="border:1px solid #ddd;padding:4px 6px;text-align:right;background:#f5f5f5;font-weight:600;width:20%">Total</th></tr>
         ${linhasServ}
       </table>
     </div>`;
