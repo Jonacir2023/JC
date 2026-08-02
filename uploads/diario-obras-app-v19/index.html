@@ -1116,10 +1116,10 @@
 .stat-num { font-size: 12pt; font-weight: 800; color: #495057; line-height: 1; }
 .stat-label { font-size: 12pt; font-weight: 600; color: #495057; letter-spacing: 0px; }
 
-table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 22px; }
+table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 22px; table-layout: fixed; }
 table.data-table th, table.data-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; vertical-align: middle; }
-table.data-table th { background: #f8f9fa; font-weight: 800; color: #495057; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
-table.data-table td { font-size: 9pt; color: #212529; }
+table.data-table th { background: #f8f9fa; font-weight: 800; color: #495057; font-size: 12pt; text-transform: uppercase; letter-spacing: 0.5px; }
+table.data-table td { font-size: 12pt; color: #212529; }
 table.data-table tr:nth-child(even) td { background-color: #fdfdfd; }
 
 .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 7.5pt; font-weight: bold; text-transform: uppercase; }
@@ -1131,9 +1131,9 @@ table.data-table tr:nth-child(even) td { background-color: #fdfdfd; }
 .split-col:first-child { padding-right: 10px; }
 .split-col:last-child { padding-left: 10px; }
 
-.jornada-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 4px; font-size: 8.5pt; }
-.jornada-box strong { color: #343a40; display: block; margin-bottom: 4px; }
-.jornada-box div { margin-bottom: 2px; color: #495057; }
+.jornada-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 4px; font-size: 12pt; margin-bottom: 22px; }
+.jornada-box strong { color: #343a40; display: block; margin-bottom: 6px; font-weight: 800; }
+.jornada-box div { margin-bottom: 3px; color: #495057; }
 
 .signature-grid { display: table; width: 100%; margin-top: 50px; text-align: center; page-break-inside: avoid; }
 .sig-row { display: table-row; }
@@ -2994,25 +2994,20 @@ function gerarPdfRDO() {
             <div class="stat-row"><div class="stat-box"><div class="stat-label">Fotos</div></div><div class="stat-box"><div class="stat-num">${nFotos}</div></div></div>
         </div>
 
-        <div class="split-grid">
-            <div class="split-col">
-                <div class="section-title">CONDIÇÕES CLIMÁTICAS</div>
-                <table class="data-table" style="margin-bottom:0;">
-                    <tr><th style="width: 25%;">Período</th><th>Operação</th><th>Condição</th><th style="text-align:right;">mm</th></tr>
-                    ${linhasClima}
-                </table>
-            </div>
-            <div class="split-col">
-                <div class="section-title">JORNADA E DSS</div>
-                <div class="jornada-box">
-                    <strong>Jornada de Trabalho:</strong>
-                    <div>Café: ${day.cafeInicio || '--:--'} – ${day.cafeFim || '--:--'} &nbsp;|&nbsp; Almoço: ${day.almocoInicio || '--:--'} – ${day.almocoFim || '--:--'}</div>
-                    <div>Encerramento Padrão: ${day.encerramento || '--:--'}</div>
-                    <strong style="margin-top: 10px;">Diálogo Diário de Segurança (DSS):</strong>
-                    <div>Horário: ${escHtml(day.dssHorario || '—')} &nbsp;|&nbsp; Ministrante: ${escHtml(day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '—')}</div>
-                    <div>Tema: ${escHtml(day.dssTema || '—')}</div>
-                </div>
-            </div>
+        <div class="section-title">CONDIÇÕES CLIMÁTICAS</div>
+        <table class="data-table">
+            <tr><th style="width: 25%;">Período</th><th>Operação</th><th>Condição</th><th style="text-align:right;">mm</th></tr>
+            ${linhasClima}
+        </table>
+
+        <div class="section-title">JORNADA E DSS</div>
+        <div class="jornada-box">
+            <strong>Jornada de Trabalho:</strong>
+            <div>Café: ${day.cafeInicio || '--:--'} – ${day.cafeFim || '--:--'} &nbsp;|&nbsp; Almoço: ${day.almocoInicio || '--:--'} – ${day.almocoFim || '--:--'}</div>
+            <div>Encerramento Padrão: ${day.encerramento || '--:--'}</div>
+            <strong style="margin-top: 10px;">Diálogo Diário de Segurança (DSS):</strong>
+            <div>Horário: ${escHtml(day.dssHorario || '—')} &nbsp;|&nbsp; Ministrante: ${escHtml(day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '—')}</div>
+            <div>Tema: ${escHtml(day.dssTema || '—')}</div>
         </div>
 
         <div class="section-title">ATIVIDADES DO DIA</div>
