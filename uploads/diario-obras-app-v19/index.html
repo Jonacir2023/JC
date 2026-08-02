@@ -1109,11 +1109,12 @@
 
 .section-title { background: #2C3E50; color: #ffffff; padding: 8px 15px; font-weight: 800; font-size: 10.5pt; letter-spacing: 0.5px; margin-bottom: 12px; border-radius: 2px; page-break-after: avoid; }
 
-.stats-grid { display: table; width: 100%; margin-bottom: 22px; text-align: center; }
+.stats-grid { display: table; width: 100%; margin-bottom: 22px; border-collapse: collapse; }
 .stat-row { display: table-row; }
-.stat-box { display: table-cell; width: 14.28%; padding: 5px; }
-.stat-num { font-size: 26pt; font-weight: 800; color: #495057; line-height: 1; margin-bottom: 4px; }
-.stat-label { font-size: 7.5pt; text-transform: uppercase; font-weight: 800; color: #868e96; letter-spacing: 0.5px; }
+.stat-box { display: table-cell; width: 50%; padding: 10px 12px; border: 1px solid #dee2e6; text-align: left; vertical-align: middle; }
+.stat-box:nth-child(2n) { text-align: right; font-weight: 800; }
+.stat-num { font-size: 12pt; font-weight: 800; color: #495057; line-height: 1; }
+.stat-label { font-size: 12pt; font-weight: 600; color: #495057; letter-spacing: 0px; }
 
 table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 22px; }
 table.data-table th, table.data-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; vertical-align: middle; }
@@ -2984,15 +2985,13 @@ function gerarPdfRDO() {
 
         <div class="section-title">RESUMO GERAL</div>
         <div class="stats-grid">
-            <div class="stat-row">
-                <div class="stat-box"><div class="stat-num">${totEfCard}</div><div class="stat-label">Efetivo</div></div>
-                <div class="stat-box"><div class="stat-num">${nAtiv}</div><div class="stat-label">Ativ.</div></div>
-                <div class="stat-box"><div class="stat-num">${nEquip}</div><div class="stat-label">Equip</div></div>
-                <div class="stat-box"><div class="stat-num">${nOcor}</div><div class="stat-label">SSMA</div></div>
-                <div class="stat-box"><div class="stat-num">${nParal}</div><div class="stat-label">Parados</div></div>
-                <div class="stat-box"><div class="stat-num">${mmTotal.toFixed(1)}</div><div class="stat-label">Precip.</div></div>
-                <div class="stat-box"><div class="stat-num">${nFotos}</div><div class="stat-label">Fotos</div></div>
-            </div>
+            <div class="stat-row"><div class="stat-box"><div class="stat-label">Efetivo</div></div><div class="stat-box"><div class="stat-num">${totEfCard}</div></div></div>
+            <div class="stat-row"><div class="stat-box"><div class="stat-label">Atividades</div></div><div class="stat-box"><div class="stat-num">${nAtiv}</div></div></div>
+            <div class="stat-row"><div class="stat-box"><div class="stat-label">Equipamentos</div></div><div class="stat-box"><div class="stat-num">${nEquip}</div></div></div>
+            <div class="stat-row"><div class="stat-box"><div class="stat-label">Eventos SSMA</div></div><div class="stat-box"><div class="stat-num">${nOcor}</div></div></div>
+            <div class="stat-row"><div class="stat-box"><div class="stat-label">Parados</div></div><div class="stat-box"><div class="stat-num">${nParal}</div></div></div>
+            <div class="stat-row"><div class="stat-box"><div class="stat-label">Precipitação (mm)</div></div><div class="stat-box"><div class="stat-num">${mmTotal.toFixed(1)}</div></div></div>
+            <div class="stat-row"><div class="stat-box"><div class="stat-label">Fotos</div></div><div class="stat-box"><div class="stat-num">${nFotos}</div></div></div>
         </div>
 
         <div class="split-grid">
