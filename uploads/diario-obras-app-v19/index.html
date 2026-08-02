@@ -1094,6 +1094,10 @@
     line-height: 1.4;
 }
 .pdf-doc *, .pdf-doc *::before, .pdf-doc *::after { box-sizing: border-box; }
+/* Impede o ajuste automático de tamanho de texto do Safari no iOS, que inflava
+   blocos largos de texto corrido (a caixa de Jornada/DSS) e deixava intactas as
+   células estreitas das tabelas — o mesmo 12pt saía maior num lugar que noutro. */
+.pdf-doc, .pdf-doc * { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 .header-table {
     width: 100%;
@@ -1148,7 +1152,9 @@ table.fotos-table td { width: 50%; vertical-align: top; padding-bottom: 12px; }
 .pdf-foto img { width: 100%; height: 150px; object-fit: cover; border: 1px solid #dee2e6; border-radius: 3px; display: block; }
 .pdf-foto figcaption { font-size: 12pt; color: #495057; margin-top: 4px; line-height: 1.3; }
 
-.jornada-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 4px; font-size: 12pt; margin-bottom: 22px; }
+.jornada-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 4px; margin-bottom: 22px; }
+/* 12pt declarado em cada elemento da caixa, sem depender de herança */
+.jornada-box, .jornada-box * { font-size: 12pt; line-height: 1.4; }
 .jornada-box strong { color: #343a40; display: block; margin-bottom: 6px; font-weight: 800; }
 .jornada-box div { margin-bottom: 3px; color: #495057; }
 
