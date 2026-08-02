@@ -1069,86 +1069,84 @@
   }
 
 /* ===== PDF do RDO ===== */
-:root {
-  --rdo-navy: #1a2b4d;
-  --rdo-ink: #1c1a18;
-  --rdo-ink-soft: #4a4540;
-  --rdo-ink-faint: #8a8178;
-  --rdo-line: #ccc5bc;
+@page {
+    size: A4;
+    margin: 15mm 15mm;
+    background-color: #ffffff;
 }
-/* margin:0 no @page de propósito: no iOS/AirPrint um valor não-zero em @page é
-   frequentemente ignorado e substituído pela margem padrão da impressora (~12-13mm),
-   fazendo a página impressa ter recuo bem maior que o configurado aqui. Com margin:0
-   a margem real de 5mm é aplicada via padding de cada .pdf-page (abaixo), o que o
-   iOS respeita corretamente. */
-@page { size: A4; margin: 0; }
 #pdfOverlay { position: fixed; inset: 0; background: #eeeae3; z-index: 9999; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .pdf-toolbar { position: sticky; top: 0; background: #2c2c2c; padding: 10px 14px; display: flex; gap: 10px; z-index: 2; }
 .pdf-toolbar button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
-.pdf-doc { max-width: 800px; margin: 16px auto; font-family: 'Barlow', Arial, 'Helvetica Neue', sans-serif; font-size: 8pt; line-height: 1.4; color: var(--rdo-ink); background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.15); }
-.pdf-page { padding: 5mm; box-sizing: border-box; }
-
-/* Capa */
-.pdf-capa-head { display: flex; align-items: flex-end; gap: 14px; border-bottom: 3px solid var(--rdo-navy); padding-bottom: 10px; }
-.pdf-capa-logo { height: 30px; max-width: 140px; width: auto; object-fit: contain; flex-shrink: 0; }
-.pdf-capa-htext { flex: 1; }
-.pdf-capa-titulo { font-size: 10pt; font-weight: 800; letter-spacing: .02em; color: var(--rdo-ink); }
-.pdf-capa-sub { font-size: 8pt; color: var(--rdo-ink-soft); margin-top: 2px; }
-.pdf-capa-rdotag { margin-top: 12px; display: inline-flex; align-items: center; background: rgba(212,84,26,.08); border: 1px solid var(--rdo-navy); border-radius: 3px; padding: 4px 10px; }
-.pdf-capa-rdotag span { font-size: 10pt; font-weight: 800; color: var(--rdo-navy); letter-spacing: .03em; }
-.pdf-capa-obra { font-size: 10pt; font-weight: 700; margin-top: 12px; }
-.pdf-capa-data { font-size: 8pt; color: var(--rdo-ink-soft); margin-top: 3px; }
-.pdf-capa-meta { margin-top: 12px; display: flex; gap: 28px; flex-wrap: wrap; }
-.pdf-capa-meta .k { font-size: 8pt; letter-spacing: .08em; text-transform: uppercase; color: var(--rdo-ink-faint); }
-.pdf-capa-meta .v { font-size: 8pt; font-weight: 700; margin-top: 2px; }
-
-/* Cabecalho das paginas internas */
-.pdf-pg-head { display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--rdo-navy); padding-bottom: 8px; margin-bottom: 12px; }
-.pdf-pg-head img { height: 22px; max-width: 90px; width: auto; object-fit: contain; flex-shrink: 0; }
-.pdf-pg-head .htext { flex: 1; }
-.pdf-pg-head .htext .t { font-size: 10pt; font-weight: 800; }
-.pdf-pg-head .htext .s { font-size: 8pt; color: var(--rdo-ink-soft); }
-
-.pdf-sec { margin-bottom: 18px; page-break-inside: avoid; }
-.pdf-sec h2 {
-  font-size: 11pt; font-weight: 700; letter-spacing: .01em;
-  background: #2C3E50;
-  color: #fff; border: none;
-  padding: 12px 15px; margin: 0 0 10px; border-radius: 0;
+.pdf-doc {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #1c1a18;
+    font-size: 9pt;
+    line-height: 1.4;
 }
+.pdf-doc *, .pdf-doc *::before, .pdf-doc *::after { box-sizing: border-box; }
 
-/* Resumo Geral com números grandes */
-.pdf-resumo-geral { margin-bottom: 20px; page-break-inside: avoid; }
-.pdf-resumo-geral h2 { background: #2C3E50; color: #fff; padding: 12px 15px; margin: 0 0 10px; font-size: 11pt; }
-.pdf-resumo-cards { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.pdf-resumo-card { flex: 1; text-align: center; }
-.pdf-resumo-card .num { font-size: 48pt; font-weight: 700; color: #666; line-height: 1; }
-.pdf-resumo-card .label { font-size: 9pt; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+.header-table {
+    width: 100%;
+    border-bottom: 3px solid #1a2b4d;
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+}
+.header-left { width: 70%; vertical-align: bottom; }
+.header-right { width: 30%; text-align: right; vertical-align: bottom; }
+.header h1 { margin: 0 0 2px 0; font-size: 20pt; color: #1a1a1a; font-weight: 800; text-transform: uppercase; }
+.header .sub { color: #666; font-size: 10pt; font-weight: 600; }
+.header-right .num { font-size: 22pt; font-weight: 800; color: #2C3E50; line-height: 1; }
+.header-right .rdo-label { font-size: 9pt; color: #666; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
 
-/* Layout lado a lado */
-.pdf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-.pdf-grid-2 > * { page-break-inside: avoid; }
+.info-grid { display: table; width: 100%; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; margin-bottom: 20px; }
+.info-row { display: table-row; }
+.info-col { display: table-cell; width: 25%; padding: 12px 15px; border-right: 1px solid #e9ecef; }
+.info-col:last-child { border-right: none; }
+.info-label { color: #868e96; text-transform: uppercase; font-weight: 800; font-size: 7.5pt; letter-spacing: 0.5px; margin-bottom: 4px; }
+.info-val { font-weight: 700; font-size: 10pt; color: #343a40; }
 
-/* Assinaturas lado a lado */
-.pdf-assinaturas { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 40px; }
-.pdf-assin-box { text-align: center; }
-.pdf-assin-linha { border-top: 1px solid #000; height: 40px; margin-bottom: 8px; }
-.pdf-assin-nome { font-size: 9pt; font-weight: 600; }
-.pdf-assin-funcao { font-size: 8pt; color: #666; margin-top: 2px; }
-.pdf-doc table { width: 100%; border-collapse: collapse; font-size: 8pt; }
-.pdf-doc th, .pdf-doc td { border: 1px solid var(--rdo-line); padding: 4px 7px; text-align: left; vertical-align: top; }
-.pdf-doc th { background: #f0ece4; font-weight: 700; font-size: 8pt; text-transform: uppercase; letter-spacing: .02em; color: var(--rdo-ink-soft); }
-.pdf-fotos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.pdf-fotos figure { margin: 0; page-break-inside: avoid; }
-.pdf-fotos img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border: 1px solid var(--rdo-line); border-radius: 3px; }
-.pdf-fotos figcaption { font-size: 8pt; color: var(--rdo-ink-soft); margin-top: 3px; }
-.pdf-ass { display: flex; gap: 30px; margin-top: 32px; page-break-inside: avoid; }
-.pdf-ass > div { flex: 1; text-align: center; font-size: 8pt; }
+.section-title { background: #2C3E50; color: #ffffff; padding: 8px 15px; font-weight: 800; font-size: 10.5pt; letter-spacing: 0.5px; margin-bottom: 12px; border-radius: 2px; page-break-after: avoid; }
+
+.stats-grid { display: table; width: 100%; margin-bottom: 22px; text-align: center; }
+.stat-row { display: table-row; }
+.stat-box { display: table-cell; width: 14.28%; padding: 5px; }
+.stat-num { font-size: 26pt; font-weight: 800; color: #495057; line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 7.5pt; text-transform: uppercase; font-weight: 800; color: #868e96; letter-spacing: 0.5px; }
+
+table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 22px; }
+table.data-table th, table.data-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; vertical-align: middle; }
+table.data-table th { background: #f8f9fa; font-weight: 800; color: #495057; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
+table.data-table td { font-size: 9pt; color: #212529; }
+table.data-table tr:nth-child(even) td { background-color: #fdfdfd; }
+
+.badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 7.5pt; font-weight: bold; text-transform: uppercase; }
+.badge-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.badge-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+
+.split-grid { display: table; width: 100%; margin-bottom: 22px; table-layout: fixed; }
+.split-col { display: table-cell; width: 50%; }
+.split-col:first-child { padding-right: 10px; }
+.split-col:last-child { padding-left: 10px; }
+
+.jornada-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 4px; font-size: 8.5pt; }
+.jornada-box strong { color: #343a40; display: block; margin-bottom: 4px; }
+.jornada-box div { margin-bottom: 2px; color: #495057; }
+
+.signature-grid { display: table; width: 100%; margin-top: 50px; text-align: center; page-break-inside: avoid; }
+.sig-row { display: table-row; }
+.sig-box { display: table-cell; width: 50%; padding: 0 30px; }
+.sig-line { border-top: 1px solid #212529; margin-bottom: 8px; margin-top: 50px; }
+
+.footer { margin-top: 30px; text-align: center; font-size: 8pt; color: #adb5bd; border-top: 1px solid #e9ecef; padding-top: 10px; }
+
 #padAssOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 16px; }
 #padAssOverlay .pad-box { background: #fff; border-radius: 12px; padding: 14px; width: 100%; max-width: 520px; }
 #padAssOverlay canvas { width: 100%; height: 200px; border: 1.5px dashed #999; border-radius: 8px; touch-action: none; display: block; background: #fff; }
 #padAssOverlay .pad-btns { display: flex; gap: 8px; margin-top: 10px; }
 #padAssOverlay .pad-btns button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+
 @media print {
   body.pdf-printing > *:not(#pdfOverlay) { display: none !important; }
   html, body, #pdfOverlay { background: #fff !important; }
