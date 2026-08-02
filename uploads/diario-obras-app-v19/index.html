@@ -1071,7 +1071,7 @@
 /* ===== PDF do RDO ===== */
 @page {
     size: A4;
-    margin: 15mm 15mm;
+    margin: 10mm;   /* 1 cm nas laterais, no cabeçalho e no rodapé */
     background-color: #ffffff;
 }
 #pdfOverlay { position: fixed; inset: 0; background: #eeeae3; z-index: 9999; overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -1083,12 +1083,12 @@
    continuavam em 12pt, dando a impressão de zoom altíssimo. */
 .pdf-stage { overflow: hidden; padding: 16px 0; }
 .pdf-doc {
-    width: 210mm;
-    padding: 12mm;
+    width: 210mm;    /* folha A4 */
+    padding: 10mm;   /* 1 cm de margem — espelha o @page na visualização */
+    box-sizing: border-box;   /* os 210mm incluem a margem: área útil de 190mm */
     transform-origin: top left;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     margin: 0;
-    padding: 0;
     color: #1c1a18;
     font-size: 9pt;
     line-height: 1.4;
@@ -3269,7 +3269,9 @@ async function compartilharPdfRDO() {
     let primeira = true;
     let paginasComFalha = 0;
 
-    const pageWmm = 210, pageHmm = 297, margemMm = 0;
+    // 1 cm de margem em todos os lados (o html2canvas captura o conteúdo sem o
+    // padding do .pdf-doc, então a margem é aplicada aqui, ao posicionar a imagem)
+    const pageWmm = 210, pageHmm = 297, margemMm = 10;
     const areaWmm = pageWmm - margemMm * 2;
     const areaHmm = pageHmm - margemMm * 2;
 
