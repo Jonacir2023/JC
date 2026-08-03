@@ -3167,7 +3167,7 @@ function gerarPdfRDO() {
   const emModoApp = (navigator.standalone === true);
   const btnImprimir = emModoApp
     ? `<button style="background:#f5b334;color:#1a1a1a" onclick="abrirRdoNoSafari()">🖨️ Salvar PDF (abre no Safari)</button>`
-    : `<button style="background:#f5b334;color:#1a1a1a" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>`;
+    : `<button style="background:#f5b334;color:#1a1a1a" onclick="imprimirRdo()">🖨️ Imprimir / Salvar PDF</button>`;
   const btnCompartilhar = (navigator.share)
     ? `<button id="btnCompartilharPdf" style="background:#25D366;color:#fff" onclick="compartilharPdfRDO()">📤 Compartilhar</button>`
     : '';
@@ -3331,7 +3331,7 @@ async function compartilharPdfRDO() {
     }
 
     const num = numeroRDO(currentDay.data);
-    const nomeArquivo = `RDO ${num} ${formatDateBR(currentDay.data).replace(/\//g, '-')}.pdf`;
+    const nomeArquivo = `${nomeArquivoRdo(currentDay.data)}.pdf`;
     const blob = doc.output('blob');
     const file = new File([blob], nomeArquivo, { type: 'application/pdf' });
 
@@ -3387,6 +3387,31 @@ function enviarPdfPreparado() {
 function abrirRdoNoSafari() {
   const url = location.origin + location.pathname + '?rdo=' + encodeURIComponent(currentDay.data);
   window.open(url, '_blank');
+}
+
+// Nome do arquivo do RDO, sem extensão: "RDO 165 01-08-2026".
+// A data vai com hífen porque a barra não é aceita em nome de arquivo.
+function nomeArquivoRdo(dataISO) {
+  return `RDO ${numeroRDO(dataISO)} ${formatDateBR(dataISO).replace(/\//g, '-')}`;
+}
+
+// Ao salvar pela caixa de impressão, o navegador sugere o nome do arquivo a
+// partir do título da página — que é o nome do app. Aqui o título vira o nome
+// do RDO durante a impressão e volta ao normal em seguida.
+function imprimirRdo() {
+  const tituloOriginal = document.title;
+  document.title = nomeArquivoRdo(currentDay.data);
+  let restaurado = false;
+  const restaurar = () => {
+    if (restaurado) return;
+    restaurado = true;
+    document.title = tituloOriginal;
+    window.removeEventListener('afterprint', restaurar);
+  };
+  window.addEventListener('afterprint', restaurar);
+  // Rede de segurança: o iOS nem sempre dispara afterprint
+  setTimeout(restaurar, 120000);
+  window.print();
 }
 
 // Se a página foi aberta com ?rdo=YYYY-MM-DD, carrega esse diário e abre direto o PDF
