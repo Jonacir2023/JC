@@ -3498,6 +3498,23 @@ function salvarPadAssinatura() {
 // INTEGRAÇÃO COM GOOGLE SHEETS
 // ============================================================
 
+// Atividades do dia em texto corrido, incluindo as paralisadas. Usado tanto no
+// envio para a planilha quanto no contexto que vai junto da pergunta ao robô,
+// para que os dois enxerguem exatamente o mesmo conteúdo.
+function textoAtividadesDia(day) {
+  return [
+    ...state.atividades.filter(a => (day.atividadesMarcadas || {})[a.id]).map(a => {
+      const qtd = day.atividadesQtd && day.atividadesQtd[a.id];
+      return `${a.desc}${a.local ? ' – ' + a.local : ''}${qtd ? ' (' + qtd + ' ' + (a.unidade||'') + ')' : ''}`;
+    }),
+    ...(day.atividadesAvulsas || []).map(a => `${a.desc}${a.local ? ' – ' + a.local : ''}`),
+    ...(day.atividadesExtra ? day.atividadesExtra.split('\n').filter(x => x.trim()) : [])
+  ].join('\n')
+  + ((day.atividadesParalisadas || []).length
+      ? '\n\nPARALISADAS:\n' + day.atividadesParalisadas.map(p => `${p.desc} — ${p.just || 'sem justificativa'}`).join('\n')
+      : '');
+}
+
 function buildPayloadGoogle(diarioData) {
   const day = diarioData;
 
@@ -3508,17 +3525,7 @@ function buildPayloadGoogle(diarioData) {
   const dssMin = day.dssMinistrou ? (day.dssMinistrou.includes('|') ? day.dssMinistrou.split('|')[1] : day.dssMinistrou) : '';
 
   // Atividades
-  const ativsTexto = [
-    ...state.atividades.filter(a => day.atividadesMarcadas[a.id]).map(a => {
-      const qtd = day.atividadesQtd && day.atividadesQtd[a.id];
-      return `${a.desc}${a.local ? ' – ' + a.local : ''}${qtd ? ' (' + qtd + ' ' + (a.unidade||'') + ')' : ''}`;
-    }),
-    ...(day.atividadesAvulsas || []).map(a => `${a.desc}${a.local ? ' – ' + a.local : ''}`),
-    ...(day.atividadesExtra ? day.atividadesExtra.split('\n').filter(x => x.trim()) : [])
-  ].join('\n')
-  + ((day.atividadesParalisadas || []).length
-      ? '\n\nPARALISADAS:\n' + day.atividadesParalisadas.map(p => `${p.desc} — ${p.just || 'sem justificativa'}`).join('\n')
-      : '');
+  const ativsTexto = textoAtividadesDia(day);
 
   // Efetivo — resolver IDs para nomes
   const efetivoPorFuncao = [];
@@ -5433,10 +5440,20 @@ async function enviarPergunta() {
   btn.disabled = true;
 
   try {
+    // Vai junto da pergunta o conteúdo do dia — atividades (com quantidades e as
+    // paralisadas) e observações — para o robô responder a partir desses dados.
+    // Os nomes dos campos são os mesmos usados no envio à planilha.
+    const diaAtual = currentDay || {};
     const resp = await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=ia&action=perguntar`, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ pergunta, obra: state.obra.nome || '' })
+      body: JSON.stringify({
+        pergunta,
+        obra: state.obra.nome || '',
+        data: diaAtual.data || '',
+        atividades: diaAtual.data ? textoAtividadesDia(diaAtual) : '',
+        observacoes: (diaAtual.observacoesDia || '').trim()
+      })
     });
     const json = await resp.json().catch(() => null);
     respostaBox.textContent = (json && json.resposta) || '❌ Não foi possível obter resposta.';
