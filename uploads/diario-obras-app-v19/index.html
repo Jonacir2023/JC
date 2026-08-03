@@ -1146,6 +1146,8 @@ table.data-table tr:nth-child(even) td { background-color: #fdfdfd; }
 .split-col:first-child { padding-right: 10px; }
 .split-col:last-child { padding-left: 10px; }
 
+/* Começa em página nova na impressão. Em tela não tem efeito. */
+.quebra-pagina { page-break-before: always; break-before: page; }
 table.fotos-table { width: 100%; border-collapse: separate; border-spacing: 10px 0; table-layout: fixed; margin-bottom: 22px; }
 table.fotos-table td { width: 50%; vertical-align: top; padding-bottom: 12px; }
 .pdf-foto { margin: 0; page-break-inside: avoid; }
@@ -2978,8 +2980,11 @@ function gerarPdfRDO() {
     const descAtiv = id => (state.atividades.find(a => a.id === id) || {}).desc || '';
     const cels = day.fotos.map((f, i) => {
       const legenda = f.legenda || descAtiv(f.ativId) || `Foto ${i + 1}`;
+      // Sem crossorigin: o Drive não envia cabeçalho CORS nessa URL de
+      // miniatura, e exigi-lo faz a imagem não carregar de jeito nenhum.
+      // É a mesma forma usada na galeria do diário, onde as fotos aparecem.
       return `<figure class="pdf-foto">
-          <img src="https://drive.google.com/thumbnail?id=${escHtml(f.fileId)}&sz=w400" alt="Foto ${i + 1}" crossorigin="anonymous">
+          <img src="https://drive.google.com/thumbnail?id=${escHtml(f.fileId)}&sz=w400" alt="Foto ${i + 1}" loading="eager">
           <figcaption>${i + 1}. ${escHtml(legenda)}</figcaption>
         </figure>`;
     });
@@ -2988,9 +2993,12 @@ function gerarPdfRDO() {
     for (let i = 0; i < cels.length; i += 2) {
       linhasFotos += `<tr><td>${cels[i]}</td><td>${cels[i + 1] || ''}</td></tr>`;
     }
+    // O registro fotográfico começa sempre em página nova
     blocoFotos = `
-        <div class="section-title">REGISTRO FOTOGRÁFICO — ${day.fotos.length}</div>
-        <table class="fotos-table">${linhasFotos}</table>`;
+        <div class="quebra-pagina">
+            <div class="section-title">REGISTRO FOTOGRÁFICO — ${day.fotos.length}</div>
+            <table class="fotos-table">${linhasFotos}</table>
+        </div>`;
   }
 
   // Resumos acumulados da semana e do mês
