@@ -3265,6 +3265,52 @@ function carregarScriptUmaVez(src) {
 // resolve isso: o segundo toque é que dispara o share(), já com o arquivo pronto.
 let _pdfParaCompartilhar = null;
 
+// Baixa cada foto do relatório e troca o src por um dado embutido (data URI),
+// única forma de o html2canvas conseguir desenhá-la. Cada foto é tentada em
+// duas URLs; se ambas falharem, o src original é mantido.
+async function prepararFotosParaCaptura(overlay) {
+  const imgs = [...overlay.querySelectorAll('.pdf-foto img')];
+  if (!imgs.length) return;
+
+  const paraDataUri = async (url) => {
+    const controle = new AbortController();
+    const limite = setTimeout(() => controle.abort(), 12000);
+    try {
+      const r = await fetch(url, { mode: 'cors', signal: controle.signal });
+      if (!r.ok) return null;
+      const blob = await r.blob();
+      if (!blob.size || !/^image\//.test(blob.type)) return null;
+      return await new Promise((ok, falha) => {
+        const fr = new FileReader();
+        fr.onload = () => ok(fr.result);
+        fr.onerror = falha;
+        fr.readAsDataURL(blob);
+      });
+    } catch (_) {
+      return null;   // CORS, rede ou tempo esgotado — tenta a próxima via
+    } finally {
+      clearTimeout(limite);
+    }
+  };
+
+  await Promise.all(imgs.map(async (img) => {
+    const src = img.getAttribute('src') || '';
+    if (src.startsWith('data:')) return;
+    const fileId = (src.match(/[?&]id=([^&]+)/) || [])[1];
+    const vias = fileId
+      ? [`https://lh3.googleusercontent.com/d/${fileId}=w800`, src]
+      : [src];
+    for (const via of vias) {
+      const dataUri = await paraDataUri(via);
+      if (dataUri) { img.src = dataUri; return; }
+    }
+    console.warn('Foto não pôde ser embutida no PDF (CORS):', src);
+  }));
+
+  // Espera o navegador decodificar as imagens já trocadas
+  await Promise.all(imgs.map(im => (im.decode ? im.decode().catch(() => {}) : null)));
+}
+
 async function compartilharPdfRDO() {
   const overlay = document.getElementById('pdfOverlay');
   if (!overlay) return;
@@ -3287,6 +3333,16 @@ async function compartilharPdfRDO() {
   try {
     await carregarScriptUmaVez('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
     await carregarScriptUmaVez('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+
+    // O html2canvas não consegue desenhar imagem que o servidor entrega sem
+    // cabeçalho CORS — é o caso da miniatura do Drive, que aparece na tela mas
+    // sai em branco no PDF. Aqui cada foto é baixada e convertida em dado
+    // embutido antes da captura. Tenta primeiro o domínio de imagens do Google,
+    // que costuma liberar CORS; se nenhuma via funcionar, a foto fica como está
+    // e o PDF sai sem ela, como antes — nada piora.
+    if (btn) btn.textContent = '⏳ Preparando fotos...';
+    await prepararFotosParaCaptura(overlay);
+    if (btn) btn.textContent = '⏳ Gerando...';
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
