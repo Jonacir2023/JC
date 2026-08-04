@@ -1151,7 +1151,9 @@ table.data-table tr:nth-child(even) td { background-color: #fdfdfd; }
 table.fotos-table { width: 100%; border-collapse: separate; border-spacing: 10px 0; table-layout: fixed; margin-bottom: 22px; }
 table.fotos-table td { width: 50%; vertical-align: top; padding-bottom: 12px; }
 .pdf-foto { margin: 0; page-break-inside: avoid; }
-.pdf-foto img { width: 100%; height: 150px; object-fit: cover; border: 1px solid #dee2e6; border-radius: 3px; display: block; }
+/* height:auto preserva a proporção original da foto — sem corte e sem distorção.
+   Antes havia altura fixa com object-fit:cover, que recortava as bordas. */
+.pdf-foto img { width: 100%; height: auto; border: 1px solid #dee2e6; border-radius: 3px; display: block; }
 .pdf-foto figcaption { font-size: 12pt; color: #495057; margin-top: 4px; line-height: 1.3; }
 
 .jornada-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 4px; margin-bottom: 22px; }
