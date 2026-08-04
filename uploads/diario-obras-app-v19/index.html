@@ -3272,11 +3272,35 @@ async function prepararFotosParaCaptura(overlay) {
   const imgs = [...overlay.querySelectorAll('.pdf-foto img')];
   if (!imgs.length) return;
 
-  const paraDataUri = async (url) => {
-    const controle = new AbortController();
-    const limite = setTimeout(() => controle.abort(), 12000);
+  const comLimite = (ms) => {
+    const c = new AbortController();
+    return { sinal: c.signal, limpar: (t => () => clearTimeout(t))(setTimeout(() => c.abort(), ms)) };
+  };
+
+  // Via 1 — Apps Script. É a única que não depende de CORS do Google: o script
+  // lê o arquivo no Drive e devolve a imagem já em base64. Requer o endpoint
+  // path=foto&action=base64 publicado no Apps Script; sem ele, cai nas outras.
+  const viaAppsScript = async (fileId) => {
+    if (!APPS_SCRIPT_URL_DIARIO) return null;
+    const { sinal, limpar } = comLimite(15000);
     try {
-      const r = await fetch(url, { mode: 'cors', signal: controle.signal });
+      const r = await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=foto&action=base64&fileId=${encodeURIComponent(fileId)}`, { signal: sinal });
+      if (!r.ok) return null;
+      const j = await r.json().catch(() => null);
+      if (!j) return null;
+      if (j.dataUri && j.dataUri.startsWith('data:image/')) return j.dataUri;
+      if (j.base64) return `data:${j.mimeType || 'image/jpeg'};base64,${j.base64}`;
+      return null;
+    } catch (_) {
+      return null;
+    } finally { limpar(); }
+  };
+
+  // Via 2 — buscar a imagem direto. Só funciona se o servidor mandar CORS.
+  const viaDireta = async (url) => {
+    const { sinal, limpar } = comLimite(6000);
+    try {
+      const r = await fetch(url, { mode: 'cors', signal: sinal });
       if (!r.ok) return null;
       const blob = await r.blob();
       if (!blob.size || !/^image\//.test(blob.type)) return null;
@@ -3287,25 +3311,31 @@ async function prepararFotosParaCaptura(overlay) {
         fr.readAsDataURL(blob);
       });
     } catch (_) {
-      return null;   // CORS, rede ou tempo esgotado — tenta a próxima via
-    } finally {
-      clearTimeout(limite);
-    }
+      return null;
+    } finally { limpar(); }
   };
 
+  let falhas = 0;
   await Promise.all(imgs.map(async (img) => {
     const src = img.getAttribute('src') || '';
     if (src.startsWith('data:')) return;
     const fileId = (src.match(/[?&]id=([^&]+)/) || [])[1];
-    const vias = fileId
-      ? [`https://lh3.googleusercontent.com/d/${fileId}=w800`, src]
-      : [src];
-    for (const via of vias) {
-      const dataUri = await paraDataUri(via);
-      if (dataUri) { img.src = dataUri; return; }
+
+    if (fileId) {
+      const viaScript = await viaAppsScript(fileId);
+      if (viaScript) { img.src = viaScript; return; }
     }
-    console.warn('Foto não pôde ser embutida no PDF (CORS):', src);
+    for (const via of (fileId ? [`https://lh3.googleusercontent.com/d/${fileId}=w800`, src] : [src])) {
+      const d = await viaDireta(via);
+      if (d) { img.src = d; return; }
+    }
+    falhas++;
+    console.warn('Foto não pôde ser embutida no PDF:', src);
   }));
+
+  if (falhas) {
+    toast(`⚠️ ${falhas} foto(s) não entraram no PDF — use Imprimir / Salvar PDF`);
+  }
 
   // Espera o navegador decodificar as imagens já trocadas
   await Promise.all(imgs.map(im => (im.decode ? im.decode().catch(() => {}) : null)));
