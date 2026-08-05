@@ -1102,8 +1102,8 @@ function checkinNotify(msg, cor) {
 
 function checkinGoTab(id, el) {
   document.querySelectorAll('#page-checkin .tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('#page-checkin .page').forEach(p => p.style.display = 'none');
-  document.getElementById('checkin-page-' + id).style.display = 'block';
+  document.querySelectorAll('#page-checkin .page').forEach(p => p.classList.remove('active'));
+  document.getElementById('checkin-page-' + id).classList.add('active');
   el.classList.add('active');
   if (id === 'checkin') checkinRender();
   if (id === 'cadastro') checkinRenderCadastro();
