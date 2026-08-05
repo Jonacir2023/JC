@@ -363,7 +363,6 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
     <nav class="tabs">
       <div class="tab active" onclick="pautaGoTab('envio',this)">📤 Envio</div>
       <div class="tab" onclick="pautaGoTab('listar',this)">📋 Listar</div>
-      <div class="tab" onclick="pautaGoTab('exportar',this)">🚀 Exportar</div>
     </nav>
   </header>
 
@@ -447,25 +446,6 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
       <div id="pauta-lista-assuntos">
         <div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-txt">Nenhum assunto registrado</div></div>
       </div>
-    </div>
-  </div>
-
-  <!-- EXPORTAR -->
-  <div class="page" id="pauta-page-exportar">
-    <div class="sec">
-      <div class="sec-title">🚀 Exportar para n8n</div>
-      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">Envia todos os assuntos registrados para o workflow de integração.</p>
-      <div id="pauta-export-status"></div>
-      <button class="btn btn-green btn-full" onclick="pautaExportarParaN8n()">📤 EXPORTAR PARA N8N</button>
-      <button class="btn btn-outline btn-full" onclick="pautaLimparAssuntos()" style="margin-top:6px;margin-bottom:0;border-color:var(--red);color:var(--red)">🗑️ LIMPAR TODOS</button>
-    </div>
-    <div class="sec">
-      <div class="sec-title">⚙️ Configuração</div>
-      <div class="frow">
-        <label>URL do Webhook n8n</label>
-        <input type="text" id="pauta-cfg-webhook" placeholder="https://..."/>
-      </div>
-      <button class="btn btn-secondary btn-full" onclick="pautaSalvarConfig()">💾 SALVAR</button>
     </div>
   </div>
 </div>
@@ -757,7 +737,6 @@ let pautaStatus = 'afazer';
 function pautaInit() {
   document.getElementById('pauta-hdr-date').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'}) + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
   document.getElementById('pauta-f-data-lanc').value = new Date().toISOString().slice(0,10);
-  document.getElementById('pauta-cfg-webhook').value = pautaConfig.webhook || '';
   pautaPopularSelects();
 }
 
@@ -821,36 +800,6 @@ function pautaEnviarAssunto() {
 
   pautaAssuntos.push(item);
   pautaS.set('assuntos', pautaAssuntos);
-
-  // Enviar para webhook se configurado
-  if (pautaConfig.webhook) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', pautaConfig.webhook, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.onload = function() {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        pautaNotify('Sincronizado com Sheets!', 'var(--green)');
-      } else {
-        pautaNotify('Erro ao sincronizar', 'var(--red)');
-      }
-    };
-    xhr.onerror = function() {
-      pautaNotify('Erro de conexão', 'var(--red)');
-    };
-    xhr.send(JSON.stringify({
-      tipo: 'pauta',
-      assunto: item.assunto,
-      descricao: item.desc,
-      criador: item.criador,
-      responsavel: item.resp,
-      setor: item.setor,
-      prioridade: item.prioridade,
-      status: item.status,
-      data_lancamento: item.dataLanc,
-      previsao_termino: item.dataTerm,
-      criado_em: new Date(item.criadoEm).toISOString()
-    }));
-  }
 
   document.getElementById('pauta-f-assunto').value = '';
   document.getElementById('pauta-f-descricao').value = '';
@@ -921,56 +870,6 @@ function pautaLimparAssuntos() {
   pautaNotify('Assuntos limpos', 'var(--red)');
 }
 
-function pautaSalvarConfig() {
-  pautaConfig.webhook = document.getElementById('pauta-cfg-webhook').value.trim();
-  pautaS.set('config', pautaConfig);
-  pautaNotify('Configuração salva!');
-}
-
-function pautaExportarParaN8n() {
-  if (!pautaAssuntos.length) { pautaNotify('Nenhum assunto para exportar', 'var(--yellow)'); return; }
-  if (!pautaConfig.webhook) { pautaNotify('Configure a URL do webhook antes', 'var(--yellow)'); return; }
-
-  const payload = {
-    assuntos: pautaAssuntos.map(a => ({
-      id: a.id, assunto: a.assunto, desc: a.desc || '', criador: a.criador || '', resp: a.resp || '', setor: a.setor || '',
-      prioridade: a.prioridade || 'media', status: a.status || 'afazer', dataLanc: a.dataLanc || '', dataTerm: a.dataTerm || '', criadoEm: a.criadoEm || Date.now()
-    })),
-    exportado_em: new Date().toISOString(),
-    total: pautaAssuntos.length
-  };
-
-  const statusEl = document.getElementById('pauta-export-status');
-  statusEl.className = '';
-  statusEl.innerHTML = '⏳ Enviando...';
-  statusEl.style.display = 'block';
-  statusEl.style.background = '#fef3dc';
-  statusEl.style.border = '1px solid var(--yellow)';
-  statusEl.style.color = 'var(--yellow)';
-  statusEl.style.padding = '12px';
-  statusEl.style.borderRadius = '8px';
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', pautaConfig.webhook, true);
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.onload = function() {
-    if (xhr.status >= 200 && xhr.status < 300) {
-      statusEl.className = 'export-status ok';
-      statusEl.innerHTML = '✅ <strong>Exportado!</strong><br>' + pautaAssuntos.length + ' assunto(s) enviado(s).';
-      pautaNotify('Enviado com sucesso!');
-    } else {
-      statusEl.className = 'export-status err';
-      statusEl.innerHTML = '❌ <strong>Erro</strong><br>Status: ' + xhr.status;
-      pautaNotify('Erro ao enviar', 'var(--red)');
-    }
-  };
-  xhr.onerror = function() {
-    statusEl.className = 'export-status err';
-    statusEl.innerHTML = '❌ <strong>Erro de conexão</strong>';
-    pautaNotify('Erro de conexão', 'var(--red)');
-  };
-  xhr.send(JSON.stringify(payload));
-}
 
 function pautaOpenAdmin() {
   document.getElementById('pauta-modal-admin').classList.add('open');
@@ -1374,33 +1273,7 @@ function checkinSalvarReuniao() {
   };
   checkinReunioes.push(reuniao);
   checkinS.set('reunioes', checkinReunioes);
-
-  // Enviar para webhook se configurado
-  if (checkinConfig.whSalvar) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', checkinConfig.whSalvar, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.onload = function() {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        checkinNotify('Sincronizado com Sheets!', 'var(--green)');
-      } else {
-        checkinNotify('Erro ao sincronizar', 'var(--red)');
-      }
-    };
-    xhr.onerror = function() {
-      checkinNotify('Erro de conexão', 'var(--red)');
-    };
-    xhr.send(JSON.stringify({
-      tipo: 'checkin',
-      data: reuniao.data,
-      hora: reuniao.hora,
-      obra: checkinConfig.obra,
-      assuntos: reuniao.assuntos,
-      criado_em: new Date().toISOString()
-    }));
-  } else {
-    checkinNotify('Reunião salva!');
-  }
+  checkinNotify('Reunião salva!');
 }
 
 function checkinSalvarTelegram() {
