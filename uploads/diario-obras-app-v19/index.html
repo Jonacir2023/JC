@@ -1150,7 +1150,9 @@ table.data-table tr:nth-child(even) td { background-color: #fdfdfd; }
 .quebra-pagina { page-break-before: always; break-before: page; }
 table.fotos-table { width: 100%; border-collapse: separate; border-spacing: 10px 0; table-layout: fixed; margin-bottom: 22px; }
 table.fotos-table td { width: 50%; vertical-align: top; padding-bottom: 12px; }
-.pdf-foto { margin: 0; page-break-inside: avoid; }
+.pdf-foto { margin: 0; page-break-inside: avoid; break-inside: avoid; }
+/* Nenhuma linha de foto nem de tabela pode ser partida entre páginas */
+table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-inside: avoid; }
 /* height:auto preserva a proporção original da foto — sem corte e sem distorção.
    Antes havia altura fixa com object-fit:cover, que recortava as bordas. */
 .pdf-foto img { width: 100%; height: auto; border: 1px solid #dee2e6; border-radius: 3px; display: block; }
@@ -3426,9 +3428,36 @@ async function compartilharPdfRDO() {
         });
         const pxPerMm = canvas.width / areaWmm;
         const maxFatiaPx = Math.max(1, Math.floor(areaHmm * pxPerMm));
+
+        // Faixas que não podem ser partidas ao meio — cada foto e cada linha de
+        // tabela —, em coordenadas do canvas capturado. Sem isso o corte cai a
+        // cada altura A4 exata e racha a foto no meio.
+        const escalaCanvas = canvas.width / (pagina.scrollWidth || canvas.width);
+        const topoRef = pagina.getBoundingClientRect().top;
+        const zonas = [...pagina.querySelectorAll('.pdf-foto, tr')]
+          .map(el => {
+            const r = el.getBoundingClientRect();
+            return { topo: (r.top - topoRef) * escalaCanvas, base: (r.bottom - topoRef) * escalaCanvas };
+          })
+          .filter(z => z.base > z.topo);
+
         let y = 0;
         while (y < canvas.height) {
-          const alturaFatiaPx = Math.min(maxFatiaPx, canvas.height - y);
+          let fim = Math.min(y + maxFatiaPx, canvas.height);
+
+          if (fim < canvas.height) {
+            // O corte atravessa alguma faixa indivisível? Recua para o topo dela.
+            const atravessada = zonas
+              .filter(z => fim > z.topo + 1 && fim < z.base - 1)
+              .sort((a, b) => a.topo - b.topo)[0];
+            // Só recua se sobrar fatia útil — elemento maior que uma página
+            // inteira não tem como não ser partido.
+            if (atravessada && atravessada.topo > y + maxFatiaPx * 0.15) {
+              fim = Math.floor(atravessada.topo);
+            }
+          }
+
+          const alturaFatiaPx = Math.max(1, fim - y);
           const fatia = document.createElement('canvas');
           fatia.width = canvas.width;
           fatia.height = alturaFatiaPx;
