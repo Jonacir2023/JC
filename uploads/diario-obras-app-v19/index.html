@@ -3190,6 +3190,7 @@ function gerarPdfRDO() {
     <div class="pdf-stage"><div class="pdf-doc" style="font-family:'Barlow',Arial,'Helvetica Neue',sans-serif;font-size:10pt;line-height:1.4;color:#1a1a1a;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.15)">${h}</div></div>`;
   document.body.appendChild(overlay);
   document.body.classList.add('pdf-printing');
+  agruparBlocosPdf(overlay);
   ajustarEscalaPdf();
   window.addEventListener('resize', ajustarEscalaPdf);
   window.addEventListener('orientationchange', ajustarEscalaPdf);
@@ -3198,6 +3199,32 @@ function gerarPdfRDO() {
 // Fração da largura disponível ocupada pela folha na visualização. Abaixo de 1
 // para sobrar margem nas laterais e as bordas da página ficarem visíveis.
 const ZOOM_VISUALIZACAO_PDF = 0.8;
+
+// Agrupa o conteúdo do relatório em blocos, cortando nos pontos marcados com
+// .quebra-pagina. A impressão respeita page-break-before sozinha, mas o PDF do
+// botão Compartilhar é montado pelo html2canvas, que fatia o documento em
+// pedaços de altura A4 e ignora quebras de CSS. Com o conteúdo já separado em
+// blocos, aquele gerador captura um bloco por vez e cada um começa em página
+// nova. Os divs criados não têm estilo, então nada muda na aparência.
+function agruparBlocosPdf(overlay) {
+  const pagina = overlay.querySelector('.pdf-page');
+  if (!pagina || pagina.querySelector(':scope > .pdf-bloco')) return;
+
+  const grupos = [[]];
+  [...pagina.children].forEach(el => {
+    const cortaAqui = el.classList.contains('quebra-pagina') || el.querySelector('.quebra-pagina');
+    if (cortaAqui && grupos[grupos.length - 1].length) grupos.push([]);
+    grupos[grupos.length - 1].push(el);
+  });
+  if (grupos.length < 2) return;   // não há onde cortar
+
+  grupos.forEach(grupo => {
+    const bloco = document.createElement('div');
+    bloco.className = 'pdf-bloco';
+    pagina.appendChild(bloco);
+    grupo.forEach(el => bloco.appendChild(el));
+  });
+}
 
 // Reduz o documento (largura fixa de A4) para caber na largura da tela,
 // mantendo a proporção de uma página real. Em telas largas não amplia além
@@ -3346,7 +3373,10 @@ async function prepararFotosParaCaptura(overlay) {
 async function compartilharPdfRDO() {
   const overlay = document.getElementById('pdfOverlay');
   if (!overlay) return;
-  const paginas = overlay.querySelectorAll('.pdf-page');
+  // Captura um bloco por vez: cada um vira uma página nova, respeitando as
+  // quebras. Sem blocos (relatório sem fotos), captura a página inteira.
+  const blocos = overlay.querySelectorAll('.pdf-bloco');
+  const paginas = blocos.length ? blocos : overlay.querySelectorAll('.pdf-page');
   if (!paginas.length) { toast('❌ Nada para compartilhar'); return; }
 
   const btn = document.getElementById('btnCompartilharPdf');
