@@ -822,6 +822,36 @@ function pautaEnviarAssunto() {
   pautaAssuntos.push(item);
   pautaS.set('assuntos', pautaAssuntos);
 
+  // Enviar para webhook se configurado
+  if (pautaConfig.webhook) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', pautaConfig.webhook, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = function() {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        pautaNotify('Sincronizado com Sheets!', 'var(--green)');
+      } else {
+        pautaNotify('Erro ao sincronizar', 'var(--red)');
+      }
+    };
+    xhr.onerror = function() {
+      pautaNotify('Erro de conexão', 'var(--red)');
+    };
+    xhr.send(JSON.stringify({
+      tipo: 'pauta',
+      assunto: item.assunto,
+      descricao: item.desc,
+      criador: item.criador,
+      responsavel: item.resp,
+      setor: item.setor,
+      prioridade: item.prioridade,
+      status: item.status,
+      data_lancamento: item.dataLanc,
+      previsao_termino: item.dataTerm,
+      criado_em: new Date(item.criadoEm).toISOString()
+    }));
+  }
+
   document.getElementById('pauta-f-assunto').value = '';
   document.getElementById('pauta-f-descricao').value = '';
   document.getElementById('pauta-f-data-term').value = '';
@@ -1344,7 +1374,33 @@ function checkinSalvarReuniao() {
   };
   checkinReunioes.push(reuniao);
   checkinS.set('reunioes', checkinReunioes);
-  checkinNotify('Reunião salva!');
+
+  // Enviar para webhook se configurado
+  if (checkinConfig.whSalvar) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', checkinConfig.whSalvar, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = function() {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        checkinNotify('Sincronizado com Sheets!', 'var(--green)');
+      } else {
+        checkinNotify('Erro ao sincronizar', 'var(--red)');
+      }
+    };
+    xhr.onerror = function() {
+      checkinNotify('Erro de conexão', 'var(--red)');
+    };
+    xhr.send(JSON.stringify({
+      tipo: 'checkin',
+      data: reuniao.data,
+      hora: reuniao.hora,
+      obra: checkinConfig.obra,
+      assuntos: reuniao.assuntos,
+      criado_em: new Date().toISOString()
+    }));
+  } else {
+    checkinNotify('Reunião salva!');
+  }
 }
 
 function checkinSalvarTelegram() {
