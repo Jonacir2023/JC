@@ -278,6 +278,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
     <div class="tab active" onclick="switchTab('home', this)">🏠 Home</div>
     <div class="tab" onclick="switchTab('pauta', this)">📋 Pautas</div>
     <div class="tab" onclick="switchTab('checkin', this)">✅ Check-in</div>
+    <div class="tab" onclick="switchTab('rdo', this)">📝 RDO</div>
   </nav>
 </header>
 
@@ -305,12 +306,11 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
         <div class="home-button-desc">Pautas e Check-in</div>
       </div>
 
-      <!-- 3. RDO (Reserved) -->
-      <div class="home-button btn-rdo disabled">
+      <!-- 3. RDO (Diário de Obras) -->
+      <div class="home-button btn-rdo" onclick="switchTab('rdo', document.querySelectorAll('.tab')[3])">
         <div class="home-button-icon">📝</div>
         <div class="home-button-title">RDO</div>
         <div class="home-button-desc">Diário de obras</div>
-        <div class="home-button-badge">Em breve</div>
       </div>
 
       <!-- 4. Custos (Reserved) -->
@@ -604,6 +604,15 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   <!-- DASHBOARD PAGE -->
   <div class="page" id="checkin-page-dashboard">
     <div id="checkin-dashboard-conteudo"></div>
+  </div>
+</div>
+
+<!-- RDO PAGE (Diário de Obras) -->
+<div class="page" id="page-rdo">
+  <div class="sec">
+    <div class="sec-title">📝 Diário de Obras</div>
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:12px;">Aplicação de RDO carregando...</p>
+    <p style="font-size:12px;color:var(--ink-faint);">Compartilhado com Check-in e Pautas via Google Sheets</p>
   </div>
 </div>
 
