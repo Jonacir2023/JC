@@ -1080,7 +1080,7 @@ let checkinNomesCriador = checkinS.get('nomesCriador') || [];
 let checkinCalMes = new Date();
 let checkinResumoTab = 'semanal';
 
-function checkinAprender Nombre(lista, nome, chave) {
+function checkinAprenderNome(lista, nome, chave) {
   nome = nome.trim();
   if (!nome) return;
   if (!lista.includes(nome)) { lista.push(nome); checkinS.set(chave, lista); }
@@ -1291,8 +1291,8 @@ function checkinSalvarAssunto() {
   const editId = document.getElementById('checkin-a-edit-id').value;
   const resp = document.getElementById('checkin-a-resp').value.trim();
   const criador = document.getElementById('checkin-a-criador').value.trim();
-  checkinAprender Nombre(checkinNomesResp, resp, 'nomesResp');
-  checkinAprender Nombre(checkinNomesCriador, criador, 'nomesCriador');
+  checkinAprenderNome(checkinNomesResp, resp, 'nomesResp');
+  checkinAprenderNome(checkinNomesCriador, criador, 'nomesCriador');
   if (criador) checkinS.set('ultimoCriador', criador);
   const dados = {
     assunto, desc: document.getElementById('checkin-a-desc').value,
