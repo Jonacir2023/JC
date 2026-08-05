@@ -3034,16 +3034,19 @@ function gerarPdfRDO() {
     });
     if (!linhasServ) linhasServ = '<tr><td colspan="2" style="text-align:center">Nenhum serviço lançado no período</td></tr>';
     const mediaEf = r.diasComEfetivo > 0 ? Math.round(r.somaEfetivo / r.diasComEfetivo) : 0;
+    // Cada resumo de período começa em página nova
     return `
-        <div class="section-title">${titulo} — ${escHtml(periodoLabel)}</div>
-        <div class="stats-grid">
-            <div class="stat-row"><div class="stat-box"><div class="stat-label">Dias com registro</div></div><div class="stat-box"><div class="stat-num">${r.dias.length}</div></div></div>
-            <div class="stat-row"><div class="stat-box"><div class="stat-label">Efetivo médio/dia</div></div><div class="stat-box"><div class="stat-num">${mediaEf || '—'}</div></div></div>
-        </div>
-        <table class="data-table">
-            <tr><th>Serviço</th><th style="width: 25%; text-align: right;">Total acumulado</th></tr>
-            ${linhasServ}
-        </table>`;
+        <div class="quebra-pagina">
+            <div class="section-title">${titulo} — ${escHtml(periodoLabel)}</div>
+            <div class="stats-grid">
+                <div class="stat-row"><div class="stat-box"><div class="stat-label">Dias com registro</div></div><div class="stat-box"><div class="stat-num">${r.dias.length}</div></div></div>
+                <div class="stat-row"><div class="stat-box"><div class="stat-label">Efetivo médio/dia</div></div><div class="stat-box"><div class="stat-num">${mediaEf || '—'}</div></div></div>
+            </div>
+            <table class="data-table">
+                <tr><th>Serviço</th><th style="width: 25%; text-align: right;">Total acumulado</th></tr>
+                ${linhasServ}
+            </table>
+        </div>`;
   };
 
   // Assinaturas
