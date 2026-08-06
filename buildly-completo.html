@@ -1079,7 +1079,7 @@ function pautaAbaAdmin(aba, el) {
   if (aba === 'sync') {
     const tokenInput = document.getElementById('pauta-sync-token');
     if (tokenInput) {
-      tokenInput.value = githubToken || '';
+      tokenInput.value = githubToken;
     }
     atualizarStatusSync();
   }
@@ -1679,7 +1679,7 @@ function checkinAbrirConfig() {
   document.getElementById('checkin-cfg-wh-telegram').value = checkinConfig.whTelegram || '';
   document.getElementById('checkin-cfg-wh-carregar').value = checkinConfig.whCarregar || '';
   document.getElementById('checkin-cfg-wh-pdf').value = checkinConfig.whPDF || '';
-  document.getElementById('checkin-cfg-github-token').value = githubToken || '';
+  document.getElementById('checkin-cfg-github-token').value = githubToken;
   document.getElementById('checkin-modal-config').classList.add('open');
 }
 
