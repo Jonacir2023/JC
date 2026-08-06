@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Controle de Custos"/>
+<title>Controle de Custos — BUILDLy Premium</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#e8e4df;--bg-card:#f0ece7;--bg-dark:#1c1c1c;--bg-mid:#2e2b28;
+  --ink:#1c1a18;--ink-soft:#4a4540;--ink-faint:#8a8178;
+  --accent:#d4541a;--accent2:#e8a030;--line:#ccc5bc;
+  --green:#2d6a40;--red:#b83228;--blue:#1e3f6e;--yellow:#c99500;
+  --serif:'Barlow Condensed','Arial Narrow',sans-serif;
+  --sans:'Barlow',-apple-system,sans-serif;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.12)
+}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100vh}
+body{max-width:480px;margin:0 auto;padding-bottom:82px}
+
+.hdr{background:var(--bg-dark);color:#f0ece7;padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:0 3px 16px rgba(0,0,0,.4);border-bottom:3px solid var(--accent)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.hdr-logo{font-family:var(--serif);font-size:22px;font-weight:800;letter-spacing:1px;color:#f0ece7}
+.hdr-logo span{color:var(--accent)}
+.hdr-date{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--accent2);text-align:right}
+.hdr-settings{background:none;border:1px solid rgba(255,255,255,.2);color:#aaa;font-size:14px;padding:6px 8px;border-radius:6px;cursor:pointer}
+.hdr-settings:hover{background:rgba(255,255,255,.08)}
+
+.tabs{display:flex;overflow-x:auto;gap:0;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.08)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:10px 14px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;color:#888;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab.active{color:#f0ece7;border-bottom-color:var(--accent)}
+.tab:hover:not(.active){color:#ccc}
+
+.page{display:none;padding:16px}
+.page.active{display:block}
+
+.sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--bg-dark);margin-bottom:12px}
+
+.frow{margin-bottom:10px}
+.frow label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
+.frow input,.frow select,.frow textarea{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#fff;color:var(--ink);transition:border .2s;outline:none}
+.frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
+.frow textarea{resize:vertical;min-height:60px}
+.frow-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#b8431a}
+.btn-secondary{background:var(--bg-dark);color:#f0ece7}
+.btn-secondary:hover{background:var(--bg-mid)}
+.btn-full{width:100%;justify-content:center;margin-bottom:8px}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--serif);letter-spacing:.4px;text-transform:uppercase}
+.badge-red{background:#fde8e8;color:var(--red)}
+.badge-yellow{background:#fef3dc;color:var(--yellow)}
+.badge-green{background:#e1f0e6;color:var(--green)}
+.badge-blue{background:#dde8f5;color:var(--blue)}
+
+.notif{position:fixed;top:60px;left:16px;right:16px;padding:12px;border-radius:8px;background:var(--green);color:white;font-size:13px;font-weight:600;z-index:200;display:none}
+.notif.show{display:block}
+
+.card{background:#fff;border-radius:8px;padding:11px;margin-bottom:8px;box-shadow:0 1px 6px rgba(0,0,0,.08);border:1px solid #dbd4cb}
+.card-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.card-desc{font-size:12px;color:var(--ink-soft);margin-bottom:6px}
+.card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #f0ece7;font-size:11px;color:var(--ink-faint)}
+
+.stat-box{background:var(--bg-card);padding:12px;border-radius:8px;margin-bottom:10px;border:1px solid var(--line)}
+.stat-label{font-size:11px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.stat-value{font-family:var(--serif);font-size:24px;font-weight:800;color:var(--accent);margin-top:4px}
+
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--bg-dark);color:#f0ece7;padding:8px;text-align:left;font-weight:700;font-family:var(--serif)}
+td{padding:8px;border-bottom:1px solid var(--line)}
+tr:hover{background:#f9f7f5}
+
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:500}
+.modal.open{display:flex}
+.modal-content{background:white;border-radius:12px;padding:20px;max-width:90%;max-height:90vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#999}
+.modal-close:hover{color:#333}
+.modal-title{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:15px}
+</style>
+</head>
+<body>
+
+<div class="notif" id="notif"></div>
+
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-logo">CUS<span>TOS</span></div>
+      <div style="font-size:11px;color:#aaa">Controle de Gastos</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="hdr-date" id="hdr-date"></div>
+      <button class="hdr-settings" onclick="abrirConfig()">⚙️</button>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" onclick="abrir('novo',this)">➕ Novo Gasto</button>
+    <button class="tab" onclick="abrir('listar',this)">📋 Listar</button>
+    <button class="tab" onclick="abrir('resumo',this)">📊 Resumo</button>
+    <button class="tab" onclick="abrir('categorias',this)">🏷️ Categorias</button>
+  </nav>
+</header>
+
+<!-- Novo Gasto -->
+<div class="page active" id="page-novo">
+  <div class="sec">
+    <div class="sec-title">💰 Registrar Novo Gasto</div>
+    <div class="frow">
+      <label>Data</label>
+      <input type="date" id="gasto-data"/>
+    </div>
+    <div class="frow">
+      <label>Descrição</label>
+      <input type="text" id="gasto-descricao" placeholder="Ex: Compra de cimento"/>
+    </div>
+    <div class="frow-2">
+      <div class="frow">
+        <label>Valor (R$)</label>
+        <input type="number" id="gasto-valor" step="0.01" placeholder="0.00"/>
+      </div>
+      <div class="frow">
+        <label>Categoria</label>
+        <select id="gasto-categoria"></select>
+      </div>
+    </div>
+    <div class="frow">
+      <label>Fornecedor</label>
+      <input type="text" id="gasto-fornecedor" placeholder="Ex: Loja do Zé"/>
+    </div>
+    <div class="frow">
+      <label>Responsável</label>
+      <select id="gasto-responsavel"></select>
+    </div>
+    <div class="frow">
+      <label>Observações</label>
+      <textarea id="gasto-observacoes" placeholder="Detalhes adicionais..."></textarea>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="salvarGasto()">💾 SALVAR GASTO</button>
+  </div>
+</div>
+
+<!-- Listar Gastos -->
+<div class="page" id="page-listar">
+  <div class="sec">
+    <div class="sec-title">📋 Histórico de Gastos</div>
+    <div class="frow-2">
+      <div class="frow">
+        <label>Filtrar por Categoria</label>
+        <select id="filtro-categoria" onchange="renderListar()">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="frow">
+        <label>Período</label>
+        <select id="filtro-periodo" onchange="renderListar()">
+          <option value="todo">Todos</option>
+          <option value="mes">Este Mês</option>
+          <option value="semana">Esta Semana</option>
+        </select>
+      </div>
+    </div>
+    <div id="lista-gastos"></div>
+  </div>
+</div>
+
+<!-- Resumo -->
+<div class="page" id="page-resumo">
+  <div class="sec">
+    <div class="sec-title">📊 Resumo de Gastos</div>
+    <div class="stat-box">
+      <div class="stat-label">Total Geral</div>
+      <div class="stat-value" id="total-geral">R$ 0,00</div>
+    </div>
+    <div id="resumo-categorias"></div>
+    <div id="resumo-responsaveis"></div>
+  </div>
+</div>
+
+<!-- Categorias -->
+<div class="page" id="page-categorias">
+  <div class="sec">
+    <div class="sec-title">🏷️ Gerenciar Categorias</div>
+    <div class="frow-2" style="align-items:flex-end;margin-bottom:10px">
+      <div class="frow" style="margin-bottom:0">
+        <label>Nova Categoria</label>
+        <input type="text" id="nova-categoria" placeholder="Ex: Material"/>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="adicionarCategoria()">+ ADD</button>
+    </div>
+    <div id="lista-categorias"></div>
+  </div>
+</div>
+
+<!-- Modal Config -->
+<div class="modal" id="modal-config">
+  <div class="modal-content">
+    <button class="modal-close" onclick="fecharConfig()">✕</button>
+    <div class="modal-title">⚙️ Configurações</div>
+    <div class="frow">
+      <label>Nome da Obra</label>
+      <input type="text" id="cfg-obra"/>
+    </div>
+    <div class="frow">
+      <label>Responsável</label>
+      <input type="text" id="cfg-responsavel"/>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="salvarConfig()">SALVAR</button>
+  </div>
+</div>
+
+<script>
+const S = {
+  get(k) { try { return JSON.parse(localStorage.getItem('custo_' + k)); } catch { return null; } },
+  set(k, v) { localStorage.setItem('custo_' + k, JSON.stringify(v)); }
+};
+
+let config = S.get('config') || { obra: 'Obra', responsavel: 'Responsável' };
+let categorias = S.get('categorias') || ['Material', 'Mão de Obra', 'Aluguel', 'Combustível', 'Outros'];
+let gastos = S.get('gastos') || [];
+let responsaveis = S.get('responsaveis') || ['Jonacir', 'Aline', 'José'];
+
+function notify(msg, cor = '#2d6a40') {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.style.background = cor;
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 3000);
+}
+
+function formatarMoeda(valor) {
+  return 'R$ ' + valor.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function salvarGasto() {
+  const data = document.getElementById('gasto-data').value;
+  const descricao = document.getElementById('gasto-descricao').value.trim();
+  const valor = parseFloat(document.getElementById('gasto-valor').value) || 0;
+  const categoria = document.getElementById('gasto-categoria').value;
+  const fornecedor = document.getElementById('gasto-fornecedor').value.trim();
+  const responsavel = document.getElementById('gasto-responsavel').value;
+  const observacoes = document.getElementById('gasto-observacoes').value.trim();
+
+  if (!data || !descricao || valor === 0) {
+    notify('❌ Preencha data, descrição e valor', '#b83228');
+    return;
+  }
+
+  const gasto = {
+    id: Date.now(),
+    data,
+    descricao,
+    valor,
+    categoria,
+    fornecedor,
+    responsavel,
+    observacoes,
+    criado_em: new Date().toISOString()
+  };
+
+  gastos.push(gasto);
+  S.set('gastos', gastos);
+
+  document.getElementById('gasto-data').value = '';
+  document.getElementById('gasto-descricao').value = '';
+  document.getElementById('gasto-valor').value = '';
+  document.getElementById('gasto-fornecedor').value = '';
+  document.getElementById('gasto-observacoes').value = '';
+
+  notify('✅ Gasto registrado com sucesso!', '#2d6a40');
+}
+
+function renderListar() {
+  const categoria = document.getElementById('filtro-categoria').value;
+  const periodo = document.getElementById('filtro-periodo').value;
+  const hoje = new Date();
+  const mesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const semanaPassa = new Date(hoje.getTime() - 7*24*60*60*1000);
+
+  let filtrados = gastos.filter(g => {
+    if (categoria && g.categoria !== categoria) return false;
+    const dataGasto = new Date(g.data);
+    if (periodo === 'mes' && dataGasto < mesAtual) return false;
+    if (periodo === 'semana' && dataGasto < semanaPassa) return false;
+    return true;
+  }).sort((a, b) => new Date(b.data) - new Date(a.data));
+
+  const html = filtrados.length ? filtrados.map(g => `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div>
+          <div class="card-title">${g.descricao}</div>
+          <div class="card-desc">${g.fornecedor || 'N/A'}</div>
+          <div class="card-meta">
+            <span class="badge badge-blue">${g.categoria}</span>
+            <span class="badge badge-yellow">${g.responsavel}</span>
+          </div>
+        </div>
+        <div style="text-align:right;font-family:var(--serif);font-size:14px;font-weight:700;color:var(--red)">
+          ${formatarMoeda(g.valor)}
+        </div>
+      </div>
+      <div class="card-footer">
+        <span>${new Date(g.data).toLocaleDateString('pt-BR')}</span>
+        <button onclick="deletarGasto(${g.id})" style="background:none;border:none;color:#b83228;cursor:pointer;font-size:12px;font-weight:700">🗑️ DELETAR</button>
+      </div>
+    </div>
+  `).join('') : '<p style="color:var(--ink-faint)">Nenhum gasto registrado</p>';
+
+  document.getElementById('lista-gastos').innerHTML = html;
+}
+
+function renderResumo() {
+  const total = gastos.reduce((s, g) => s + g.valor, 0);
+  document.getElementById('total-geral').textContent = formatarMoeda(total);
+
+  const porCategoria = {};
+  gastos.forEach(g => {
+    porCategoria[g.categoria] = (porCategoria[g.categoria] || 0) + g.valor;
+  });
+
+  const catHtml = Object.entries(porCategoria)
+    .sort((a, b) => b[1] - a[1])
+    .map(([cat, valor]) => `
+      <div class="stat-box">
+        <div class="stat-label">${cat}</div>
+        <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--accent)">${formatarMoeda(valor)}</div>
+        <div style="font-size:11px;color:var(--ink-faint);margin-top:4px">${((valor/total)*100).toFixed(1)}% do total</div>
+      </div>
+    `).join('');
+
+  document.getElementById('resumo-categorias').innerHTML = catHtml;
+}
+
+function renderCategorias() {
+  const html = categorias.map((cat, idx) => `
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <span>${cat}</span>
+      <button onclick="deletarCategoria(${idx})" style="background:none;border:none;color:#b83228;cursor:pointer;font-size:12px">🗑️</button>
+    </div>
+  `).join('');
+
+  document.getElementById('lista-categorias').innerHTML = html;
+}
+
+function adicionarCategoria() {
+  const nova = document.getElementById('nova-categoria').value.trim();
+  if (!nova || categorias.includes(nova)) return notify('❌ Categoria inválida ou duplicada', '#b83228');
+
+  categorias.push(nova);
+  S.set('categorias', categorias);
+  document.getElementById('nova-categoria').value = '';
+  renderCategorias();
+  atualizarSelectsCategorias();
+  notify('✅ Categoria adicionada!');
+}
+
+function deletarCategoria(idx) {
+  if (confirm('Tem certeza?')) {
+    categorias.splice(idx, 1);
+    S.set('categorias', categorias);
+    renderCategorias();
+    atualizarSelectsCategorias();
+  }
+}
+
+function deletarGasto(id) {
+  if (confirm('Deletar este gasto?')) {
+    gastos = gastos.filter(g => g.id !== id);
+    S.set('gastos', gastos);
+    renderListar();
+    renderResumo();
+  }
+}
+
+function atualizarSelectsCategorias() {
+  [document.getElementById('gasto-categoria'), document.getElementById('filtro-categoria')].forEach(sel => {
+    const val = sel.value;
+    sel.innerHTML = '<option value="">Todas</option>' + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+    sel.value = val;
+  });
+}
+
+function atualizarSelectsResponsaveis() {
+  document.getElementById('gasto-responsavel').innerHTML = responsaveis.map(r => `<option value="${r}">${r}</option>`).join('');
+}
+
+function abrir(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  el.classList.add('active');
+
+  if (tab === 'listar') renderListar();
+  else if (tab === 'resumo') renderResumo();
+  else if (tab === 'categorias') renderCategorias();
+}
+
+function abrirConfig() {
+  document.getElementById('cfg-obra').value = config.obra;
+  document.getElementById('cfg-responsavel').value = config.responsavel;
+  document.getElementById('modal-config').classList.add('open');
+}
+
+function fecharConfig() {
+  document.getElementById('modal-config').classList.remove('open');
+}
+
+function salvarConfig() {
+  config.obra = document.getElementById('cfg-obra').value;
+  config.responsavel = document.getElementById('cfg-responsavel').value;
+  S.set('config', config);
+  fecharConfig();
+  notify('✅ Configurações salvas!');
+}
+
+// Init
+window.addEventListener('load', () => {
+  const agora = new Date();
+  document.getElementById('hdr-date').textContent = agora.toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'});
+  document.getElementById('gasto-data').valueAsDate = agora;
+  atualizarSelectsCategorias();
+  atualizarSelectsResponsaveis();
+});
+</script>
+</body>
+</html>
