@@ -278,6 +278,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
     <div class="tab active" onclick="switchTab('home', this)">🏠 Home</div>
     <div class="tab" onclick="switchTab('pauta', this)">📋 Pautas</div>
     <div class="tab" onclick="switchTab('checkin', this)">✅ Check-in</div>
+    <div class="tab" onclick="switchTab('custos', this)">💰 Custos</div>
     <div class="tab" onclick="switchTab('rdo', this)">📝 RDO</div>
   </nav>
 </header>
@@ -313,12 +314,12 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
         <div class="home-button-desc">Diário de obras</div>
       </div>
 
-      <!-- 4. Custos (Reserved) -->
-      <div class="home-button btn-custos disabled">
+      <!-- 4. Custos -->
+      <div class="home-button" onclick="switchTab('custos', document.querySelector('.tab[onclick*=custos]') || this)">
         <div class="home-button-icon">💰</div>
         <div class="home-button-title">Custos</div>
-        <div class="home-button-desc">Em desenvolvimento</div>
-        <div class="home-button-badge">Em breve</div>
+        <div class="home-button-desc">Controle de gastos</div>
+        <div class="home-button-badge">Ativo</div>
       </div>
 
       <!-- 5. Medição (Reserved) -->
@@ -607,6 +608,11 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   <div class="page" id="checkin-page-dashboard">
     <div id="checkin-dashboard-conteudo"></div>
   </div>
+</div>
+
+<!-- CUSTOS PAGE (Controle de Gastos) -->
+<div class="page" id="page-custos">
+  <iframe id="custos-iframe" src="custos.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#f0ece7;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- RDO PAGE (Diário de Obras) -->
