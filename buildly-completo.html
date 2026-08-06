@@ -461,6 +461,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
       <button class="atab active" onclick="pautaAbaAdmin('membros',this)">👥 Membros</button>
       <button class="atab" onclick="pautaAbaAdmin('setores',this)">🏗️ Setores</button>
       <button class="atab" onclick="pautaAbaAdmin('backup',this)">💾 Backup</button>
+      <button class="atab" onclick="pautaAbaAdmin('sync',this)">☁️ Sync</button>
     </div>
 
     <div class="admin-section active" id="pauta-admin-membros">
@@ -485,6 +486,26 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
         <label class="frow"><span style="display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:4px">Restaurar</span>
           <input type="file" accept=".json" onchange="pautaRestaurarBackup(event)"/>
         </label>
+      </div>
+    </div>
+
+    <div class="admin-section" id="pauta-admin-sync">
+      <div class="sec">
+        <div class="sec-title">🔐 GitHub PAT</div>
+        <div class="frow">
+          <label>Token de Acesso Pessoal</label>
+          <input type="password" id="pauta-sync-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" value=""/>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="pautaSalvarTokenSync()">💾 SALVAR TOKEN</button>
+      </div>
+      <div class="sec" style="margin-top:12px">
+        <div class="sec-title">📊 Status de Sincronização</div>
+        <div style="font-size:13px;color:var(--ink-soft);line-height:1.6">
+          <p><strong>Próxima sincronização:</strong> <span id="sync-proximo"></span></p>
+          <p><strong>Última sincronização:</strong> <span id="sync-ultimo">Nunca</span></p>
+          <p><strong>Arquivos:</strong> pauta-dados.json, checkin-dados.json</p>
+          <p><strong>Intervalo:</strong> A cada 2 minutos</p>
+        </div>
       </div>
     </div>
   </div>
@@ -677,6 +698,8 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
     <div class="frow"><label>Webhook Telegram</label><input type="text" id="checkin-cfg-wh-telegram" placeholder="https://..."/></div>
     <div class="frow"><label>Webhook Carregar</label><input type="text" id="checkin-cfg-wh-carregar" placeholder="https://..."/></div>
     <div class="frow"><label>Webhook PDF</label><input type="text" id="checkin-cfg-wh-pdf" placeholder="https://..."/></div>
+    <hr style="border:none;border-top:1px solid var(--line);margin:12px 0;opacity:.5"/>
+    <div class="frow"><label>🔐 GitHub PAT (Sincronização)</label><input type="password" id="checkin-cfg-github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"/></div>
     <button class="btn btn-primary btn-full" onclick="checkinSalvarConfig()">SALVAR</button>
   </div>
 </div>
@@ -712,6 +735,105 @@ setInterval(() => {
 }, 30000);
 
 document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'}) + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+
+// ═══════════════════════════════════════════════════════════════
+// AUTO-SYNC COM GITHUB
+// ═══════════════════════════════════════════════════════════════
+
+const syncConfig = {
+  get(k) { try { return JSON.parse(localStorage.getItem('sync_' + k)); } catch { return null; } },
+  set(k, v) { localStorage.setItem('sync_' + k, JSON.stringify(v)); }
+};
+
+let githubToken = syncConfig.get('token') || '';
+
+function setSyncToken(token) {
+  githubToken = token.trim();
+  syncConfig.set('token', githubToken);
+}
+
+function syncToGithub() {
+  if (!githubToken) return;
+
+  const pautaData = {
+    timestamp: new Date().toISOString(),
+    assuntos: pautaAssuntos || [],
+    membros: pautaMembros || [],
+    setores: pautaSetores || []
+  };
+
+  const checkinData = {
+    timestamp: new Date().toISOString(),
+    assuntos: checkinAssuntos || [],
+    reunioes: checkinReunioes || []
+  };
+
+  // Salvar Pauta
+  fetch('https://api.github.com/repos/Jonacir2023/JC/contents/pauta-dados.json', {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'token ' + githubToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: 'auto: sync pauta data',
+      content: btoa(JSON.stringify(pautaData, null, 2)),
+      branch: 'main'
+    })
+  }).then(() => {
+    syncConfig.set('ultimo', new Date().toISOString());
+    atualizarStatusSync();
+  }).catch(e => console.log('Pauta sync:', e.message));
+
+  // Salvar Check-in
+  fetch('https://api.github.com/repos/Jonacir2023/JC/contents/checkin-dados.json', {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'token ' + githubToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: 'auto: sync checkin data',
+      content: btoa(JSON.stringify(checkinData, null, 2)),
+      branch: 'main'
+    })
+  }).catch(e => console.log('Check-in sync:', e.message));
+}
+
+function atualizarStatusSync() {
+  const ultimo = syncConfig.get('ultimo');
+  const ultimoEl = document.getElementById('sync-ultimo');
+  const proximoEl = document.getElementById('sync-proximo');
+
+  if (ultimo) {
+    const data = new Date(ultimo);
+    ultimoEl.textContent = data.toLocaleString('pt-BR');
+  }
+
+  const proximo = new Date(new Date().getTime() + 120000);
+  proximoEl.textContent = proximo.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+}
+
+function pautaSalvarTokenSync() {
+  const tokenInput = document.getElementById('pauta-sync-token');
+  const token = tokenInput.value;
+
+  if (!token) {
+    pautaNotify('❌ Token vazio', '#b83228');
+    return;
+  }
+
+  setSyncToken(token);
+  pautaNotify('✅ Token salvo com sucesso!', '#2d6a40');
+
+  // Fazer primeira sincronização
+  syncToGithub();
+}
+
+// Auto-sync a cada 2 minutos
+setInterval(() => {
+  if (githubToken) syncToGithub();
+}, 120000);
 
 // ═══════════════════════════════════════════════════════════════
 // PAUTA APP
@@ -886,6 +1008,15 @@ function pautaAbaAdmin(aba, el) {
   document.getElementById('pauta-admin-' + aba).classList.add('active');
   document.querySelectorAll('#page-pauta .atab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
+
+  // Se abrir aba sync, carregar dados
+  if (aba === 'sync') {
+    const tokenInput = document.getElementById('pauta-sync-token');
+    if (tokenInput) {
+      tokenInput.value = githubToken;
+    }
+    atualizarStatusSync();
+  }
 }
 
 function pautaAddMembro() {
@@ -1482,6 +1613,7 @@ function checkinAbrirConfig() {
   document.getElementById('checkin-cfg-wh-telegram').value = checkinConfig.whTelegram || '';
   document.getElementById('checkin-cfg-wh-carregar').value = checkinConfig.whCarregar || '';
   document.getElementById('checkin-cfg-wh-pdf').value = checkinConfig.whPDF || '';
+  document.getElementById('checkin-cfg-github-token').value = githubToken;
   document.getElementById('checkin-modal-config').classList.add('open');
 }
 
@@ -1495,6 +1627,13 @@ function checkinSalvarConfig() {
   };
   checkinS.set('config', checkinConfig);
   document.getElementById('checkin-hdr-obra-label').textContent = checkinConfig.obra || '— Configure a obra —';
+
+  // Salvar GitHub token
+  const githubTokenInput = document.getElementById('checkin-cfg-github-token').value.trim();
+  if (githubTokenInput) {
+    setSyncToken(githubTokenInput);
+  }
+
   checkinFecharModal('config');
   checkinNotify('Configurações salvas!');
 }
