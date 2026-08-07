@@ -1249,7 +1249,40 @@ function checkinInit() {
   document.getElementById('checkin-ci-data').value = now.toISOString().slice(0,10);
   document.getElementById('checkin-ci-hora').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   document.getElementById('checkin-hdr-obra-label').textContent = checkinConfig.obra || '— Configure a obra —';
+
+  // Sincronizar Pauta → Check-in automaticamente
+  checkinSincronizarComPauta();
+
   checkinRender();
+}
+
+function checkinSincronizarComPauta() {
+  // Carregar assuntos da Pauta
+  const assuntosPauta = pautaS.get('assuntos') || [];
+
+  if (assuntosPauta.length === 0) return;
+
+  // Carregar assuntos locais do Check-in
+  let assuntosCheckin = checkinS.get('assuntos') || [];
+  const idsCheckin = new Set(assuntosCheckin.map(a => a.id));
+
+  // Adicionar novos assuntos da Pauta (sem duplicar)
+  let adicionados = 0;
+  assuntosPauta.forEach(a => {
+    if (!idsCheckin.has(a.id)) {
+      assuntosCheckin.push({
+        ...a,
+        status: 'afazer' // Novo assunto começa como "A fazer"
+      });
+      adicionados++;
+    }
+  });
+
+  if (adicionados > 0) {
+    checkinS.set('assuntos', assuntosCheckin);
+    checkinAssuntos = assuntosCheckin;
+    checkinNotify(`✅ ${adicionados} assunto(s) da Pauta sincronizado(s)!`, '#2d6a40');
+  }
 }
 
 function checkinAtualizarContadores() {
