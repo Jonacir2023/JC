@@ -70,6 +70,12 @@ python scripts/importar_sinapi_mg.py --csv
 
 ---
 
+## Relacionado
+
+- [[Projetos/Diário de Obras (App RDO)]] — contexto completo do app que alimenta a aba Diário
+
+---
+
 ## Custo Mensal
 
 | Serviço | Custo |

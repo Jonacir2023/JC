@@ -278,6 +278,8 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
     <div class="tab active" onclick="switchTab('home', this)">🏠 Home</div>
     <div class="tab" onclick="switchTab('pauta', this)">📋 Pautas</div>
     <div class="tab" onclick="switchTab('checkin', this)">✅ Check-in</div>
+    <div class="tab" onclick="switchTab('custos', this)">💰 Custos</div>
+    <div class="tab" onclick="switchTab('rdo', this)">📝 RDO</div>
   </nav>
 </header>
 
@@ -305,20 +307,19 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
         <div class="home-button-desc">Pautas e Check-in</div>
       </div>
 
-      <!-- 3. RDO (Reserved) -->
-      <div class="home-button btn-rdo disabled">
+      <!-- 3. RDO (Diário de Obras) -->
+      <div class="home-button btn-rdo" onclick="switchTab('rdo', document.querySelectorAll('.tab')[3])">
         <div class="home-button-icon">📝</div>
         <div class="home-button-title">RDO</div>
         <div class="home-button-desc">Diário de obras</div>
-        <div class="home-button-badge">Em breve</div>
       </div>
 
-      <!-- 4. Custos (Reserved) -->
-      <div class="home-button btn-custos disabled">
+      <!-- 4. Custos -->
+      <div class="home-button" onclick="switchTab('custos', document.querySelector('.tab[onclick*=custos]') || this)">
         <div class="home-button-icon">💰</div>
         <div class="home-button-title">Custos</div>
-        <div class="home-button-desc">Em desenvolvimento</div>
-        <div class="home-button-badge">Em breve</div>
+        <div class="home-button-desc">Controle de gastos</div>
+        <div class="home-button-badge">Ativo</div>
       </div>
 
       <!-- 5. Medição (Reserved) -->
@@ -363,7 +364,6 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
     <nav class="tabs">
       <div class="tab active" onclick="pautaGoTab('envio',this)">📤 Envio</div>
       <div class="tab" onclick="pautaGoTab('listar',this)">📋 Listar</div>
-      <div class="tab" onclick="pautaGoTab('exportar',this)">🚀 Exportar</div>
     </nav>
   </header>
 
@@ -449,25 +449,6 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
       </div>
     </div>
   </div>
-
-  <!-- EXPORTAR -->
-  <div class="page" id="pauta-page-exportar">
-    <div class="sec">
-      <div class="sec-title">🚀 Exportar para n8n</div>
-      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">Envia todos os assuntos registrados para o workflow de integração.</p>
-      <div id="pauta-export-status"></div>
-      <button class="btn btn-green btn-full" onclick="pautaExportarParaN8n()">📤 EXPORTAR PARA N8N</button>
-      <button class="btn btn-outline btn-full" onclick="pautaLimparAssuntos()" style="margin-top:6px;margin-bottom:0;border-color:var(--red);color:var(--red)">🗑️ LIMPAR TODOS</button>
-    </div>
-    <div class="sec">
-      <div class="sec-title">⚙️ Configuração</div>
-      <div class="frow">
-        <label>URL do Webhook n8n</label>
-        <input type="text" id="pauta-cfg-webhook" placeholder="https://..."/>
-      </div>
-      <button class="btn btn-secondary btn-full" onclick="pautaSalvarConfig()">💾 SALVAR</button>
-    </div>
-  </div>
 </div>
 
 <!-- PAUTA MODAL ADMIN -->
@@ -544,6 +525,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <div class="hdr-date" id="checkin-hdr-date"></div>
+        <button class="hdr-settings" onclick="checkinCarregarAssuntosDaPauta()" title="Sincronizar com Pauta">🔄</button>
         <button class="hdr-settings" onclick="checkinAbrirConfig()" title="Configurar obra">⚙️</button>
       </div>
     </div>
@@ -626,6 +608,16 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
   <div class="page" id="checkin-page-dashboard">
     <div id="checkin-dashboard-conteudo"></div>
   </div>
+</div>
+
+<!-- CUSTOS PAGE (Controle de Gastos) -->
+<div class="page" id="page-custos">
+  <iframe id="custos-iframe" src="custos.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#f0ece7;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
+</div>
+
+<!-- RDO PAGE (Diário de Obras) -->
+<div class="page" id="page-rdo">
+  <iframe id="rdo-iframe" src="rdo.html" style="width:100%;height:calc(100vh - 140px);border:none;background:#f0ece7;display:block;margin:0;padding:0" frameborder="0" allow="geolocation; microphone; camera"></iframe>
 </div>
 
 <!-- CHECKIN MODAL ASSUNTO -->
@@ -874,7 +866,6 @@ let pautaStatus = 'afazer';
 function pautaInit() {
   document.getElementById('pauta-hdr-date').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'}) + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
   document.getElementById('pauta-f-data-lanc').value = new Date().toISOString().slice(0,10);
-  document.getElementById('pauta-cfg-webhook').value = pautaConfig.webhook || '';
   pautaPopularSelects();
 }
 
@@ -1008,56 +999,6 @@ function pautaLimparAssuntos() {
   pautaNotify('Assuntos limpos', 'var(--red)');
 }
 
-function pautaSalvarConfig() {
-  pautaConfig.webhook = document.getElementById('pauta-cfg-webhook').value.trim();
-  pautaS.set('config', pautaConfig);
-  pautaNotify('Configuração salva!');
-}
-
-function pautaExportarParaN8n() {
-  if (!pautaAssuntos.length) { pautaNotify('Nenhum assunto para exportar', 'var(--yellow)'); return; }
-  if (!pautaConfig.webhook) { pautaNotify('Configure a URL do webhook antes', 'var(--yellow)'); return; }
-
-  const payload = {
-    assuntos: pautaAssuntos.map(a => ({
-      id: a.id, assunto: a.assunto, desc: a.desc || '', criador: a.criador || '', resp: a.resp || '', setor: a.setor || '',
-      prioridade: a.prioridade || 'media', status: a.status || 'afazer', dataLanc: a.dataLanc || '', dataTerm: a.dataTerm || '', criadoEm: a.criadoEm || Date.now()
-    })),
-    exportado_em: new Date().toISOString(),
-    total: pautaAssuntos.length
-  };
-
-  const statusEl = document.getElementById('pauta-export-status');
-  statusEl.className = '';
-  statusEl.innerHTML = '⏳ Enviando...';
-  statusEl.style.display = 'block';
-  statusEl.style.background = '#fef3dc';
-  statusEl.style.border = '1px solid var(--yellow)';
-  statusEl.style.color = 'var(--yellow)';
-  statusEl.style.padding = '12px';
-  statusEl.style.borderRadius = '8px';
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', pautaConfig.webhook, true);
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.onload = function() {
-    if (xhr.status >= 200 && xhr.status < 300) {
-      statusEl.className = 'export-status ok';
-      statusEl.innerHTML = '✅ <strong>Exportado!</strong><br>' + pautaAssuntos.length + ' assunto(s) enviado(s).';
-      pautaNotify('Enviado com sucesso!');
-    } else {
-      statusEl.className = 'export-status err';
-      statusEl.innerHTML = '❌ <strong>Erro</strong><br>Status: ' + xhr.status;
-      pautaNotify('Erro ao enviar', 'var(--red)');
-    }
-  };
-  xhr.onerror = function() {
-    statusEl.className = 'export-status err';
-    statusEl.innerHTML = '❌ <strong>Erro de conexão</strong>';
-    pautaNotify('Erro de conexão', 'var(--red)');
-  };
-  xhr.send(JSON.stringify(payload));
-}
 
 function pautaOpenAdmin() {
   document.getElementById('pauta-modal-admin').classList.add('open');
@@ -1197,6 +1138,96 @@ const checkinS = {
   get(k) { try { return JSON.parse(localStorage.getItem('chk_' + k)); } catch { return null; } },
   set(k, v) { localStorage.setItem('chk_' + k, JSON.stringify(v)); }
 };
+
+// ═══════════════════════════════════════════════════════════════
+// INTEGRAÇÃO COM GOOGLE SHEETS
+// ═══════════════════════════════════════════════════════════════
+
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwa_TMG_RFnsFPE1-Q-gmYN9nPAv6QLy4A5N5B_z8VNK31N7R_-J_rPJtkErhJMLfMzeA/exec';
+
+async function checkinCarregarAssuntosDaPauta() {
+  try {
+    const response = await fetch(APPS_SCRIPT_URL + '?path=pauta&action=listar');
+    const data = await response.json();
+
+    if (data.status === 'ok') {
+      const assuntosPauta = data.dados || [];
+      checkinNotify('✅ Assuntos carregados da Pauta!', '#2d6a40');
+
+      // Mergear com assuntos locais (não duplicar IDs)
+      let assuntosLocais = checkinS.get('assuntos') || [];
+      const ids = new Set(assuntosLocais.map(a => a.id));
+
+      assuntosPauta.forEach(a => {
+        if (!ids.has(a.id)) {
+          assuntosLocais.push(a);
+        }
+      });
+
+      checkinS.set('assuntos', assuntosLocais);
+      checkinRenderCadastro();
+      return assuntosLocais;
+    } else {
+      checkinNotify('❌ Erro ao carregar assuntos', '#b83228');
+    }
+  } catch (e) {
+    checkinNotify('❌ Erro de conexão: ' + e.message, '#b83228');
+    console.error('Erro ao sincronizar:', e);
+  }
+}
+
+async function checkinAtualizarStatusNoServidor(id, novoStatus) {
+  try {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        path: 'pauta',
+        action: 'atualizar-status',
+        id: id,
+        status: novoStatus
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.status === 'ok') {
+      checkinNotify('✅ Status atualizado no servidor', '#2d6a40');
+    } else {
+      checkinNotify('❌ Erro ao atualizar', '#b83228');
+    }
+  } catch (e) {
+    console.error('Erro ao atualizar status:', e);
+  }
+}
+
+async function checkinSalvarReuniao() {
+  const assuntos = checkinS.get('assuntos') || [];
+  const reuniao = {
+    data: new Date().toISOString(),
+    duracao: document.getElementById('checkin-duracao')?.value || '0:00',
+    participantes: [],
+    assuntos: assuntos,
+    observacoes: document.getElementById('checkin-obs')?.value || ''
+  };
+
+  try {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        path: 'checkin',
+        action: 'salvar',
+        dados: reuniao
+      })
+    });
+
+    const data = await response.json();
+    if (data.status === 'ok') {
+      checkinNotify('✅ Reunião salva com sucesso!', '#2d6a40');
+    }
+  } catch (e) {
+    checkinNotify('❌ Erro ao salvar reunião', '#b83228');
+  }
+}
 
 let checkinConfig = checkinS.get('config') || {obra:'',whSalvar:'',whTelegram:'',whCarregar:'',whPDF:''};
 let checkinAssuntos = checkinS.get('assuntos') || [

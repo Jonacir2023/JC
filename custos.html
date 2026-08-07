@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Controle de Custos"/>
+<title>Controle de Custos — BUILDLy Premium</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#e8e4df;--bg-card:#f0ece7;--bg-dark:#1c1c1c;--bg-mid:#2e2b28;
+  --ink:#1c1a18;--ink-soft:#4a4540;--ink-faint:#8a8178;
+  --accent:#d4541a;--accent2:#e8a030;--line:#ccc5bc;
+  --green:#2d6a40;--red:#b83228;--blue:#1e3f6e;--yellow:#c99500;
+  --serif:'Barlow Condensed','Arial Narrow',sans-serif;
+  --sans:'Barlow',-apple-system,sans-serif;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.12)
+}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100vh}
+body{max-width:480px;margin:0 auto;padding-bottom:82px}
+
+.hdr{background:var(--bg-dark);color:#f0ece7;padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:0 3px 16px rgba(0,0,0,.4);border-bottom:3px solid var(--accent)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.hdr-logo{font-family:var(--serif);font-size:22px;font-weight:800;letter-spacing:1px;color:#f0ece7}
+.hdr-logo span{color:var(--accent)}
+.hdr-date{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--accent2);text-align:right}
+.hdr-settings{background:none;border:1px solid rgba(255,255,255,.2);color:#aaa;font-size:14px;padding:6px 8px;border-radius:6px;cursor:pointer}
+.hdr-settings:hover{background:rgba(255,255,255,.08)}
+
+.tabs{display:flex;overflow-x:auto;gap:0;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.08)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:10px 14px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;color:#888;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab.active{color:#f0ece7;border-bottom-color:var(--accent)}
+
+.page{display:none;padding:16px}
+.page.active{display:block}
+
+.sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--bg-dark);margin-bottom:12px}
+
+.frow{margin-bottom:10px}
+.frow label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase}
+.frow input,.frow select,.frow textarea{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:14px;background:#fff;color:var(--ink);transition:border .2s;outline:none}
+.frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
+.frow textarea{resize:vertical;min-height:60px}
+.frow-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.frow-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#b8431a}
+.btn-secondary{background:var(--bg-dark);color:#f0ece7}
+.btn-full{width:100%;justify-content:center;margin-bottom:8px}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--serif);letter-spacing:.4px;text-transform:uppercase}
+.badge-red{background:#fde8e8;color:var(--red)}
+.badge-blue{background:#dde8f5;color:var(--blue)}
+.badge-green{background:#e1f0e6;color:var(--green)}
+
+.notif{position:fixed;top:60px;left:16px;right:16px;padding:12px;border-radius:8px;background:var(--green);color:white;font-size:13px;font-weight:600;z-index:200;display:none}
+.notif.show{display:block}
+
+.card{background:#fff;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.08);border:1px solid #dbd4cb}
+.card-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.card-desc{font-size:12px;color:var(--ink-soft);margin-bottom:6px}
+.card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #f0ece7;font-size:11px;color:var(--ink-faint)}
+
+.item-row{background:#f9f7f5;padding:10px;border-radius:6px;margin-bottom:8px;border:1px solid var(--line)}
+.item-row-header{display:flex;justify-content:space-between;margin-bottom:6px}
+.item-row-title{font-weight:700;color:var(--ink)}
+.item-row-actions{display:flex;gap:4px}
+.item-row-actions button{background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:#b83228}
+
+.stat-box{background:var(--bg-card);padding:12px;border-radius:8px;margin-bottom:10px;border:1px solid var(--line)}
+.stat-label{font-size:11px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.stat-value{font-family:var(--serif);font-size:24px;font-weight:800;color:var(--accent);margin-top:4px}
+
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--bg-dark);color:#f0ece7;padding:8px;text-align:left;font-weight:700}
+td{padding:8px;border-bottom:1px solid var(--line)}
+tr:hover{background:#f9f7f5}
+
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:500;overflow-y:auto}
+.modal.open{display:flex}
+.modal-content{background:white;border-radius:12px;padding:20px;max-width:90%;max-height:90vh;overflow-y:auto;position:relative;margin:auto}
+.modal-close{position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#999}
+.modal-title{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:15px}
+</style>
+</head>
+<body>
+
+<div class="notif" id="notif"></div>
+
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-logo">CUS<span>TOS</span></div>
+      <div style="font-size:11px;color:#aaa">Controle de Notas Fiscais</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="hdr-date" id="hdr-date"></div>
+      <button class="hdr-settings" onclick="abrirConfig()">⚙️</button>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" onclick="abrir('nova',this)">➕ Nova NF</button>
+    <button class="tab" onclick="abrir('listar',this)">📋 Listar</button>
+    <button class="tab" onclick="abrir('resumo',this)">📊 Resumo</button>
+  </nav>
+</header>
+
+<!-- Nova Nota Fiscal -->
+<div class="page active" id="page-nova">
+  <div class="sec">
+    <div class="sec-title">📄 Dados da Nota Fiscal</div>
+    <div class="frow-2">
+      <div class="frow">
+        <label>Número NF</label>
+        <input type="text" id="nf-numero" placeholder="Ex: 12345"/>
+      </div>
+      <div class="frow">
+        <label>Série</label>
+        <input type="text" id="nf-serie" placeholder="Ex: A"/>
+      </div>
+    </div>
+    <div class="frow-2">
+      <div class="frow">
+        <label>Data Emissão</label>
+        <input type="date" id="nf-data"/>
+      </div>
+      <div class="frow">
+        <label>Fornecedor</label>
+        <input type="text" id="nf-fornecedor" placeholder="Ex: Loja do Zé"/>
+      </div>
+    </div>
+    <div class="frow">
+      <label>Categoria</label>
+      <select id="nf-categoria"></select>
+    </div>
+    <div class="frow">
+      <label>Responsável</label>
+      <select id="nf-responsavel"></select>
+    </div>
+    <div class="frow">
+      <label>Observações</label>
+      <textarea id="nf-observacoes" placeholder="Detalhes adicionais..."></textarea>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">📦 Itens da Nota Fiscal</div>
+    <div id="lista-itens-novo"></div>
+
+    <div style="background:#f9f7f5;padding:12px;border-radius:8px;margin-bottom:14px;border:1px solid var(--line)">
+      <div class="frow">
+        <label>Descrição do Item</label>
+        <input type="text" id="item-descricao" placeholder="Ex: Cimento"/>
+      </div>
+      <div class="frow-3">
+        <div class="frow">
+          <label>Quantidade</label>
+          <input type="number" id="item-quantidade" step="0.01" placeholder="0"/>
+        </div>
+        <div class="frow">
+          <label>Preço Unit.</label>
+          <input type="number" id="item-preco-unit" step="0.01" placeholder="0.00"/>
+        </div>
+        <div class="frow">
+          <label>Total</label>
+          <input type="number" id="item-total" disabled style="background:#f0ece7"/>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-full btn-sm" onclick="adicionarItem()">+ ADICIONAR ITEM</button>
+    </div>
+
+    <div class="stat-box">
+      <div class="stat-label">Total da NF</div>
+      <div class="stat-value" id="total-nf">R$ 0,00</div>
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="salvarNotaFiscal()">💾 SALVAR NOTA FISCAL</button>
+  </div>
+</div>
+
+<!-- Listar Notas Fiscais -->
+<div class="page" id="page-listar">
+  <div class="sec">
+    <div class="sec-title">📋 Histórico de Notas Fiscais</div>
+    <div class="frow-2">
+      <div class="frow">
+        <label>Filtrar por Categoria</label>
+        <select id="filtro-categoria" onchange="renderListar()">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="frow">
+        <label>Período</label>
+        <select id="filtro-periodo" onchange="renderListar()">
+          <option value="todo">Todos</option>
+          <option value="mes">Este Mês</option>
+          <option value="semana">Esta Semana</option>
+        </select>
+      </div>
+    </div>
+    <div id="lista-nfs"></div>
+  </div>
+</div>
+
+<!-- Resumo -->
+<div class="page" id="page-resumo">
+  <div class="sec">
+    <div class="sec-title">📊 Resumo de Custos</div>
+    <div class="stat-box">
+      <div class="stat-label">Total Geral</div>
+      <div class="stat-value" id="total-geral">R$ 0,00</div>
+    </div>
+    <div id="resumo-categorias"></div>
+    <div id="resumo-fornecedores"></div>
+  </div>
+</div>
+
+<!-- Modal Config -->
+<div class="modal" id="modal-config">
+  <div class="modal-content">
+    <button class="modal-close" onclick="fecharConfig()">✕</button>
+    <div class="modal-title">⚙️ Configurações</div>
+    <div class="frow">
+      <label>Nome da Obra</label>
+      <input type="text" id="cfg-obra"/>
+    </div>
+    <div class="frow">
+      <label>Responsável</label>
+      <input type="text" id="cfg-responsavel"/>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="salvarConfig()">SALVAR</button>
+  </div>
+</div>
+
+<script>
+const S = {
+  get(k) { try { return JSON.parse(localStorage.getItem('custo_' + k)); } catch { return null; } },
+  set(k, v) { localStorage.setItem('custo_' + k, JSON.stringify(v)); }
+};
+
+let config = S.get('config') || { obra: 'Obra', responsavel: 'Responsável' };
+let categorias = S.get('categorias') || ['Material', 'Mão de Obra', 'Aluguel', 'Combustível', 'Outros'];
+let notasFiscais = S.get('notasfiscais') || [];
+let responsaveis = S.get('responsaveis') || ['Jonacir', 'Aline', 'José'];
+let itensTemp = [];
+
+function notify(msg, cor = '#2d6a40') {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.style.background = cor;
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 3000);
+}
+
+function formatarMoeda(valor) {
+  return 'R$ ' + valor.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// Calcular total do item
+document.addEventListener('input', function(e) {
+  if (e.target.id === 'item-quantidade' || e.target.id === 'item-preco-unit') {
+    const qtd = parseFloat(document.getElementById('item-quantidade').value) || 0;
+    const preco = parseFloat(document.getElementById('item-preco-unit').value) || 0;
+    const total = qtd * preco;
+    document.getElementById('item-total').value = total.toFixed(2);
+  }
+});
+
+function adicionarItem() {
+  const descricao = document.getElementById('item-descricao').value.trim();
+  const quantidade = parseFloat(document.getElementById('item-quantidade').value) || 0;
+  const preco_unitario = parseFloat(document.getElementById('item-preco-unit').value) || 0;
+  const total = quantidade * preco_unitario;
+
+  if (!descricao || quantidade === 0 || preco_unitario === 0) {
+    notify('❌ Preencha descrição, quantidade e preço', '#b83228');
+    return;
+  }
+
+  itensTemp.push({
+    id: Date.now(),
+    descricao,
+    quantidade,
+    preco_unitario,
+    total
+  });
+
+  document.getElementById('item-descricao').value = '';
+  document.getElementById('item-quantidade').value = '';
+  document.getElementById('item-preco-unit').value = '';
+  document.getElementById('item-total').value = '';
+
+  renderItensTemp();
+  atualizarTotalNF();
+  notify('✅ Item adicionado!');
+}
+
+function renderItensTemp() {
+  const html = itensTemp.length ? itensTemp.map((item, idx) => `
+    <div class="item-row">
+      <div class="item-row-header">
+        <div>
+          <div class="item-row-title">${item.descricao}</div>
+          <div style="font-size:11px;color:var(--ink-faint)">
+            ${item.quantidade} × R$ ${item.preco_unitario.toFixed(2)} = ${formatarMoeda(item.total)}
+          </div>
+        </div>
+        <div class="item-row-actions">
+          <button onclick="removerItem(${idx})">🗑️</button>
+        </div>
+      </div>
+    </div>
+  `).join('') : '<p style="color:var(--ink-faint);font-size:12px">Nenhum item adicionado ainda</p>';
+
+  document.getElementById('lista-itens-novo').innerHTML = html;
+}
+
+function removerItem(idx) {
+  itensTemp.splice(idx, 1);
+  renderItensTemp();
+  atualizarTotalNF();
+}
+
+function atualizarTotalNF() {
+  const total = itensTemp.reduce((s, i) => s + i.total, 0);
+  document.getElementById('total-nf').textContent = formatarMoeda(total);
+}
+
+function salvarNotaFiscal() {
+  const numero = document.getElementById('nf-numero').value.trim();
+  const serie = document.getElementById('nf-serie').value.trim();
+  const data = document.getElementById('nf-data').value;
+  const fornecedor = document.getElementById('nf-fornecedor').value.trim();
+  const categoria = document.getElementById('nf-categoria').value;
+  const responsavel = document.getElementById('nf-responsavel').value;
+  const observacoes = document.getElementById('nf-observacoes').value.trim();
+
+  if (!numero || !data || !fornecedor || itensTemp.length === 0) {
+    notify('❌ Preencha NF, data, fornecedor e adicione itens', '#b83228');
+    return;
+  }
+
+  const total_nf = itensTemp.reduce((s, i) => s + i.total, 0);
+
+  const nf = {
+    id: Date.now(),
+    numero,
+    serie,
+    data,
+    fornecedor,
+    categoria,
+    responsavel,
+    observacoes,
+    itens: [...itensTemp],
+    total_nf,
+    criado_em: new Date().toISOString()
+  };
+
+  notasFiscais.push(nf);
+  S.set('notasfiscais', notasFiscais);
+
+  document.getElementById('nf-numero').value = '';
+  document.getElementById('nf-serie').value = '';
+  document.getElementById('nf-data').value = '';
+  document.getElementById('nf-fornecedor').value = '';
+  document.getElementById('nf-observacoes').value = '';
+  itensTemp = [];
+  renderItensTemp();
+  atualizarTotalNF();
+
+  notify('✅ Nota Fiscal salva com sucesso!', '#2d6a40');
+}
+
+function renderListar() {
+  const categoria = document.getElementById('filtro-categoria').value;
+  const periodo = document.getElementById('filtro-periodo').value;
+  const hoje = new Date();
+  const mesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const semanaPassa = new Date(hoje.getTime() - 7*24*60*60*1000);
+
+  let filtradas = notasFiscais.filter(nf => {
+    if (categoria && nf.categoria !== categoria) return false;
+    const dataNF = new Date(nf.data);
+    if (periodo === 'mes' && dataNF < mesAtual) return false;
+    if (periodo === 'semana' && dataNF < semanaPassa) return false;
+    return true;
+  }).sort((a, b) => new Date(b.data) - new Date(a.data));
+
+  const html = filtradas.length ? filtradas.map(nf => `
+    <div class="card">
+      <div class="card-title">NF ${nf.numero}${nf.serie ? '/' + nf.serie : ''} - ${nf.fornecedor}</div>
+      <div class="card-desc">${new Date(nf.data).toLocaleDateString('pt-BR')}</div>
+      <div class="card-meta">
+        <span class="badge badge-blue">${nf.categoria}</span>
+        <span class="badge badge-green">${nf.responsavel}</span>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--ink-soft)">
+        <strong>${nf.itens.length} item(ns):</strong><br>
+        ${nf.itens.map(i => `• ${i.descricao} (${i.quantidade} × R$ ${i.preco_unitario.toFixed(2)})`).join('<br>')}
+      </div>
+      <div class="card-footer">
+        <span>${formatarMoeda(nf.total_nf)}</span>
+        <button onclick="deletarNF(${nf.id})" style="background:none;border:none;color:#b83228;cursor:pointer;font-weight:700">🗑️ DELETAR</button>
+      </div>
+    </div>
+  `).join('') : '<p style="color:var(--ink-faint)">Nenhuma nota fiscal</p>';
+
+  document.getElementById('lista-nfs').innerHTML = html;
+}
+
+function renderResumo() {
+  const total = notasFiscais.reduce((s, nf) => s + nf.total_nf, 0);
+  document.getElementById('total-geral').textContent = formatarMoeda(total);
+
+  const porCategoria = {};
+  const porFornecedor = {};
+
+  notasFiscais.forEach(nf => {
+    porCategoria[nf.categoria] = (porCategoria[nf.categoria] || 0) + nf.total_nf;
+    porFornecedor[nf.fornecedor] = (porFornecedor[nf.fornecedor] || 0) + nf.total_nf;
+  });
+
+  const catHtml = Object.entries(porCategoria)
+    .sort((a, b) => b[1] - a[1])
+    .map(([cat, valor]) => `
+      <div class="stat-box">
+        <div class="stat-label">${cat}</div>
+        <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--accent)">${formatarMoeda(valor)}</div>
+        <div style="font-size:11px;color:var(--ink-faint);margin-top:4px">${((valor/total)*100).toFixed(1)}% do total</div>
+      </div>
+    `).join('');
+
+  const fornHtml = '<div style="margin-top:20px"><div class="sec-title">Top Fornecedores</div>' +
+    Object.entries(porFornecedor)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([forn, valor]) => `
+      <div class="stat-box">
+        <div class="stat-label">${forn}</div>
+        <div style="font-family:var(--serif);font-size:16px;font-weight:700;color:var(--accent)">${formatarMoeda(valor)}</div>
+      </div>
+    `).join('') + '</div>';
+
+  document.getElementById('resumo-categorias').innerHTML = catHtml;
+  document.getElementById('resumo-fornecedores').innerHTML = fornHtml;
+}
+
+function deletarNF(id) {
+  if (confirm('Deletar esta nota fiscal?')) {
+    notasFiscais = notasFiscais.filter(nf => nf.id !== id);
+    S.set('notasfiscais', notasFiscais);
+    renderListar();
+    renderResumo();
+  }
+}
+
+function atualizarSelectsCategorias() {
+  [document.getElementById('nf-categoria'), document.getElementById('filtro-categoria')].forEach(sel => {
+    const val = sel.value;
+    sel.innerHTML = '<option value="">Todas</option>' + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+    sel.value = val;
+  });
+}
+
+function atualizarSelectsResponsaveis() {
+  document.getElementById('nf-responsavel').innerHTML = responsaveis.map(r => `<option value="${r}">${r}</option>`).join('');
+}
+
+function abrir(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  el.classList.add('active');
+
+  if (tab === 'listar') renderListar();
+  else if (tab === 'resumo') renderResumo();
+}
+
+function abrirConfig() {
+  document.getElementById('cfg-obra').value = config.obra;
+  document.getElementById('cfg-responsavel').value = config.responsavel;
+  document.getElementById('modal-config').classList.add('open');
+}
+
+function fecharConfig() {
+  document.getElementById('modal-config').classList.remove('open');
+}
+
+function salvarConfig() {
+  config.obra = document.getElementById('cfg-obra').value;
+  config.responsavel = document.getElementById('cfg-responsavel').value;
+  S.set('config', config);
+  fecharConfig();
+  notify('✅ Configurações salvas!');
+}
+
+// Init
+window.addEventListener('load', () => {
+  const agora = new Date();
+  document.getElementById('hdr-date').textContent = agora.toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'});
+  document.getElementById('nf-data').valueAsDate = agora;
+  atualizarSelectsCategorias();
+  atualizarSelectsResponsaveis();
+});
+</script>
+</body>
+</html>
