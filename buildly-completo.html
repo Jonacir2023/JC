@@ -1293,42 +1293,95 @@ function checkinInit() {
 
 function checkinSincronizarComPauta() {
   try {
-    // Carregar assuntos da Pauta (tenta via pautaAssuntos global primeiro)
-    const assuntosPauta = (typeof pautaAssuntos !== 'undefined' && pautaAssuntos.length > 0)
-      ? pautaAssuntos
-      : pautaS.get('assuntos') || [];
+    // DEBUG: Log inicial
+    console.log('🔄 Iniciando sincronização Pauta → Check-in...');
 
-    if (assuntosPauta.length === 0) return;
+    // 1. Carregar Pauta do localStorage (forma confiável)
+    let assuntosPauta = [];
+    try {
+      const pautaData = localStorage.getItem('pauta_assuntos');
+      if (pautaData) {
+        assuntosPauta = JSON.parse(pautaData);
+        console.log(`✓ Carregou ${assuntosPauta.length} assuntos da Pauta do localStorage`);
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar Pauta do localStorage:', e);
+    }
 
-    // Carregar assuntos locais do Check-in (usa variável global)
-    let assuntosCheckin = (typeof checkinAssuntos !== 'undefined' && Array.isArray(checkinAssuntos))
-      ? [...checkinAssuntos]
-      : checkinS.get('assuntos') || [];
+    // 2. Se não achou no localStorage, tenta variável global
+    if (assuntosPauta.length === 0 && typeof pautaAssuntos !== 'undefined') {
+      assuntosPauta = pautaAssuntos;
+      console.log(`✓ Carregou ${assuntosPauta.length} assuntos da variável global pautaAssuntos`);
+    }
 
-    // Criar set de IDs e também de títulos para evitar duplicatas
-    const idsCheckin = new Set(assuntosCheckin.map(a => a.id));
-    const titulosCheckin = new Set(assuntosCheckin.map(a => a.assunto));
+    // 3. Se ainda não tem assuntos, retorna
+    if (!assuntosPauta || assuntosPauta.length === 0) {
+      console.log('⚠️ Nenhum assunto encontrado na Pauta para sincronizar');
+      return;
+    }
 
-    // Adicionar novos assuntos da Pauta (sem duplicar)
+    // 4. Carregar Check-in atual
+    let assuntosCheckin = [];
+    try {
+      const checkinData = localStorage.getItem('chk_assuntos');
+      if (checkinData) {
+        assuntosCheckin = JSON.parse(checkinData);
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar Check-in do localStorage:', e);
+    }
+
+    // 5. Criar sets para evitar duplicatas (por ID e por título)
+    const idsExistentes = new Set(assuntosCheckin.map(a => a.id || a.assunto));
+
+    // 6. Sincronizar
     let adicionados = 0;
-    assuntosPauta.forEach(a => {
-      if (!idsCheckin.has(a.id) && !titulosCheckin.has(a.assunto)) {
-        assuntosCheckin.push({
-          ...a,
-          status: 'afazer', // Novo assunto começa como "A fazer"
-          criadoEm: a.criadoEm || Date.now()
-        });
+    const novasAdicoes = [];
+
+    assuntosPauta.forEach(pauta => {
+      const chaveUnica = pauta.id || pauta.assunto;
+
+      if (!idsExistentes.has(chaveUnica)) {
+        // Criar novo assunto com dados da Pauta
+        const novoAssunto = {
+          id: pauta.id || 'CHK-' + Date.now() + '-' + Math.random(),
+          assunto: pauta.assunto,
+          desc: pauta.desc || '',
+          criador: pauta.criador || '',
+          resp: pauta.resp || '',
+          setor: pauta.setor || '',
+          prioridade: pauta.prioridade || 'média',
+          status: 'afazer', // ← Novo sempre começa como "A fazer"
+          dataTerm: pauta.dataTerm || '',
+          criadoEm: pauta.criadoEm || Date.now(),
+          _origem: 'pauta'
+        };
+
+        assuntosCheckin.push(novoAssunto);
+        novasAdicoes.push(novoAssunto.assunto);
         adicionados++;
       }
     });
 
+    // 7. Salvar de volta ao localStorage
     if (adicionados > 0) {
-      checkinS.set('assuntos', assuntosCheckin);
+      localStorage.setItem('chk_assuntos', JSON.stringify(assuntosCheckin));
       checkinAssuntos = assuntosCheckin;
-      checkinNotify(`✅ ${adicionados} assunto(s) da Pauta sincronizado(s)!`, '#2d6a40');
+
+      console.log(`✅ Sincronização concluída! ${adicionados} assunto(s) adicionado(s)`);
+      console.log('Assuntos adicionados:', novasAdicoes);
+
+      // Mostrar notificação apenas se houver adições
+      if (typeof checkinNotify === 'function') {
+        checkinNotify(`✅ ${adicionados} assunto(s) sincronizado(s) da Pauta!`, '#2d6a40');
+      }
+    } else {
+      console.log('ℹ️ Todos os assuntos da Pauta já estão no Check-in');
     }
+
   } catch (err) {
-    console.error('Erro na sincronização Pauta → Check-in:', err);
+    console.error('❌ Erro na sincronização Pauta → Check-in:', err);
+    console.error('Stack:', err.stack);
   }
 }
 
