@@ -864,6 +864,9 @@ let pautaPrioridade = 'media';
 let pautaStatus = 'afazer';
 
 function pautaInit() {
+  console.log('📋 pautaInit() — Inicializando Pauta');
+  console.log(`   Assuntos carregados: ${pautaAssuntos.length}`);
+
   document.getElementById('pauta-hdr-date').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'}) + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
   document.getElementById('pauta-f-data-lanc').value = new Date().toISOString().slice(0,10);
   pautaPopularSelects();
@@ -908,6 +911,8 @@ function pautaPopularSelects() {
 }
 
 function pautaEnviarAssunto() {
+  console.log('📝 pautaEnviarAssunto() chamado');
+
   const assunto = document.getElementById('pauta-f-assunto').value.trim();
   const descricao = document.getElementById('pauta-f-descricao').value.trim();
   const criador = document.getElementById('pauta-f-criador').value;
@@ -915,6 +920,9 @@ function pautaEnviarAssunto() {
   const setor = document.getElementById('pauta-f-setor').value;
   const dataLanc = document.getElementById('pauta-f-data-lanc').value;
   const dataTerm = document.getElementById('pauta-f-data-term').value;
+
+  console.log('   Assunto:', assunto);
+  console.log('   Setor:', setor);
 
   if (!assunto) { pautaNotify('Informe o assunto', 'var(--red)'); return; }
   if (!setor) { pautaNotify('Selecione o setor', 'var(--red)'); return; }
@@ -927,8 +935,21 @@ function pautaEnviarAssunto() {
     criadoEm: Date.now()
   };
 
+  console.log('📌 Item criado:', item);
+
   pautaAssuntos.push(item);
+  console.log(`✅ Item adicionado ao array (total: ${pautaAssuntos.length})`);
+
   pautaS.set('assuntos', pautaAssuntos);
+  console.log('💾 Salvo em localStorage - pauta_assuntos');
+
+  // Verificação
+  const verificacao = localStorage.getItem('pauta_assuntos');
+  console.log('🔍 Verificação: dados foram salvos?', verificacao ? 'SIM' : 'NÃO');
+  if (verificacao) {
+    const parsed = JSON.parse(verificacao);
+    console.log(`   Total de itens no localStorage: ${parsed.length}`);
+  }
 
   document.getElementById('pauta-f-assunto').value = '';
   document.getElementById('pauta-f-descricao').value = '';
