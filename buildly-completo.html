@@ -1143,7 +1143,10 @@ const checkinS = {
 // INTEGRAÇÃO COM GOOGLE SHEETS
 // ═══════════════════════════════════════════════════════════════
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwa_TMG_RFnsFPE1-Q-gmYN9nPAv6QLy4A5N5B_z8VNK31N7R_-J_rPJtkErhJMLfMzeA/exec';
+// ⚠️ SUBSTITUA ESTA URL PELA URL DO SEU NOVO GOOGLE APPS SCRIPT (v2 - BUILDLy Premium)
+// Após deploy no Google Apps Script, cole a URL aqui:
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/COLE_A_URL_DO_NOVO_SCRIPT_AQUI/exec';
+// Exemplo: 'https://script.google.com/macros/s/AKfycbw...xxxxx.../exec'
 
 async function checkinCarregarAssuntosDaPauta() {
   try {
@@ -1330,6 +1333,69 @@ function checkinSincronizarComPauta() {
     console.error('Erro na sincronização Pauta → Check-in:', err);
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// SINCRONIZAÇÃO COM GOOGLE SHEETS (BUILDLy Premium)
+// ═══════════════════════════════════════════════════════════════
+
+async function sincronizarComGoogleSheets() {
+  try {
+    // Sincronizar PAUTA para Google Sheets
+    const assuntosPauta = pautaAssuntos || [];
+    for (const assunto of assuntosPauta) {
+      if (!assunto._sincronizado) {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            path: 'pauta',
+            action: 'criar',
+            path: 'pauta',
+            assunto: assunto.assunto,
+            descricao: assunto.desc,
+            criador: assunto.criador,
+            responsavel: assunto.resp,
+            setor: assunto.setor,
+            prioridade: assunto.prioridade,
+            status: assunto.status,
+            dataLanc: assunto.dataLanc,
+            dataTerm: assunto.dataTerm
+          })
+        });
+        assunto._sincronizado = true;
+      }
+    }
+
+    // Sincronizar CHECK-IN para Google Sheets
+    const assuntosCheckin = checkinAssuntos || [];
+    for (const assunto of assuntosCheckin) {
+      if (!assunto._sincronizado) {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            path: 'checkin',
+            action: 'salvar',
+            assunto: assunto.assunto,
+            descricao: assunto.desc,
+            criador: assunto.criador,
+            responsavel: assunto.resp,
+            setor: assunto.setor,
+            prioridade: assunto.prioridade,
+            status: assunto.status,
+            dataTerm: assunto.dataTerm
+          })
+        });
+        assunto._sincronizado = true;
+      }
+    }
+
+    console.log('✅ Sincronização com Google Sheets concluída');
+  } catch (err) {
+    console.error('❌ Erro ao sincronizar com Google Sheets:', err);
+  }
+}
+
+// Sincronizar a cada 2 minutos
+setInterval(sincronizarComGoogleSheets, 2 * 60 * 1000);
 
 function checkinAtualizarContadores() {
   const af = checkinAssuntos.filter(a => a.status === 'afazer').length;
