@@ -1281,6 +1281,9 @@ function checkinInit() {
   document.getElementById('checkin-ci-hora').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   document.getElementById('checkin-hdr-obra-label').textContent = checkinConfig.obra || '— Configure a obra —';
 
+  // Recarregar assuntos do localStorage (garante dados atualizados)
+  checkinAssuntos = checkinS.get('assuntos') || [];
+
   // Sincronizar Pauta → Check-in automaticamente
   checkinSincronizarComPauta();
 
@@ -1288,31 +1291,43 @@ function checkinInit() {
 }
 
 function checkinSincronizarComPauta() {
-  // Carregar assuntos da Pauta
-  const assuntosPauta = pautaS.get('assuntos') || [];
+  try {
+    // Carregar assuntos da Pauta (tenta via pautaAssuntos global primeiro)
+    const assuntosPauta = (typeof pautaAssuntos !== 'undefined' && pautaAssuntos.length > 0)
+      ? pautaAssuntos
+      : pautaS.get('assuntos') || [];
 
-  if (assuntosPauta.length === 0) return;
+    if (assuntosPauta.length === 0) return;
 
-  // Carregar assuntos locais do Check-in
-  let assuntosCheckin = checkinS.get('assuntos') || [];
-  const idsCheckin = new Set(assuntosCheckin.map(a => a.id));
+    // Carregar assuntos locais do Check-in (usa variável global)
+    let assuntosCheckin = (typeof checkinAssuntos !== 'undefined' && Array.isArray(checkinAssuntos))
+      ? [...checkinAssuntos]
+      : checkinS.get('assuntos') || [];
 
-  // Adicionar novos assuntos da Pauta (sem duplicar)
-  let adicionados = 0;
-  assuntosPauta.forEach(a => {
-    if (!idsCheckin.has(a.id)) {
-      assuntosCheckin.push({
-        ...a,
-        status: 'afazer' // Novo assunto começa como "A fazer"
-      });
-      adicionados++;
+    // Criar set de IDs e também de títulos para evitar duplicatas
+    const idsCheckin = new Set(assuntosCheckin.map(a => a.id));
+    const titulosCheckin = new Set(assuntosCheckin.map(a => a.assunto));
+
+    // Adicionar novos assuntos da Pauta (sem duplicar)
+    let adicionados = 0;
+    assuntosPauta.forEach(a => {
+      if (!idsCheckin.has(a.id) && !titulosCheckin.has(a.assunto)) {
+        assuntosCheckin.push({
+          ...a,
+          status: 'afazer', // Novo assunto começa como "A fazer"
+          criadoEm: a.criadoEm || Date.now()
+        });
+        adicionados++;
+      }
+    });
+
+    if (adicionados > 0) {
+      checkinS.set('assuntos', assuntosCheckin);
+      checkinAssuntos = assuntosCheckin;
+      checkinNotify(`✅ ${adicionados} assunto(s) da Pauta sincronizado(s)!`, '#2d6a40');
     }
-  });
-
-  if (adicionados > 0) {
-    checkinS.set('assuntos', assuntosCheckin);
-    checkinAssuntos = assuntosCheckin;
-    checkinNotify(`✅ ${adicionados} assunto(s) da Pauta sincronizado(s)!`, '#2d6a40');
+  } catch (err) {
+    console.error('Erro na sincronização Pauta → Check-in:', err);
   }
 }
 
