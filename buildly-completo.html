@@ -864,6 +864,9 @@ let pautaPrioridade = 'media';
 let pautaStatus = 'afazer';
 
 function pautaInit() {
+  console.log('📋 pautaInit() — Inicializando Pauta');
+  console.log(`   Assuntos carregados: ${pautaAssuntos.length}`);
+
   document.getElementById('pauta-hdr-date').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'short'}) + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
   document.getElementById('pauta-f-data-lanc').value = new Date().toISOString().slice(0,10);
   pautaPopularSelects();
@@ -908,6 +911,8 @@ function pautaPopularSelects() {
 }
 
 function pautaEnviarAssunto() {
+  console.log('📝 pautaEnviarAssunto() chamado');
+
   const assunto = document.getElementById('pauta-f-assunto').value.trim();
   const descricao = document.getElementById('pauta-f-descricao').value.trim();
   const criador = document.getElementById('pauta-f-criador').value;
@@ -915,6 +920,9 @@ function pautaEnviarAssunto() {
   const setor = document.getElementById('pauta-f-setor').value;
   const dataLanc = document.getElementById('pauta-f-data-lanc').value;
   const dataTerm = document.getElementById('pauta-f-data-term').value;
+
+  console.log('   Assunto:', assunto);
+  console.log('   Setor:', setor);
 
   if (!assunto) { pautaNotify('Informe o assunto', 'var(--red)'); return; }
   if (!setor) { pautaNotify('Selecione o setor', 'var(--red)'); return; }
@@ -927,8 +935,21 @@ function pautaEnviarAssunto() {
     criadoEm: Date.now()
   };
 
+  console.log('📌 Item criado:', item);
+
   pautaAssuntos.push(item);
+  console.log(`✅ Item adicionado ao array (total: ${pautaAssuntos.length})`);
+
   pautaS.set('assuntos', pautaAssuntos);
+  console.log('💾 Salvo em localStorage - pauta_assuntos');
+
+  // Verificação
+  const verificacao = localStorage.getItem('pauta_assuntos');
+  console.log('🔍 Verificação: dados foram salvos?', verificacao ? 'SIM' : 'NÃO');
+  if (verificacao) {
+    const parsed = JSON.parse(verificacao);
+    console.log(`   Total de itens no localStorage: ${parsed.length}`);
+  }
 
   document.getElementById('pauta-f-assunto').value = '';
   document.getElementById('pauta-f-descricao').value = '';
@@ -1143,7 +1164,8 @@ const checkinS = {
 // INTEGRAÇÃO COM GOOGLE SHEETS
 // ═══════════════════════════════════════════════════════════════
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwa_TMG_RFnsFPE1-Q-gmYN9nPAv6QLy4A5N5B_z8VNK31N7R_-J_rPJtkErhJMLfMzeA/exec';
+// BUILDLy Premium — Google Apps Script URL (v2)
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd3u7QlYZpTbXr8fDS_zwU8GYRvvnxBCUZtrDwqk1f01mz52GvjvA0D1hGEeaX86tdWw/exec';
 
 async function checkinCarregarAssuntosDaPauta() {
   try {
@@ -1280,8 +1302,172 @@ function checkinInit() {
   document.getElementById('checkin-ci-data').value = now.toISOString().slice(0,10);
   document.getElementById('checkin-ci-hora').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   document.getElementById('checkin-hdr-obra-label').textContent = checkinConfig.obra || '— Configure a obra —';
+
+  // Recarregar assuntos do localStorage (garante dados atualizados)
+  checkinAssuntos = checkinS.get('assuntos') || [];
+
+  // Sincronizar Pauta → Check-in automaticamente
+  checkinSincronizarComPauta();
+
   checkinRender();
 }
+
+function checkinSincronizarComPauta() {
+  try {
+    // DEBUG: Log inicial
+    console.log('🔄 Iniciando sincronização Pauta → Check-in...');
+
+    // 1. Carregar Pauta do localStorage (forma confiável)
+    let assuntosPauta = [];
+    try {
+      const pautaData = localStorage.getItem('pauta_assuntos');
+      if (pautaData) {
+        assuntosPauta = JSON.parse(pautaData);
+        console.log(`✓ Carregou ${assuntosPauta.length} assuntos da Pauta do localStorage`);
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar Pauta do localStorage:', e);
+    }
+
+    // 2. Se não achou no localStorage, tenta variável global
+    if (assuntosPauta.length === 0 && typeof pautaAssuntos !== 'undefined') {
+      assuntosPauta = pautaAssuntos;
+      console.log(`✓ Carregou ${assuntosPauta.length} assuntos da variável global pautaAssuntos`);
+    }
+
+    // 3. Se ainda não tem assuntos, retorna
+    if (!assuntosPauta || assuntosPauta.length === 0) {
+      console.log('⚠️ Nenhum assunto encontrado na Pauta para sincronizar');
+      return;
+    }
+
+    // 4. Carregar Check-in atual
+    let assuntosCheckin = [];
+    try {
+      const checkinData = localStorage.getItem('chk_assuntos');
+      if (checkinData) {
+        assuntosCheckin = JSON.parse(checkinData);
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar Check-in do localStorage:', e);
+    }
+
+    // 5. Criar sets para evitar duplicatas (por ID e por título)
+    const idsExistentes = new Set(assuntosCheckin.map(a => a.id || a.assunto));
+
+    // 6. Sincronizar
+    let adicionados = 0;
+    const novasAdicoes = [];
+
+    assuntosPauta.forEach(pauta => {
+      const chaveUnica = pauta.id || pauta.assunto;
+
+      if (!idsExistentes.has(chaveUnica)) {
+        // Criar novo assunto com dados da Pauta
+        const novoAssunto = {
+          id: pauta.id || 'CHK-' + Date.now() + '-' + Math.random(),
+          assunto: pauta.assunto,
+          desc: pauta.desc || '',
+          criador: pauta.criador || '',
+          resp: pauta.resp || '',
+          setor: pauta.setor || '',
+          prioridade: pauta.prioridade || 'média',
+          status: 'afazer', // ← Novo sempre começa como "A fazer"
+          dataTerm: pauta.dataTerm || '',
+          criadoEm: pauta.criadoEm || Date.now(),
+          _origem: 'pauta'
+        };
+
+        assuntosCheckin.push(novoAssunto);
+        novasAdicoes.push(novoAssunto.assunto);
+        adicionados++;
+      }
+    });
+
+    // 7. Salvar de volta ao localStorage
+    if (adicionados > 0) {
+      localStorage.setItem('chk_assuntos', JSON.stringify(assuntosCheckin));
+      checkinAssuntos = assuntosCheckin;
+
+      console.log(`✅ Sincronização concluída! ${adicionados} assunto(s) adicionado(s)`);
+      console.log('Assuntos adicionados:', novasAdicoes);
+
+      // Mostrar notificação apenas se houver adições
+      if (typeof checkinNotify === 'function') {
+        checkinNotify(`✅ ${adicionados} assunto(s) sincronizado(s) da Pauta!`, '#2d6a40');
+      }
+    } else {
+      console.log('ℹ️ Todos os assuntos da Pauta já estão no Check-in');
+    }
+
+  } catch (err) {
+    console.error('❌ Erro na sincronização Pauta → Check-in:', err);
+    console.error('Stack:', err.stack);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SINCRONIZAÇÃO COM GOOGLE SHEETS (BUILDLy Premium)
+// ═══════════════════════════════════════════════════════════════
+
+async function sincronizarComGoogleSheets() {
+  try {
+    // Sincronizar PAUTA para Google Sheets
+    const assuntosPauta = pautaAssuntos || [];
+    for (const assunto of assuntosPauta) {
+      if (!assunto._sincronizado) {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            path: 'pauta',
+            action: 'criar',
+            path: 'pauta',
+            assunto: assunto.assunto,
+            descricao: assunto.desc,
+            criador: assunto.criador,
+            responsavel: assunto.resp,
+            setor: assunto.setor,
+            prioridade: assunto.prioridade,
+            status: assunto.status,
+            dataLanc: assunto.dataLanc,
+            dataTerm: assunto.dataTerm
+          })
+        });
+        assunto._sincronizado = true;
+      }
+    }
+
+    // Sincronizar CHECK-IN para Google Sheets
+    const assuntosCheckin = checkinAssuntos || [];
+    for (const assunto of assuntosCheckin) {
+      if (!assunto._sincronizado) {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            path: 'checkin',
+            action: 'salvar',
+            assunto: assunto.assunto,
+            descricao: assunto.desc,
+            criador: assunto.criador,
+            responsavel: assunto.resp,
+            setor: assunto.setor,
+            prioridade: assunto.prioridade,
+            status: assunto.status,
+            dataTerm: assunto.dataTerm
+          })
+        });
+        assunto._sincronizado = true;
+      }
+    }
+
+    console.log('✅ Sincronização com Google Sheets concluída');
+  } catch (err) {
+    console.error('❌ Erro ao sincronizar com Google Sheets:', err);
+  }
+}
+
+// Sincronizar a cada 2 minutos
+setInterval(sincronizarComGoogleSheets, 2 * 60 * 1000);
 
 function checkinAtualizarContadores() {
   const af = checkinAssuntos.filter(a => a.status === 'afazer').length;
