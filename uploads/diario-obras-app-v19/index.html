@@ -2842,6 +2842,20 @@ function escHtml(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Texto livre para o relatório, uma linha por item. O HTML colapsa quebras de
+// linha em espaço, então elas viram <br>. Um traço que abra item depois do fim
+// de uma frase também inicia linha, para o caso de o texto vir corrido.
+// Traço no meio da frase é preservado: em "filtro 1 - 12um" não há quebra,
+// porque o traço não vem depois de pontuação de fim de frase.
+function textoEmLinhas(s) {
+  return escHtml(s)
+    .replace(/([.;:!?])[ \t]+-[ \t]+/g, '$1\n- ')
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(l => l !== '')
+    .join('<br>');
+}
+
 function calcResumoPeriodoPDF(isoInicio, isoFim) {
   const dias = Object.keys(history).filter(d => d >= isoInicio && d <= isoFim).sort();
   const acum = {}; // atId -> total
@@ -3143,8 +3157,8 @@ function gerarPdfRDO() {
 
         ${day.observacoesDia && day.observacoesDia.trim() ? `
         <div class="section-title" style="page-break-before: auto;">OBSERVAÇÕES DO DIA</div>
-        <div style="background: #fdfdfd; padding: 12px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 9pt; min-height: 60px;">
-            ${escHtml(day.observacoesDia.trim())}
+        <div style="background: #fdfdfd; padding: 12px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 12pt; line-height: 1.5; min-height: 60px;">
+            ${textoEmLinhas(day.observacoesDia)}
         </div>` : ''}
 
         ${blocoFotos}
