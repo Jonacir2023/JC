@@ -240,6 +240,8 @@ tr:hover{background:#f9f7f5}
 </div>
 
 <script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd3u7QlYZpTbXr8fDS_zwU8GYRvvnxBCUZtrDwqk1f01mz52GvjvA0D1hGEeaX86tdWw/exec';
+
 const S = {
   get(k) { try { return JSON.parse(localStorage.getItem('custo_' + k)); } catch { return null; } },
   set(k, v) { localStorage.setItem('custo_' + k, JSON.stringify(v)); }
