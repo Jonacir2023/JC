@@ -1594,6 +1594,7 @@ function checkinRenderKanban() {
 }
 
 function checkinMoverCard(id, status) {
+  checkinAssuntos = checkinS.get('assuntos') || checkinAssuntos;
   const a = checkinAssuntos.find(x => String(x.id) === String(id));
   if (a) {
     a.status = status;
@@ -1601,6 +1602,8 @@ function checkinMoverCard(id, status) {
     checkinS.set('assuntos', checkinAssuntos);
     checkinRenderKanban();
     checkinAtualizarContadores();
+  } else {
+    console.warn('Item não encontrado:', id, 'IDs disponíveis:', checkinAssuntos.map(x => x.id));
   }
 }
 
@@ -1658,7 +1661,10 @@ function checkinAbrirModalAssunto(a) {
 }
 
 function checkinEditarAssunto(id) {
-  checkinAbrirModalAssunto(checkinAssuntos.find(x => String(x.id) === String(id)));
+  checkinAssuntos = checkinS.get('assuntos') || checkinAssuntos;
+  const a = checkinAssuntos.find(x => String(x.id) === String(id));
+  if (!a) console.warn('Item não encontrado para edição:', id, 'IDs:', checkinAssuntos.map(x => x.id));
+  checkinAbrirModalAssunto(a);
 }
 
 function checkinFecharModal(id) {
@@ -1666,6 +1672,7 @@ function checkinFecharModal(id) {
 }
 
 function checkinSalvarAssunto() {
+  checkinAssuntos = checkinS.get('assuntos') || checkinAssuntos;
   const assunto = document.getElementById('checkin-a-assunto').value.trim();
   if (!assunto) return checkinNotify('Informe o assunto', 'var(--red)');
   const editId = document.getElementById('checkin-a-edit-id').value;
@@ -1684,7 +1691,7 @@ function checkinSalvarAssunto() {
     dataTerm: document.getElementById('checkin-a-data-term').value
   };
   if (editId) {
-    const idx = checkinAssuntos.findIndex(x => x.id == editId);
+    const idx = checkinAssuntos.findIndex(x => String(x.id) === String(editId));
     if (idx >= 0) {
       if (dados.status === 'concluido' && checkinAssuntos[idx].status !== 'concluido') dados.concluidoEm = Date.now();
       checkinAssuntos[idx] = {...checkinAssuntos[idx], ...dados};
@@ -1702,7 +1709,12 @@ function checkinSalvarAssunto() {
 
 function checkinRemoverAssunto(id) {
   if (!confirm('Remover este assunto?')) return;
+  checkinAssuntos = checkinS.get('assuntos') || checkinAssuntos;
+  const countAntes = checkinAssuntos.length;
   checkinAssuntos = checkinAssuntos.filter(a => String(a.id) !== String(id));
+  if (checkinAssuntos.length === countAntes) {
+    console.warn('Nenhum item foi removido. ID procurado:', id, 'IDs:', checkinAssuntos.map(x => x.id));
+  }
   checkinS.set('assuntos', checkinAssuntos);
   checkinRenderCadastro();
   checkinRenderKanban();
