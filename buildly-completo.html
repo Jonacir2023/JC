@@ -1594,7 +1594,7 @@ function checkinRenderKanban() {
 }
 
 function checkinMoverCard(id, status) {
-  const a = checkinAssuntos.find(x => x.id === id);
+  const a = checkinAssuntos.find(x => String(x.id) === String(id));
   if (a) {
     a.status = status;
     if (status === 'concluido') a.concluidoEm = Date.now();
@@ -1658,7 +1658,7 @@ function checkinAbrirModalAssunto(a) {
 }
 
 function checkinEditarAssunto(id) {
-  checkinAbrirModalAssunto(checkinAssuntos.find(x => x.id === id));
+  checkinAbrirModalAssunto(checkinAssuntos.find(x => String(x.id) === String(id)));
 }
 
 function checkinFecharModal(id) {
@@ -1702,7 +1702,7 @@ function checkinSalvarAssunto() {
 
 function checkinRemoverAssunto(id) {
   if (!confirm('Remover este assunto?')) return;
-  checkinAssuntos = checkinAssuntos.filter(a => a.id !== id);
+  checkinAssuntos = checkinAssuntos.filter(a => String(a.id) !== String(id));
   checkinS.set('assuntos', checkinAssuntos);
   checkinRenderCadastro();
   checkinRenderKanban();
