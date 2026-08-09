@@ -96,9 +96,12 @@ tr:hover{background:#f9f7f5}
 
 <header class="hdr">
   <div class="hdr-top">
-    <div>
-      <div class="hdr-logo">CUS<span>TOS</span></div>
-      <div style="font-size:11px;color:#aaa">Controle de Notas Fiscais</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#f0ece7" onclick="voltarParaHome()">⬅️</button>
+      <div>
+        <div class="hdr-logo">CUS<span>TOS</span></div>
+        <div style="font-size:11px;color:#aaa">Controle de Notas Fiscais</div>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
       <div class="hdr-date" id="hdr-date"></div>
@@ -259,6 +262,18 @@ function notify(msg, cor = '#2d6a40') {
   n.style.background = cor;
   n.classList.add('show');
   setTimeout(() => n.classList.remove('show'), 3000);
+}
+
+function voltarParaHome() {
+  try {
+    if (parent && parent.switchTab && parent !== window) {
+      parent.switchTab('home');
+    } else {
+      window.location.href = 'buildly-completo.html';
+    }
+  } catch (e) {
+    window.location.href = 'buildly-completo.html';
+  }
 }
 
 function formatarMoeda(valor) {

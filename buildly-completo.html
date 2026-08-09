@@ -274,22 +274,11 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
       <div class="hdr-date" id="hdr-date"></div>
     </div>
   </div>
-  <nav class="tabs" id="main-tabs">
-    <div class="tab active" onclick="switchTab('home', this)">🏠 Home</div>
-    <div class="tab" onclick="switchTab('pauta', this)">📋 Pautas</div>
-    <div class="tab" onclick="switchTab('checkin', this)">✅ Check-in</div>
-    <div class="tab" onclick="switchTab('custos', this)">💰 Custos</div>
-    <div class="tab" onclick="switchTab('rdo', this)">📝 RDO</div>
-  </nav>
 </header>
 
 <!-- HOME PAGE -->
 <div class="page active" id="page-home">
   <div class="home-container">
-    <div class="home-header">
-      <div class="home-logo">🏗️ BUILDLy</div>
-      <div class="home-subtitle">Gestão Inteligente de Obras</div>
-    </div>
 
     <div class="home-grid">
       <!-- 1. Obras (Reserved) -->
@@ -352,9 +341,12 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
 
   <header class="hdr" style="margin:-16px -16px 0 -16px;position:relative;z-index:99">
     <div class="hdr-top">
-      <div>
-        <div class="hdr-logo">PAU<span>TA</span></div>
-        <div class="hdr-sub">Envio de Assuntos</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn-admin" onclick="switchTab('home', document.querySelectorAll('.tab')[0] || this)" style="font-size:20px;padding:4px 8px">⬅️</button>
+        <div>
+          <div class="hdr-logo">PAU<span>TA</span></div>
+          <div class="hdr-sub">Envio de Assuntos</div>
+        </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="hdr-date" id="pauta-hdr-date"></div>
@@ -519,9 +511,12 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px}
 
   <header class="hdr" style="margin:-16px -16px 0 -16px;position:relative;z-index:99">
     <div class="hdr-top">
-      <div>
-        <div class="hdr-logo">CHE<span>KIN</span></div>
-        <div class="hdr-obra" id="checkin-hdr-obra-label">— Configure a obra —</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn-admin" onclick="switchTab('home', document.querySelectorAll('.tab')[0] || this)" style="font-size:20px;padding:4px 8px">⬅️</button>
+        <div>
+          <div class="hdr-logo">CHE<span>KIN</span></div>
+          <div class="hdr-obra" id="checkin-hdr-obra-label">— Configure a obra —</div>
+        </div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <div class="hdr-date" id="checkin-hdr-date"></div>

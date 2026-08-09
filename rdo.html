@@ -1201,6 +1201,7 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
 <div class="topbar">
 <header class="header">
   <div class="header-top">
+    <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#f0ece7;align-self:flex-start;margin-top:4px" onclick="voltarParaHome()">⬅️</button>
     <div class="header-id">
       <div class="header-empresa" id="hdrEmpresa">EMPRESA</div>
       <h1>Diário de Obras</h1>
@@ -2024,6 +2025,18 @@ const S = {
   get(k) { try { return JSON.parse(localStorage.getItem('diario_' + k)); } catch(e) { return null; } },
   set(k, v) { localStorage.setItem('diario_' + k, JSON.stringify(v)); }
 };
+
+function voltarParaHome() {
+  try {
+    if (parent && parent.switchTab && parent !== window) {
+      parent.switchTab('home');
+    } else {
+      window.location.href = 'buildly-completo.html';
+    }
+  } catch (e) {
+    window.location.href = 'buildly-completo.html';
+  }
+}
 
 const DEFAULT_DATA = {
   obra: {
