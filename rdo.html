@@ -52,12 +52,13 @@
     line-height: 1.5;
     overscroll-behavior: none;
     min-height: 100vh;
+    width: 100%;
   }
 
   body {
     max-width: 480px;
     margin: 0 auto;
-    padding-bottom: 80px;
+    padding: 0 0 80px 0;
     background-color: var(--bg);
     background-image:
       var(--texture),
@@ -68,20 +69,32 @@
         rgba(0,0,0,0.03) 40px
       );
   }
-  
+
   /* HEADER — concreto escuro rústico */
   .topbar {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
   }
   .header {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    z-index: 1000;
     background: var(--bg-dark);
     background-image:
       var(--texture),
       linear-gradient(180deg, #363230 0%, #2c2c2c 100%);
     color: #f0ece7;
-    padding: 8px 14px 0;
+    padding: 16px 14px 12px;
     box-shadow: 0 3px 16px rgba(0,0,0,0.35);
     border-bottom: 3px solid var(--accent);
   }
@@ -93,8 +106,9 @@
     padding-bottom: 6px;
   }
   .header-id { flex: 1; min-width: 0; }
+  .header-id h1 { font-size: 24px; font-weight: 800; margin: 2px 0; }
   .header-empresa {
-    font-size: 9px;
+    font-size: 11px;
     color: var(--accent-soft);
     font-weight: 800;
     letter-spacing: 1.5px;
@@ -173,6 +187,13 @@
 
   /* TABS */
   .tabs {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    z-index: 999;
     background: var(--bg-mid);
     background-image: var(--texture);
     border-top: 1px solid rgba(0,0,0,0.2);
@@ -180,8 +201,8 @@
     grid-template-columns: repeat(5, 1fr);
   }
   .tab {
-    padding: 7px 4px;
-    font-size: 10px;
+    padding: 12px 8px;
+    font-size: 12px;
     font-weight: 700;
     font-family: var(--serif);
     color: rgba(240,236,231,0.45);
@@ -384,8 +405,8 @@
     font-family: var(--serif);
   }
 
-  .view { display: none; padding: 14px; }
-  .view.active { display: block; animation: fadeIn 0.2s ease; }
+  .view { display: none; padding: 0; }
+  .view.active { display: block; padding-top: 145px; animation: fadeIn 0.2s ease; }
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
