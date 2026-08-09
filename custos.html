@@ -94,7 +94,7 @@ tr:hover{background:#f9f7f5}
 
 <div class="notif" id="notif"></div>
 
-<header class="hdr">
+<header class="hdr" style="height:70px">
   <div class="hdr-top">
     <div style="display:flex;align-items:center;gap:10px">
       <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#f0ece7" onclick="voltarParaHome()">⬅️</button>
@@ -108,12 +108,13 @@ tr:hover{background:#f9f7f5}
       <button class="hdr-settings" onclick="abrirConfig()">⚙️</button>
     </div>
   </div>
-  <nav class="tabs">
-    <button class="tab active" onclick="abrir('nova',this)">➕ Nova NF</button>
-    <button class="tab" onclick="abrir('listar',this)">📋 Listar</button>
-    <button class="tab" onclick="abrir('resumo',this)">📊 Resumo</button>
-  </nav>
 </header>
+
+<nav class="tabs" style="top:70px">
+  <button class="tab active" onclick="abrir('nova',this)">➕ Nova NF</button>
+  <button class="tab" onclick="abrir('listar',this)">📋 Listar</button>
+  <button class="tab" onclick="abrir('resumo',this)">📊 Resumo</button>
+</nav>
 
 <!-- Nova Nota Fiscal -->
 <div class="page active" id="page-nova">

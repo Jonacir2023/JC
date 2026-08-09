@@ -34,9 +34,9 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .btn-admin{background:none;border:1px solid rgba(255,255,255,.2);color:#aaa;font-size:11px;font-weight:700;letter-spacing:.5px;padding:5px 10px;border-radius:6px;cursor:pointer;text-transform:uppercase;font-family:var(--serif)}
 .btn-admin:hover{background:rgba(255,255,255,.08)}
 
-.tabs{display:flex;overflow-x:auto;gap:0;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.08)}
+.tabs{display:flex;overflow-x:auto;gap:0;scrollbar-width:none;background:var(--bg-dark);border-top:1px solid rgba(255,255,255,.08);padding:0;margin:0;position:fixed;top:70px;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:99}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:none;padding:10px 14px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;color:#888;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab{flex:none;padding:14px 16px;font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.5px;color:#888;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s;background:transparent}
 .tab.active{color:#f0ece7;border-bottom-color:var(--accent)}
 .tab:hover:not(.active){color:#ccc}
 
@@ -44,7 +44,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .page.active{display:block}
 #page-home{margin-top:0;padding:0;height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
 #page-home:not(.active){display:none !important}
-#page-pauta,#page-checkin{padding-top:70px !important;position:relative}
+#page-pauta,#page-checkin{padding-top:130px !important;position:relative}
 
 .sec{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
 .sec-title{font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--bg-dark);margin-bottom:12px;display:flex;align-items:center;gap:6px}
@@ -350,7 +350,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
   <!-- Pauta tabs will be inserted here -->
   <div class="notif" id="notif-pauta"></div>
 
-  <header class="hdr" style="position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:101;width:100%;max-width:480px">
+  <header class="hdr" style="position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:101;width:100%;max-width:480px;height:70px">
     <div class="hdr-top">
       <div style="display:flex;align-items:center;gap:8px">
         <button class="btn-admin" onclick="switchTab('home', document.querySelectorAll('.tab')[0] || this)" style="font-size:20px;padding:4px 8px">⬅️</button>
@@ -364,11 +364,12 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
         <button class="btn-admin" onclick="pautaOpenAdmin()">⚙️ Admin</button>
       </div>
     </div>
-    <nav class="tabs">
-      <div class="tab active" onclick="pautaGoTab('envio',this)">📤 Envio</div>
-      <div class="tab" onclick="pautaGoTab('listar',this)">📋 Listar</div>
-    </nav>
   </header>
+  <nav class="tabs" style="top:70px">
+    <div class="tab active" onclick="pautaGoTab('envio',this)">📤 Envio</div>
+    <div class="tab" onclick="pautaGoTab('listar',this)">📋 Listar</div>
+    <div class="tab" onclick="pautaGoTab('exportar',this)">🚀 Exportar</div>
+  </nav>
 
   <!-- ENVIO -->
   <div class="page active" id="pauta-page-envio">
@@ -520,7 +521,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
   <div class="notif" id="notif-checkin"></div>
   <div id="print-kanban" style="display:none"></div>
 
-  <header class="hdr" style="position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:101;width:100%;max-width:480px">
+  <header class="hdr" style="position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:101;width:100%;max-width:480px;height:70px">
     <div class="hdr-top">
       <div style="display:flex;align-items:center;gap:8px">
         <button class="btn-admin" onclick="switchTab('home', document.querySelectorAll('.tab')[0] || this)" style="font-size:20px;padding:4px 8px">⬅️</button>
@@ -535,14 +536,14 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
         <button class="hdr-settings" onclick="checkinAbrirConfig()" title="Configurar obra">⚙️</button>
       </div>
     </div>
-    <nav class="tabs">
-      <div class="tab active" onclick="checkinGoTab('checkin',this)">📋 Check-in</div>
-      <div class="tab" onclick="checkinGoTab('cadastro',this)">⚙️ Cadastro</div>
-      <div class="tab" onclick="checkinGoTab('calendario',this)">📅 Calendário</div>
-      <div class="tab" onclick="checkinGoTab('resumo',this)">📊 Resumo</div>
-      <div class="tab" onclick="checkinGoTab('dashboard',this)">🚀 Dash</div>
-    </nav>
   </header>
+  <nav class="tabs tabs-checkin" id="checkin-tabs" style="top:70px;display:grid;grid-template-columns:repeat(5,1fr);background:var(--bg-dark);border-top:none;border-bottom:2px solid var(--accent);padding:8px 0">
+    <div class="tab active" onclick="checkinGoTab('checkin',this)" style="flex:1;padding:8px 4px;border:none;text-align:center;white-space:normal;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">📋<span>Check-in</span></div>
+    <div class="tab" onclick="checkinGoTab('cadastro',this)" style="flex:1;padding:8px 4px;border:none;text-align:center;white-space:normal;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">⚙️<span>Cadastro</span></div>
+    <div class="tab" onclick="checkinGoTab('calendario',this)" style="flex:1;padding:8px 4px;border:none;text-align:center;white-space:normal;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">📅<span>Calendário</span></div>
+    <div class="tab" onclick="checkinGoTab('resumo',this)" style="flex:1;padding:8px 4px;border:none;text-align:center;white-space:normal;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">📊<span>Resumo</span></div>
+    <div class="tab" onclick="checkinGoTab('dashboard',this)" style="flex:1;padding:8px 4px;border:none;text-align:center;white-space:normal;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">🚀<span>Dashb</span></div>
+  </nav>
 
   <!-- CHECKIN PAGE -->
   <div class="page active" id="checkin-page-checkin">

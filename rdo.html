@@ -1220,7 +1220,7 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
 <body>
 
 <div class="topbar">
-<header class="header">
+<header class="header" style="height:70px">
   <div class="header-top">
     <button style="font-size:20px;padding:4px 8px;background:none;border:none;cursor:pointer;color:#f0ece7;align-self:flex-start;margin-top:4px" onclick="voltarParaHome()">⬅️</button>
     <div class="header-id">
@@ -1234,15 +1234,15 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
   </div>
   <div class="header-date" id="hdrDate">—</div>
 </header>
+</div>
 
-<nav class="tabs">
+<nav class="tabs" style="top:70px">
   <button class="tab active" data-view="diario">📝<br>Diário</button>
   <button class="tab" data-view="gerar">📤<br>Gerar</button>
   <button class="tab" data-view="resumo">📊<br>Resumo</button>
   <button class="tab" data-view="calendario">📅<br>Calendário</button>
   <button class="tab" data-view="config">⚙️<br>Cadastro</button>
 </nav>
-</div>
 
 <!-- ============ DIÁRIO ============ -->
 <main id="view-diario" class="view active">
