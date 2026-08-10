@@ -166,3 +166,55 @@ Depois de fazer deploy dos 2 Apps Scripts, você vai **adaptar os HTMLs** para:
 3. Sincronizar com a planilha Google
 
 **Guarde as URLs dos Apps Scripts que você vai usar nos HTMLs!**
+
+---
+
+## Permissões OAuth (escopos) — leia antes de editar o script
+
+> **Situação atual:** um único projeto Apps Script (`DiarioObrasv5.gs`) serve os dois apps.
+> `rdo.html` e `buildly-completo.html` apontam para o mesmo deployment. A divisão em 2 scripts
+> descrita acima é histórica.
+
+O Apps Script decide quais permissões pedir **a partir do código, no momento em que você autoriza**.
+Se você adicionar uma chamada nova depois de já ter autorizado, ela é **bloqueada em execução** —
+mesmo o código estando certo. Foi o que aconteceu com o robô 🤖 do RDO:
+
+```
+❌ Você não tem permissão para chamar UrlFetchApp.fetch.
+   Permissões necessárias: https://www.googleapis.com/auth/script.external_request
+```
+
+### Escopos que este projeto precisa
+
+| Serviço usado | Onde | Escopo |
+|---|---|---|
+| `SpreadsheetApp.openById` | ler/gravar na planilha | `.../auth/spreadsheets` |
+| `DriveApp.getRootFolder`, `setSharing` | fotos e backups | `.../auth/drive` (o amplo — `drive.file` não permite `getRootFolder`) |
+| `UrlFetchApp.fetch` | robô 🤖 chama a API da Anthropic | `.../auth/script.external_request` |
+
+O arquivo [`appsscript.json`](./appsscript.json) deste diretório é **referência versionada** —
+o Apps Script **não** lê do GitHub. Você precisa copiar o bloco para dentro do editor.
+
+### Procedimento quando der erro de permissão
+
+1. **Configurações do projeto (⚙️)** → marcar *"Mostrar o arquivo de manifesto appsscript.json no editor"*.
+2. Abrir `appsscript.json` no editor e **acrescentar** o bloco `oauthScopes` do arquivo deste
+   diretório. Não substituir o arquivo inteiro — preservar `timeZone`, `runtimeVersion` etc. Salvar.
+3. **Reautorizar:** selecionar qualquer função na barra superior → **Executar** → aprovar a tela de
+   consentimento (agora aparece *"Conectar-se a um serviço externo"*).
+   Se surgir "app não verificado": Avançado → Acessar projeto.
+4. **Publicar nova versão** (o passo mais esquecido): Implantar → **Gerenciar implantações** →
+   ✏️ na implantação ativa → Versão: **Nova versão** → **Implantar**.
+   Sem isso a URL `/exec` continua servindo a versão antiga e nada muda.
+5. Conferir na mesma tela: **Executar como = Eu** e **Quem tem acesso = Qualquer pessoa**.
+   Com *"Usuário que acessa o app"* o robô nunca funciona a partir de uma página pública —
+   visitante anônimo não tem como autorizar.
+
+A URL `/exec` **não muda** ao criar nova versão da mesma implantação. Se mudar, atualize
+`rdo.html` (`APPS_SCRIPT_URL_DIARIO`) e `buildly-completo.html` (`APPS_SCRIPT_URL`).
+
+### Segredos
+
+Chaves de API **nunca** vão para o HTML nem para este repositório. Ficam em
+**Configurações do projeto → Propriedades do script**, lidas via
+`PropertiesService.getScriptProperties()`. Hoje: `ANTHROPIC_API_KEY`.
