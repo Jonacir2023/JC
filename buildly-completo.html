@@ -23,7 +23,9 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
 .hdr{background:var(--bg-dark);color:#f0ece7;padding:16px 16px;position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:100;box-shadow:0 3px 16px rgba(0,0,0,.4);border-bottom:3px solid var(--accent);height:70px;display:flex;flex-direction:column;justify-content:center;width:100%;max-width:480px}
 .hdr-home{position:relative;padding:12px 16px;height:auto}
 #page-home .hdr{position:relative;padding:12px 16px;position:static;width:auto;max-width:none}
-.hdr-home .hdr-top{flex-direction:column;align-items:flex-start;justify-content:flex-start;margin-bottom:0}
+.hdr-home .hdr-top{flex-direction:row;align-items:center;justify-content:space-between;margin-bottom:0}
+.header-ia-btn{width:34px;height:34px;border-radius:5px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.header-ia-btn:active{background:rgba(255,255,255,.18)}
 .hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0;gap:12px}
 .hdr-logo{font-family:var(--serif);font-size:22px;font-weight:800;letter-spacing:1px;color:#f0ece7}
 .hdr-logo-main{font-size:26px;letter-spacing:-0.5px}
@@ -278,6 +280,7 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
       <div class="hdr-logo hdr-logo-main">🏗️ BUILD<span>Ly</span></div>
       <div class="hdr-sub">Gestão de Obras</div>
     </div>
+    <button class="header-ia-btn" onclick="abrirModalPerguntar()" title="Perguntar sobre os dados">🤖</button>
   </div>
 </header>
 
@@ -718,6 +721,25 @@ body{max-width:480px;margin:0 auto;padding-bottom:82px;display:flex;flex-directi
   </div>
 </div>
 
+<!-- MODAL PERGUNTAR (robô) -->
+<div class="modal-overlay" id="modalPerguntar">
+  <div class="modal">
+    <div class="modal-title">
+      🤖 Perguntar sobre os dados
+      <button class="modal-close" onclick="fecharModalPerguntar()">✕</button>
+    </div>
+    <p style="font-size:12px;color:var(--ink-faint);margin:-8px 0 12px;font-style:italic">
+      Pergunte qualquer coisa sobre o que já está na planilha — RDOs, pautas, check-ins e notas fiscais.
+    </p>
+    <div class="frow">
+      <textarea id="perguntarInput" style="min-height:70px" placeholder="Ex.: Quantos bags de areia fizemos em julho? Quais pautas estão atrasadas? Quanto gastamos com cimento?"></textarea>
+    </div>
+    <div id="perguntarResposta" style="display:none;margin-top:4px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:14px;line-height:1.5;white-space:pre-wrap;max-height:260px;overflow-y:auto"></div>
+    <div id="perguntarLoading" style="display:none;margin-top:4px;font-size:13px;color:var(--ink-faint)">⏳ Consultando os dados...</div>
+    <button class="btn btn-primary btn-full" id="btnPerguntarEnviar" style="margin-top:12px" onclick="enviarPergunta()">PERGUNTAR</button>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════════
 // MAIN NAVIGATION
@@ -755,6 +777,57 @@ function switchTab(tab, el) {
     pautaInit();
   } else if (tab === 'checkin') {
     checkinInit();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ROBÔ — PERGUNTAS SOBRE OS DADOS DA PLANILHA
+// ═══════════════════════════════════════════════════════════════
+
+function abrirModalPerguntar() {
+  document.getElementById('perguntarInput').value = '';
+  document.getElementById('perguntarResposta').style.display = 'none';
+  document.getElementById('perguntarLoading').style.display = 'none';
+  document.getElementById('modalPerguntar').classList.add('open');
+  document.getElementById('perguntarInput').focus();
+}
+
+function fecharModalPerguntar() {
+  document.getElementById('modalPerguntar').classList.remove('open');
+}
+
+document.getElementById('modalPerguntar').addEventListener('click', function(e) {
+  if (e.target === this) fecharModalPerguntar();
+});
+
+async function enviarPergunta() {
+  const input = document.getElementById('perguntarInput');
+  const pergunta = input.value.trim();
+  if (!pergunta) return;
+
+  const respostaBox = document.getElementById('perguntarResposta');
+  const loading = document.getElementById('perguntarLoading');
+  const btn = document.getElementById('btnPerguntarEnviar');
+  respostaBox.style.display = 'none';
+  loading.style.display = 'block';
+  btn.disabled = true;
+
+  try {
+    // Só a pergunta viaja: o Apps Script monta o contexto lendo a planilha,
+    // então o robô não depende de estado de nenhuma tela do app.
+    const resp = await fetch(APPS_SCRIPT_URL + '?path=ia&action=perguntar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ pergunta })
+    });
+    const json = await resp.json().catch(() => null);
+    respostaBox.textContent = (json && json.resposta) || '❌ Não foi possível obter resposta.';
+  } catch (err) {
+    respostaBox.textContent = '❌ Erro de conexão: ' + err.message;
+  } finally {
+    respostaBox.style.display = 'block';
+    loading.style.display = 'none';
+    btn.disabled = false;
   }
 }
 
@@ -1188,7 +1261,7 @@ const checkinS = {
 // ═══════════════════════════════════════════════════════════════
 
 // BUILDLy Premium — Google Apps Script URL (v2)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd3u7QlYZpTbXr8fDS_zwU8GYRvvnxBCUZtrDwqk1f01mz52GvjvA0D1hGEeaX86tdWw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrSC_cQQW5IDu7Yrub0wnfMx7aInCX37U3BpiouC0qbFk6qgOwQpJzLXzH1XUX9lGEOA/exec';
 
 async function checkinCarregarAssuntosDaPauta() {
   try {
