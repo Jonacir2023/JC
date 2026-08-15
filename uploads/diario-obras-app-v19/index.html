@@ -4024,18 +4024,42 @@ function enviarPdfPreparado() {
     if (btn) { btn.disabled = false; btn.textContent = '📤 Compartilhar'; btn.onclick = compartilharPdfRDO; }
   };
 
-  navigator.share({
+  const comTexto = {
     files: [file],
     title: `RDO Nº ${num}`,
     text: `RDO Nº ${num} · ${state.obra.nome || ''} · ${formatDateBR(currentDay.data)}`
-  }).then(() => {
+  };
+  const soArquivo = { files: [file] };
+
+  // No Android o WhatsApp costuma recusar arquivo e texto no mesmo
+  // compartilhamento; só o arquivo passa. O iOS aceita os dois. Por isso o
+  // texto só vai quando o próprio aparelho confirma que aceita esse conjunto,
+  // e mesmo assim há uma segunda tentativa só com o arquivo.
+  const aceitaTexto = !navigator.canShare || navigator.canShare(comTexto);
+
+  const concluir = () => {
     toast('✓ Compartilhado' + aviso);
     _pdfParaCompartilhar = null;
     restaurarBotao();
-  }).catch(err => {
+  };
+
+  navigator.share(aceitaTexto ? comTexto : soArquivo).then(concluir).catch(err => {
     // Cancelar não é erro: o usuário fechou a janela de compartilhamento
     if (err && err.name === 'AbortError') return;
 
+    // Segunda tentativa sem o texto, que é o que costuma travar no Android
+    if (aceitaTexto) {
+      console.warn('Compartilhamento com texto falhou, tentando só o arquivo:', err);
+      navigator.share(soArquivo).then(concluir).catch(err2 => {
+        if (err2 && err2.name === 'AbortError') return;
+        recorrerAoDownload(err2);
+      });
+      return;
+    }
+    recorrerAoDownload(err);
+  });
+
+  function recorrerAoDownload(err) {
     console.error('Erro ao compartilhar PDF:', err);
     const mb = (file.size / 1024 / 1024).toFixed(1);
     // Em vez de deixar o usuário sem nada, salva o arquivo
@@ -4052,7 +4076,7 @@ function enviarPdfPreparado() {
     }
     _pdfParaCompartilhar = null;
     restaurarBotao();
-  });
+  }
 }
 
 function abrirRdoNoSafari() {
