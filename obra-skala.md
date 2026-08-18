@@ -11,6 +11,7 @@
 |-------|-------|
 | Nome | Skala |
 | Tipo | Terraplanagem |
+| Localização | Uberaba - MG |
 | Empresa Executora | Cesbe Engenharia SA |
 | Contratante | Skala Cosméticos |
 | Gerente de Obras | Jonacir |
