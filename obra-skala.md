@@ -61,12 +61,23 @@ Obra de terraplanagem da Skala. A Cesbe Engenharia SA foi selecionada como vence
 
 ---
 
+## Serviços em Cotação
+
+- 🔍 Topografia
+- 🏔️ Drenagem
+- 🧪 Laboratório de Solos
+
+---
+
 ## Pendências
 
 ### Antes do Início das Obras
 - [ ] Skala Cosméticos assinar contrato
 - [ ] Liberar início das obras
 - [ ] Definir data de início
+- [ ] Finalizar cotação de topografia
+- [ ] Finalizar cotação de drenagem
+- [ ] Finalizar cotação de laboratório de solos
 
 ## Notas e Observações
 
