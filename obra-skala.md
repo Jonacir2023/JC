@@ -49,7 +49,7 @@ Obra de terraplanagem da Skala. A Cesbe Engenharia SA foi selecionada como vence
 
 - Materiais:
 - Mão de obra:
-- Equipamentos:
+- Equipamentos: Agroterra - Pais e Filhos
 
 ---
 
