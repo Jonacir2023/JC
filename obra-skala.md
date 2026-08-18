@@ -39,6 +39,12 @@ Obra de terraplanagem da Skala. A Cesbe Engenharia SA foi selecionada como vence
 
 ---
 
+## Orçamento
+
+**Valor Total:** R$ 5.000.000,00
+
+---
+
 ## Recursos
 
 - Materiais:
