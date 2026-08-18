@@ -12,10 +12,11 @@
 | Nome | Skala |
 | Tipo | Terraplanagem |
 | Empresa Executora | Cesbe Engenharia SA |
+| Contratante | Skala Cosméticos |
 | Gerente de Obras | Jonacir |
-| Status | Ganho de licitação |
-| Data de Início | |
-| Data Prevista de Término | |
+| Status | Aguardando assinatura de contrato |
+| Data de Início | Pendente |
+| Data Prevista de Término | Pendente |
 
 ---
 
@@ -53,9 +54,17 @@ Obra de terraplanagem da Skala. A Cesbe Engenharia SA foi selecionada como vence
 
 ---
 
+## Pendências
+
+### Antes do Início das Obras
+- [ ] Skala Cosméticos assinar contrato
+- [ ] Liberar início das obras
+- [ ] Definir data de início
+
 ## Notas e Observações
 
-(Adicione observações aqui)
+- Obra ganhou licitação e está em fase de assinatura de contrato
+- Aguardando autorização da Skala Cosméticos para iniciar
 
 ---
 
