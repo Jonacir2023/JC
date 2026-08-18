@@ -45,10 +45,20 @@ Obra de terraplanagem da Skala. A Cesbe Engenharia SA foi selecionada como vence
 
 ---
 
+## Equipe Cesbe Engenharia
+
+| Função | Nome |
+|--------|------|
+| Gerente de Obras | Jonacir |
+| Administrativo | Antonio Lucas |
+| Técnico de Segurança do Trabalho | (A definir) |
+
+---
+
 ## Recursos
 
 - Materiais:
-- Mão de obra:
+- Mão de obra: Cesbe Engenharia SA + Terceirizados
 - Equipamentos: Agroterra - Pais e Filhos
 
 ---
