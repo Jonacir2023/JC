@@ -10,9 +10,10 @@
 | Campo | Valor |
 |-------|-------|
 | Nome | Skala |
-| Tipo | |
-| Localização | |
-| Cliente | |
+| Tipo | Terraplanagem |
+| Empresa Executora | Cesbe Engenharia SA |
+| Gerente de Obras | Jonacir |
+| Status | Ganho de licitação |
 | Data de Início | |
 | Data Prevista de Término | |
 
@@ -20,7 +21,7 @@
 
 ## Descrição
 
-(Adicione descrição da obra aqui)
+Obra de terraplanagem da Skala. A Cesbe Engenharia SA foi selecionada como vencedora da licitação com a melhor proposta técnica e financeira para a execução do trabalho.
 
 ---
 
