@@ -4375,14 +4375,47 @@ async function salvarDiarioGoogle(diarioData) {
   }
 }
 
+
+// Faixa de aviso enquanto o diário não tem responsável: nada está sendo gravado
+function avisarFaltaResponsavel(remover) {
+  let el = document.getElementById('avisoSemResponsavel');
+  const temConteudo = currentDay && (
+    Object.keys(currentDay.atividadesMarcadas || {}).length ||
+    Object.keys(currentDay.efetivo || {}).length ||
+    (currentDay.observacoesDia || '').trim() ||
+    (currentDay.fotos || []).length);
+
+  if (remover || !temConteudo) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'avisoSemResponsavel';
+    el.style.cssText = 'position:fixed;left:12px;right:12px;bottom:88px;z-index:9996;background:#5a1e1e;'
+      + 'border:1.5px solid #e06666;border-radius:10px;padding:12px;box-shadow:0 4px 16px rgba(0,0,0,.35);cursor:pointer';
+    el.onclick = () => {
+      const sel = document.getElementById('apontadorSelect');
+      if (sel) { sel.scrollIntoView({ behavior: 'smooth', block: 'center' }); sel.focus(); }
+    };
+    el.innerHTML = '<div style="color:#ffb3b3;font-weight:800;font-size:13px">⚠️ Este diário ainda NÃO está sendo salvo</div>'
+      + '<div style="color:#f0dcdc;font-size:12px;margin-top:3px">'
+      + 'Selecione o Apontador ou Supervisor responsável. Toque aqui para escolher.</div>';
+    document.body.appendChild(el);
+  }
+}
+
 function salvarDiarioDia(notificar) {
   if (!currentDay || !currentDay.data) return;
-  if (notificar && !(currentDay.apontador || '').trim()) {
-    toast('❌ Selecione o Apontador Responsável antes de salvar');
-    const sel = document.getElementById('apontadorSelect');
-    if (sel) { sel.scrollIntoView({ behavior: 'smooth', block: 'center' }); sel.focus(); }
+  // Sem apontador ou supervisor responsável o diário não é gravado, nem pelo
+  // salvamento automático. O aviso na tela mostra que ainda não foi salvo.
+  if (!diarioPodeSerSalvo(currentDay)) {
+    avisarFaltaResponsavel();
+    if (notificar) {
+      toast('❌ Selecione o Apontador ou Supervisor responsável para salvar');
+      const sel = document.getElementById('apontadorSelect');
+      if (sel) { sel.scrollIntoView({ behavior: 'smooth', block: 'center' }); sel.focus(); }
+    }
     return;
   }
+  avisarFaltaResponsavel(true);
   const temDado = currentDay.dssTema || currentDay.dssHorario || currentDay.atividadesExtra || currentDay.observacoesDia || currentDay.tempoManha || currentDay.tempoTarde ||
     Object.keys(currentDay.efetivo).length > 0 ||
     Object.keys(currentDay.atividadesMarcadas).length > 0 ||
@@ -5003,12 +5036,20 @@ function _todosColaboradores() {
   return lista;
 }
 
+// Quem pode responder pelo diário: apontador ou supervisão. Sem um destes o
+// diário não é gravado.
+function _ehResponsavelValido(texto) {
+  const t = String(texto || '').toLowerCase();
+  return t.includes('apontador') || t.includes('apontamento')
+      || t.includes('supervis');   // supervisor, supervisão, supervisora
+}
+
 function _apontadoresFiltrados() {
   const lista = [];
   (state.colaboradores.categorias || []).forEach(cat => {
-    const catIsApontador = cat.nome.toLowerCase().includes('apontador');
+    const catValida = _ehResponsavelValido(cat.nome);
     (cat.itens || []).forEach(c => {
-      if (catIsApontador || (c.funcao || '').toLowerCase().includes('apontador')) {
+      if (catValida || _ehResponsavelValido(c.funcao)) {
         lista.push(`${c.mat} – ${c.nome} (${cat.nome})`);
       }
     });
@@ -5016,12 +5057,20 @@ function _apontadoresFiltrados() {
   return lista;
 }
 
+// O diário só é gravado com um responsável definido
+function responsavelDoDiario(day) {
+  return String((day && day.apontador) || '').trim();
+}
+function diarioPodeSerSalvo(day) {
+  return responsavelDoDiario(day).length > 0;
+}
+
 function renderApontadorDia() {
   // Atualiza o select inline na aba Diário
   const sel = document.getElementById('apontadorSelect');
   if (sel) {
     const current = currentDay.apontador || '';
-    sel.innerHTML = '<option value="">— Selecionar Apontador —</option>';
+    sel.innerHTML = '<option value="">— Selecionar Apontador ou Supervisor —</option>';
     _apontadoresFiltrados().forEach(s => {
       const opt = document.createElement('option');
       opt.value = s;
