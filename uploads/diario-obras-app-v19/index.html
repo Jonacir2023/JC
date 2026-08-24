@@ -1674,6 +1674,8 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
         <span style="color:var(--ink-faint);font-size:12px">Nenhum backup automático ainda.</span>
       </div>
       <div class="btn-stack">
+        <button class="btn btn-primary" onclick="sincronizarAgora()">🔄 Sincronizar com os outros aparelhos</button>
+        <div id="infoSincronizacao" style="font-size:11px;color:var(--ink-soft);margin:2px 0 8px"></div>
         <button class="btn btn-primary" onclick="backupAutomatico()">💾 Fazer Backup Agora</button>
         <button class="btn btn-primary" onclick="backupNuvem(true)">☁️ Backup na Nuvem (Drive)</button>
         <button class="btn btn-secondary" onclick="if(confirm('Substituir os dados atuais pelo último backup salvo na nuvem?')) restaurarNuvem(false)">☁️ Restaurar da Nuvem</button>
@@ -4390,8 +4392,13 @@ function salvarDiarioDia(notificar) {
     (currentDay.atividadesParalisadas || []).length > 0 ||
     (currentDay.fotos || []).length > 0;
   if (temDado) {
+    // carimbo usado pela sincronização para saber o que é mais recente e de onde veio
+    currentDay.atualizadoEm = new Date().toISOString();
+    currentDay.aparelho = aparelhoId();
+    currentDay.apelidoAparelho = apelidoAparelho();
     history[currentDay.data] = JSON.parse(JSON.stringify(currentDay));
     saveHistory();
+    agendarEnvioSincronizacao();
   } else if (history[currentDay.data]) {
     delete history[currentDay.data];
     saveHistory();
@@ -7011,6 +7018,338 @@ const AUTOBACKUP_KEY = 'diario_obras_v3_autobackup';
 const AUTOBACKUP_META_KEY = 'diario_obras_v3_autobackup_meta';
 
 // Backup automático — silencioso, salva no localStorage sem download
+
+// ============================================================
+// SINCRONIZAÇÃO ENTRE APARELHOS
+// Cada aparelho grava localmente (o app continua funcionando sem internet) e
+// espelha na nuvem que já existe — Apps Script + Google Drive. Ao abrir, e de
+// tempos em tempos, busca o que os outros lançaram e MESCLA.
+// Regra: nada é sobrescrito. Diário que só existe no outro aparelho entra;
+// diário que existe nos dois com conteúdo diferente vira conflito guardado,
+// para a pessoa escolher qual versão fica.
+// ============================================================
+const SYNC_INTERVALO_MS = 3 * 60 * 1000;   // busca a cada 3 minutos
+const SYNC_ESPERA_ENVIO_MS = 8 * 1000;     // agrupa gravações seguidas
+let _syncTimerEnvio = null;
+let _syncEmAndamento = false;
+
+function aparelhoId() {
+  let id = localStorage.getItem('aparelhoId');
+  if (!id) {
+    id = 'ap-' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+    localStorage.setItem('aparelhoId', id);
+  }
+  return id;
+}
+
+function apelidoAparelho() {
+  return localStorage.getItem('aparelhoApelido') || aparelhoId();
+}
+
+function chaveConflitos() {
+  return 'conflitosSync_' + (state.obra.nome || 'default').replace(/\s+/g, '_').toLowerCase();
+}
+function carregarConflitos() {
+  try { return JSON.parse(localStorage.getItem(chaveConflitos()) || '{}'); } catch (e) { return {}; }
+}
+function salvarConflitos(c) {
+  try { localStorage.setItem(chaveConflitos(), JSON.stringify(c)); } catch (e) { console.error(e); }
+}
+
+// Compara o conteúdo do diário ignorando os carimbos de sincronização
+function mesmoConteudoDiario(a, b) {
+  const limpar = (d) => {
+    const c = JSON.parse(JSON.stringify(d || {}));
+    delete c.atualizadoEm; delete c.aparelho; delete c.apelidoAparelho;
+    return JSON.stringify(c, Object.keys(c).sort());
+  };
+  return limpar(a) === limpar(b);
+}
+
+// Junta listas de cadastro por id, sem remover nada
+function mesclarListaCadastro(minha, dela) {
+  const ids = new Set((minha || []).map(x => x && x.id));
+  let novos = 0;
+  (dela || []).forEach(x => {
+    if (x && x.id && !ids.has(x.id)) { minha.push(x); ids.add(x.id); novos++; }
+  });
+  return novos;
+}
+
+function mesclarCadastro(remoto) {
+  if (!remoto) return 0;
+  let novos = 0;
+  ['atividades', 'equipamentos', 'veiculosFrota', 'seguranca', 'meio_ambiente'].forEach(lista => {
+    state[lista] = state[lista] || [];
+    novos += mesclarListaCadastro(state[lista], remoto[lista]);
+  });
+  const cats = state.colaboradores.categorias;
+  ((remoto.colaboradores || {}).categorias || []).forEach(catR => {
+    let cat = cats.find(c => c.id === catR.id) || cats.find(c => (c.nome || '') === (catR.nome || ''));
+    if (!cat) {
+      cats.push(JSON.parse(JSON.stringify(catR)));
+      novos += (catR.itens || []).length;
+      return;
+    }
+    cat.itens = cat.itens || [];
+    novos += mesclarListaCadastro(cat.itens, catR.itens);
+  });
+  return novos;
+}
+
+// Núcleo da mescla. Devolve o que mudou, sem tocar no que é seu.
+function mesclarDaNuvem(dados) {
+  const res = { adicionados: [], conflitos: [], cadastroNovo: 0 };
+  if (!dados) return res;
+
+  res.cadastroNovo = mesclarCadastro(dados.state);
+
+  const conflitos = carregarConflitos();
+  Object.keys(dados.history || {}).forEach(data => {
+    const remoto = dados.history[data];
+    const local = history[data];
+
+    if (!local) {                       // só existe no outro aparelho: entra
+      history[data] = remoto;
+      res.adicionados.push(data);
+      return;
+    }
+    if (mesmoConteudoDiario(local, remoto)) return;   // idêntico: nada a fazer
+
+    // Existe nos dois com conteúdo diferente. O seu permanece; o outro fica
+    // guardado para você comparar e decidir.
+    const jaGuardado = (conflitos[data] || []).some(v => mesmoConteudoDiario(v.diario, remoto));
+    if (!jaGuardado) {
+      conflitos[data] = conflitos[data] || [];
+      conflitos[data].push({
+        diario: remoto,
+        de: remoto.apelidoAparelho || remoto.aparelho || 'outro aparelho',
+        quando: remoto.atualizadoEm || null,
+        recebidoEm: new Date().toISOString()
+      });
+      res.conflitos.push(data);
+    }
+  });
+
+  // As seleções do dia (efetivo, equipamentos, veículos, atividades) só entram
+  // junto com diários que são novos aqui — nunca por cima dos seus.
+  if (dados.chavesDia) {
+    Object.keys(dados.chavesDia).forEach(k => {
+      const data = k.split('_')[1];
+      if (res.adicionados.includes(data) && localStorage.getItem(k) === null) {
+        try { localStorage.setItem(k, dados.chavesDia[k]); } catch (e) { /* espaço cheio */ }
+      }
+    });
+  }
+
+  if (res.conflitos.length) salvarConflitos(conflitos);
+  if (res.adicionados.length || res.cadastroNovo) {
+    ordenarAtividadesPadrao();
+    saveState();
+    saveHistory();
+  }
+  return res;
+}
+
+// Envia o estado deste aparelho para a nuvem
+async function enviarSincronizacao() {
+  if (!APPS_SCRIPT_URL_DIARIO) return false;
+  try {
+    const chavesDia = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (/^(efetivoDia_|equipDia_|vlDia_|ativDia_)/.test(k)) chavesDia[k] = localStorage.getItem(k);
+    }
+    const conteudo = JSON.stringify({
+      state, history, chavesDia,
+      exportado: new Date().toISOString(),
+      versao: 'v4', tipo: 'sync', aparelho: aparelhoId()
+    });
+    const resp = await fetch(APPS_SCRIPT_URL_DIARIO, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ path: 'backup', obra: state.obra.nome || 'Obra', conteudo })
+    });
+    const json = await resp.json().catch(() => null);
+    if (!json || !json.ok) throw new Error((json && json.error) || 'resposta inválida');
+    localStorage.setItem('ultimoEnvioSync', new Date().toISOString());
+    return true;
+  } catch (err) {
+    console.warn('Envio da sincronização falhou (será tentado de novo):', err);
+    return false;
+  }
+}
+
+// Agenda o envio, agrupando gravações seguidas
+function agendarEnvioSincronizacao() {
+  if (_syncTimerEnvio) clearTimeout(_syncTimerEnvio);
+  _syncTimerEnvio = setTimeout(() => { _syncTimerEnvio = null; enviarSincronizacao(); }, SYNC_ESPERA_ENVIO_MS);
+}
+
+// Busca o que os outros lançaram, mescla e devolve o resumo
+async function sincronizarNuvem(silencioso) {
+  if (_syncEmAndamento || !APPS_SCRIPT_URL_DIARIO) return null;
+  if (!navigator.onLine) { if (!silencioso) toast('📴 Sem internet — sincroniza quando a rede voltar'); return null; }
+  _syncEmAndamento = true;
+  try {
+    const obra = state.obra.nome || 'Obra';
+    const resp = await fetch(`${APPS_SCRIPT_URL_DIARIO}?path=backup&action=buscar-ultimo&obra=${encodeURIComponent(obra)}`);
+    const json = await resp.json().catch(() => null);
+    if (!json || !json.ok) { if (!silencioso) toast('Nada novo na nuvem'); return null; }
+
+    const dados = JSON.parse(json.conteudo);
+    if (dados.aparelho && dados.aparelho === aparelhoId()) {
+      // o backup mais recente é deste próprio aparelho: nada a trazer
+      if (!silencioso) toast('✓ Já está em dia');
+      return { adicionados: [], conflitos: [], cadastroNovo: 0 };
+    }
+
+    const res = mesclarDaNuvem(dados);
+    if (res.adicionados.length || res.cadastroNovo) {
+      atualizarHeader();
+      if (typeof renderCalendario === 'function') renderCalendario();
+      if (typeof renderConfig === 'function') renderConfig();
+      // devolve o conjunto já unido, para o outro aparelho receber o seu também
+      agendarEnvioSincronizacao();
+    }
+    atualizarAvisoSincronizacao(res);
+    if (!silencioso) {
+      const partes = [];
+      if (res.adicionados.length) partes.push(res.adicionados.length + ' diário(s) recebido(s)');
+      if (res.cadastroNovo) partes.push(res.cadastroNovo + ' item(ns) de cadastro');
+      if (res.conflitos.length) partes.push('⚠️ ' + res.conflitos.length + ' dia(s) com duas versões');
+      toast(partes.length ? '☁️ ' + partes.join(' · ') : '✓ Já está em dia');
+    }
+    return res;
+  } catch (err) {
+    console.warn('Sincronização falhou:', err);
+    if (!silencioso) toast('❌ Não deu para sincronizar agora');
+    return null;
+  } finally {
+    _syncEmAndamento = false;
+  }
+}
+
+// Aviso fixo quando há dias com duas versões esperando decisão
+function atualizarAvisoSincronizacao(res) {
+  const conflitos = carregarConflitos();
+  const dias = Object.keys(conflitos);
+  let el = document.getElementById('avisoConflitoSync');
+  if (!dias.length) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'avisoConflitoSync';
+    el.style.cssText = 'position:fixed;left:12px;right:12px;bottom:88px;z-index:9997;background:#2c2c2c;'
+      + 'border:1.5px solid #f5b334;border-radius:10px;padding:12px;box-shadow:0 4px 16px rgba(0,0,0,.35);cursor:pointer';
+    el.onclick = abrirConflitosSync;
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<div style="color:#f5b334;font-weight:800;font-size:13px">⚠️ ${dias.length} dia(s) com duas versões</div>`
+    + `<div style="color:#e8e0d0;font-size:12px;margin-top:3px">Outro aparelho lançou algo diferente em: `
+    + dias.slice(0, 3).map(formatDateBR).join(', ') + (dias.length > 3 ? '…' : '')
+    + `. Toque para comparar.</div>`;
+}
+
+// Tela de comparação: mantém a sua ou usa a do outro
+function abrirConflitosSync() {
+  const conflitos = carregarConflitos();
+  const dias = Object.keys(conflitos).sort();
+  if (!dias.length) { toast('Nenhuma pendência'); return; }
+
+  const resumo = (d) => {
+    const ativs = Object.keys(d.atividadesMarcadas || {}).length;
+    const efet = Object.keys(d.efetivo || {}).length;
+    const fotos = (d.fotos || []).length;
+    const obs = (d.observacoesDia || '').trim();
+    return `${ativs} atividade(s) · ${efet} no efetivo · ${fotos} foto(s)`
+         + (obs ? `<br><span style="color:#888">${escHtml(obs.slice(0, 90))}${obs.length > 90 ? '…' : ''}</span>` : '');
+  };
+
+  let html = '';
+  dias.forEach(data => {
+    const minha = history[data] || {};
+    conflitos[data].forEach((v, i) => {
+      html += `<div style="border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px">
+        <div style="font-weight:800;margin-bottom:6px">📅 ${formatDateBR(data)}</div>
+        <div style="font-size:12px;margin-bottom:6px"><strong>A sua versão:</strong><br>${resumo(minha)}</div>
+        <div style="font-size:12px;margin-bottom:8px"><strong>De ${escHtml(v.de)}:</strong><br>${resumo(v.diario)}</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" style="flex:1;font-size:12px" onclick="resolverConflitoSync('${data}',${i},'minha')">Manter a minha</button>
+          <button class="btn btn-primary" style="flex:1;font-size:12px" onclick="resolverConflitoSync('${data}',${i},'outra')">Usar a do outro</button>
+        </div>
+      </div>`;
+    });
+  });
+
+  const ov = document.createElement('div');
+  ov.id = 'modalConflitoSync';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10001;padding:16px;overflow-y:auto';
+  ov.innerHTML = `<div style="background:var(--bg-card);border-radius:12px;padding:14px;max-width:560px;margin:0 auto">
+      <div style="font-weight:800;margin-bottom:4px">⚠️ Dias com duas versões</div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px">
+        Nada foi apagado. Escolha qual versão fica em cada dia.</div>
+      ${html}
+      <button class="btn btn-secondary" style="width:100%" onclick="document.getElementById('modalConflitoSync').remove()">Fechar</button>
+    </div>`;
+  document.body.appendChild(ov);
+}
+
+function resolverConflitoSync(data, indice, escolha) {
+  const conflitos = carregarConflitos();
+  const lista = conflitos[data] || [];
+  const v = lista[indice];
+  if (!v) return;
+
+  if (escolha === 'outra') {
+    history[data] = v.diario;
+    saveHistory();
+    if (currentDay && currentDay.data === data) {
+      currentDay = JSON.parse(JSON.stringify(v.diario));
+      preencherCampos(); renderDiario();
+    }
+  }
+  lista.splice(indice, 1);
+  if (!lista.length) delete conflitos[data];
+  else conflitos[data] = lista;
+  salvarConflitos(conflitos);
+
+  document.getElementById('modalConflitoSync')?.remove();
+  atualizarAvisoSincronizacao();
+  if (Object.keys(conflitos).length) abrirConflitosSync();
+  toast(escolha === 'outra' ? '✓ Versão do outro aparelho aplicada' : '✓ Mantida a sua versão');
+  agendarEnvioSincronizacao();
+  if (typeof renderCalendario === 'function') renderCalendario();
+}
+
+// Botão: envia o que é seu e traz o que é dos outros, na hora
+async function sincronizarAgora() {
+  toast('🔄 Sincronizando...');
+  await enviarSincronizacao();
+  await sincronizarNuvem(false);
+  atualizarInfoSincronizacao();
+}
+
+function atualizarInfoSincronizacao() {
+  const el = document.getElementById('infoSincronizacao');
+  if (!el) return;
+  const ultimo = localStorage.getItem('ultimoEnvioSync');
+  const conf = Object.keys(carregarConflitos()).length;
+  el.innerHTML = (ultimo ? '🔄 Última sincronização: ' + new Date(ultimo).toLocaleString('pt-BR') : '🔄 Ainda não sincronizado')
+    + ' · Este aparelho: ' + escHtml(apelidoAparelho())
+    + (conf ? ` · <span style="color:#f5b334">⚠️ ${conf} dia(s) com duas versões</span>` : '');
+}
+
+// Liga a sincronização: ao abrir, periodicamente e ao voltar para o app
+function iniciarSincronizacao() {
+  if (!APPS_SCRIPT_URL_DIARIO) return;
+  setTimeout(() => sincronizarNuvem(true), 2500);
+  setInterval(() => sincronizarNuvem(true), SYNC_INTERVALO_MS);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') sincronizarNuvem(true);
+  });
+  window.addEventListener('online', () => { sincronizarNuvem(true); enviarSincronizacao(); });
+}
+
 function backupAutomatico() {
   try {
     const payload = JSON.stringify({
@@ -7232,6 +7571,8 @@ window.addEventListener('DOMContentLoaded', () => {
   cal.month = t.getMonth();
   atualizarInfoAutoBackup();
   checarRestauracaoAutomatica();
+  iniciarSincronizacao();
+  atualizarAvisoSincronizacao();
 
   // Autosave local a cada 10 segundos
   setInterval(() => salvarDiarioDia(false), 10000);
