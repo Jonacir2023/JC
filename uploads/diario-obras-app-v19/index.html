@@ -3140,6 +3140,15 @@ function removerAtivParalisada(idx) {
 // ============================================================
 const MAX_FOTOS_DIA = 20;
 
+// Legenda da foto: "Foto 1 - Enchimento de bags". A atividade vem da lista
+// escolhida na própria foto. O campo de legenda livre foi removido; legendas
+// antigas continuam sendo usadas quando a foto não tem atividade vinculada.
+function legendaFoto(foto, indice) {
+  const ativ = ((state.atividades || []).find(a => a.id === (foto && foto.ativId)) || {}).desc || '';
+  const complemento = ativ || String((foto && foto.legenda) || '').trim();
+  return `Foto ${indice + 1}` + (complemento ? ' - ' + complemento : '');
+}
+
 function renderFotosDia() {
   const grid = document.getElementById('fotosGrid');
   const cont = document.getElementById('fotosContador');
@@ -3156,11 +3165,8 @@ function renderFotosDia() {
         <button onclick="removerFotoDia(${i})" title="Remover"
           style="position:absolute;top:4px;right:4px;width:22px;height:22px;border:none;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:12px;line-height:1;cursor:pointer">✕</button>
       </div>
-      <input type="text" placeholder="Legenda..." value="${escAttr(f.legenda || '')}"
-        onchange="salvarLegendaFoto(${i}, this.value)"
-        style="width:100%;margin-top:4px;font-size:11px;padding:5px 6px">
       <select onchange="salvarAtivFoto(${i}, this.value)"
-        style="width:100%;margin-top:3px;font-size:11px;padding:4px 4px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)">
+        style="width:100%;margin-top:4px;font-size:11px;padding:5px 6px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)">
         <option value="">📎 Geral</option>
         ${state.atividades.filter(a => currentDay.atividadesMarcadas && currentDay.atividadesMarcadas[a.id]).map(a =>
           `<option value="${a.id}" ${f.ativId === a.id ? 'selected' : ''}>${escAttr(a.desc.slice(0, 40))}</option>`).join('')}
@@ -3243,12 +3249,6 @@ function salvarAtivFoto(idx, ativId) {
   salvarDiarioDia(false);
 }
 
-function salvarLegendaFoto(idx, valor) {
-  currentDay.fotos = currentDay.fotos || [];
-  if (!currentDay.fotos[idx]) return;
-  currentDay.fotos[idx].legenda = (valor || '').trim();
-  salvarDiarioDia(false);
-}
 
 function removerFotoDia(idx) {
   if (!confirm('Remover esta foto do diário? O arquivo permanece no Google Drive.')) return;
@@ -3472,13 +3472,13 @@ function gerarPdfRDO() {
   if ((day.fotos || []).length) {
     const descAtiv = id => (state.atividades.find(a => a.id === id) || {}).desc || '';
     const cels = day.fotos.map((f, i) => {
-      const legenda = f.legenda || descAtiv(f.ativId) || `Foto ${i + 1}`;
+      const legenda = legendaFoto(f, i);
       // Sem crossorigin: o Drive não envia cabeçalho CORS nessa URL de
       // miniatura, e exigi-lo faz a imagem não carregar de jeito nenhum.
       // É a mesma forma usada na galeria do diário, onde as fotos aparecem.
       return `<figure class="pdf-foto">
           <img src="https://drive.google.com/thumbnail?id=${escHtml(f.fileId)}&sz=w400" alt="Foto ${i + 1}" loading="eager">
-          <figcaption>${i + 1}. ${escHtml(legenda)}</figcaption>
+          <figcaption>${escHtml(legenda)}</figcaption>
         </figure>`;
     });
     // 2 fotos por linha, usando tabela (o html2canvas lida melhor com tabela que com grid)
@@ -4370,7 +4370,7 @@ function buildPayloadGoogle(diarioData) {
     apontador:            day.apontador || '',
     localObra:            day.localObra || '',
     descricaoLocal:       day.descricaoLocal || '',
-    fotos:                (day.fotos || []).map(f => (f.legenda ? f.legenda + ' — ' : '') + f.url).join('\n')
+    fotos:                (day.fotos || []).map((f, i) => legendaFoto(f, i) + ' — ' + f.url).join('\n')
   };
 }
 
@@ -6574,7 +6574,7 @@ function buildRelatorio(day) {
   if ((day.fotos || []).length > 0) {
     txt += `\n${divisor}\n\n`;
     txt += `*📷 Fotos do Dia — ${day.fotos.length}*\n`;
-    day.fotos.forEach((f, i) => { txt += `${i + 1}. ${f.legenda ? f.legenda + ' — ' : ''}${f.url}\n`; });
+    day.fotos.forEach((f, i) => { txt += `${legendaFoto(f, i)} — ${f.url}\n`; });
   }
 
   // Observações do Dia
