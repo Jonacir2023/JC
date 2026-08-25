@@ -5629,8 +5629,9 @@ function renderConfigAtiv() {
         </div>
         <div>
           <label>Local de Execução</label>
-          <input type="text" value="${escAttr((savedAtiv[a.id] && savedAtiv[a.id].local) || '')}" placeholder="Ex: Bloco A"
-            onchange="atualizarQtyLocalAtiv('${a.id}', 'local', this.value)">
+          <select onchange="atualizarQtyLocalAtiv('${a.id}', 'local', this.value)">
+            ${opcoesLocalExecucao((savedAtiv[a.id] && savedAtiv[a.id].local) || '')}
+          </select>
         </div>
       `;
       wrap.appendChild(detalhe);
@@ -5937,6 +5938,24 @@ function removerEquipamento(id) {
     renderConfigEquip();
     toast('Removido');
   });
+}
+
+// Locais de execução da obra. O campo era texto livre, o que gerava grafias
+// diferentes para o mesmo lugar e atrapalhava os acumulados por local.
+const LOCAIS_EXECUCAO = [
+  'Filtro 1', 'Filtro 2', 'Filtro 3', 'Filtro 4', 'Filtro 5',
+  'Filtro 6', 'Filtro 7', 'Filtro 8', 'Filtro 9', 'Filtro 10',
+  'ETA', 'Casa de Bombas', 'Canal do Reservatório'
+];
+
+// Monta as opções mantendo o que já estava gravado, mesmo fora da lista, para
+// não perder o local de lançamentos antigos.
+function opcoesLocalExecucao(atual) {
+  const v = String(atual || '').trim();
+  const lista = LOCAIS_EXECUCAO.slice();
+  if (v && !lista.some(l => l.toLowerCase() === v.toLowerCase())) lista.unshift(v);
+  return '<option value="">— Selecionar local —</option>'
+    + lista.map(l => `<option value="${escAttr(l)}"${l.toLowerCase() === v.toLowerCase() ? ' selected' : ''}>${escapeHtml(l)}</option>`).join('');
 }
 
 function atualizarQtyLocalAtiv(atId, tipo, valor) {
