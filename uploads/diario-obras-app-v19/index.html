@@ -643,6 +643,18 @@
     justify-content: center;
   }
   .icon-btn:active { background: var(--line-soft); }
+  /* Botão de adicionar: o emoji ➕ ficava acinzentado e sumia no fundo, e emoji
+     não aceita cor por CSS. Trocado por um "+" de texto, que aceita. */
+  .icon-add {
+    color: #f5b334;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    border: 1.5px solid #f5b334;
+    border-radius: 6px;
+    background: rgba(245, 179, 52, 0.12);
+  }
+  .icon-add:active { background: rgba(245, 179, 52, 0.32); }
   
   .badge {
     font-size: 10px;
@@ -1312,7 +1324,7 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">👷 Efetivo</div>
-      <button class="icon-btn" onclick="abrirAbaEfetivo()" title="Selecionar presentes">➕</button>
+      <button class="icon-btn icon-add" onclick="abrirAbaEfetivo()" title="Selecionar presentes">+</button>
     </div>
     <div class="stats-row cols-3">
       <div class="stat"><div class="stat-num" id="statPresentes">0</div><div class="stat-label">Presentes</div></div>
@@ -1325,7 +1337,7 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">🚜 Equipamentos Utilizados</div>
-      <button class="icon-btn" onclick="abrirAbaEquipamentos()" title="Selecionar equipamentos">➕</button>
+      <button class="icon-btn icon-add" onclick="abrirAbaEquipamentos()" title="Selecionar equipamentos">+</button>
     </div>
     <div id="equipList"></div>
   </div>
@@ -1333,7 +1345,7 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">🚗 Veículos Leves Utilizados</div>
-      <button class="icon-btn" onclick="abrirAbaVeiculosLeves()" title="Selecionar veículos">➕</button>
+      <button class="icon-btn icon-add" onclick="abrirAbaVeiculosLeves()" title="Selecionar veículos">+</button>
     </div>
     <div id="veiculosLevesList"></div>
   </div>
@@ -1351,7 +1363,7 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">🛠️ Atividades do Dia</div>
-      <button class="icon-btn" onclick="abrirAbaAtividades()" title="Selecionar atividades">➕</button>
+      <button class="icon-btn icon-add" onclick="abrirAbaAtividades()" title="Selecionar atividades">+</button>
     </div>
     <div id="atividadesList"></div>
   </div>
@@ -1359,7 +1371,7 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">⏸️ Atividades Paralisadas</div>
-      <button class="icon-btn" onclick="abrirModalAtivParalisada()" title="Adicionar">➕</button>
+      <button class="icon-btn icon-add" onclick="abrirModalAtivParalisada()" title="Adicionar">+</button>
     </div>
     <p style="font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-style:italic">
       Atividades do cadastro que estão paralisadas neste dia. Informe a justificativa de cada uma.
@@ -1378,7 +1390,7 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">🦺 Eventos de Segurança</div>
-      <button class="icon-btn" onclick="abrirModalEventoDia('seguranca')" title="Adicionar">➕</button>
+      <button class="icon-btn icon-add" onclick="abrirModalEventoDia('seguranca')" title="Adicionar">+</button>
     </div>
     <div id="evSegList"></div>
     <button class="add-btn-full" onclick="abrirModalEventoAvulso('seguranca')">+ Registrar evento avulso</button>
@@ -1387,7 +1399,7 @@ table.fotos-table tr, table.data-table tr { page-break-inside: avoid; break-insi
   <div class="section">
     <div class="section-title">
       <div class="section-title-text">🌱 Eventos de Meio Ambiente</div>
-      <button class="icon-btn" onclick="abrirModalEventoDia('meio_ambiente')" title="Adicionar">➕</button>
+      <button class="icon-btn icon-add" onclick="abrirModalEventoDia('meio_ambiente')" title="Adicionar">+</button>
     </div>
     <div id="evAmbList"></div>
     <button class="add-btn-full" onclick="abrirModalEventoAvulso('meio_ambiente')">+ Registrar evento avulso</button>
@@ -4515,7 +4527,7 @@ function renderAtividadesDia() {
   const selecionadas = state.atividades.filter(a => !!currentDay.atividadesMarcadas[a.id]);
 
   if (selecionadas.length === 0) {
-    cont.innerHTML = '<div class="empty">Nenhuma atividade selecionada. Clique ➕ para adicionar.</div>';
+    cont.innerHTML = '<div class="empty">Nenhuma atividade selecionada. Toque em <strong style="color:#f5b334">+</strong> para adicionar.</div>';
     return;
   }
 
