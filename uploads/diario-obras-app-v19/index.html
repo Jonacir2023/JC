@@ -4239,10 +4239,22 @@ function salvarPadAssinatura() {
 // envio para a planilha quanto no contexto que vai junto da pergunta ao robô,
 // para que os dois enxerguem exatamente o mesmo conteúdo.
 function textoAtividadesDia(day) {
+  // Cada atividade tem dois locais: o do cadastro (fixo, ex.: ETA) e o escolhido
+  // no dia (ex.: Filtro 9). Os dois vão para a planilha, junto de quantidade e
+  // unidade: "Descrição – ETA – Filtro 9 (72 Un)".
+  const doDia = (day.data && S.get(`ativDia_${day.data}`)) || {};
   return [
     ...state.atividades.filter(a => (day.atividadesMarcadas || {})[a.id]).map(a => {
-      const qtd = day.atividadesQtd && day.atividadesQtd[a.id];
-      return `${a.desc}${a.local ? ' – ' + a.local : ''}${qtd ? ' (' + qtd + ' ' + (a.unidade||'') + ')' : ''}`;
+      const qtd = (day.atividadesQtd && day.atividadesQtd[a.id])
+               || (doDia[a.id] && doDia[a.id].qty) || '';
+      const localDia = (doDia[a.id] && doDia[a.id].local) || '';
+      const locais = [a.local, localDia]
+        .map(x => String(x || '').trim())
+        .filter((x, i, arr) => x && arr.indexOf(x) === i);   // sem repetir local igual
+      const unidade = (a.unidade || '').trim();
+      return a.desc
+        + (locais.length ? ' – ' + locais.join(' – ') : '')
+        + (qtd ? ` (${qtd}${unidade ? ' ' + unidade : ''})` : '');
     }),
     ...(day.atividadesAvulsas || []).map(a => `${a.desc}${a.local ? ' – ' + a.local : ''}`),
     ...(day.atividadesExtra ? day.atividadesExtra.split('\n').filter(x => x.trim()) : [])
