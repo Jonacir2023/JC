@@ -5095,10 +5095,8 @@ function renderVeiculosParados() {
     const just = parados[eq.id] || '';
     html += `<div style="border:1px solid var(--line-soft);border-radius:8px;padding:10px">
       <div style="font-weight:600;margin-bottom:6px">${eq.isMotorista ? '🚛' : '🚜'} ${escapeHtml(eq.numero)} — ${escapeHtml(eq.desc)}</div>
-      <input type="text" placeholder="Justificativa (manutenção, aguardando peça, parado por efetivo...)"
-        value="${escapeHtml(just)}"
-        style="width:100%;box-sizing:border-box"
-        oninput="salvarJustParado('${eq.id}', this.value)">
+      <select style="width:100%;box-sizing:border-box"
+        onchange="salvarJustParado('${eq.id}', this.value)">${opcoesMotivoParado(just)}</select>
     </div>`;
   });
 
@@ -5107,10 +5105,8 @@ function renderVeiculosParados() {
     const placa = v.placa ? ` (${v.placa})` : '';
     html += `<div style="border:1px solid var(--line-soft);border-radius:8px;padding:10px">
       <div style="font-weight:600;margin-bottom:6px">🚗 ${escapeHtml(v.desc)}${escapeHtml(placa)}</div>
-      <input type="text" placeholder="Justificativa (manutenção, aguardando peça, parado por efetivo...)"
-        value="${escapeHtml(just)}"
-        style="width:100%;box-sizing:border-box"
-        oninput="salvarJustParado('${v.id}', this.value)">
+      <select style="width:100%;box-sizing:border-box"
+        onchange="salvarJustParado('${v.id}', this.value)">${opcoesMotivoParado(just)}</select>
     </div>`;
   });
 
@@ -6210,6 +6206,29 @@ function opcoesLocalExecucao(atual) {
   if (v && !lista.some(l => l.toLowerCase() === v.toLowerCase())) lista.unshift(v);
   return '<option value="">— Selecionar local —</option>'
     + lista.map(l => `<option value="${escAttr(l)}"${l.toLowerCase() === v.toLowerCase() ? ' selected' : ''}>${escapeHtml(l)}</option>`).join('');
+}
+
+// Motivos padronizados para equipamento ou veículo parado, em ordem alfabética.
+// Texto livre gerava grafias diferentes para o mesmo motivo e atrapalhava a
+// leitura do que mais para a obra.
+const MOTIVOS_PARADO = [
+  'Aguardando Frente',
+  'Em Manutenção',
+  'Falta de Combustível',
+  'Falta de Motorista',
+  'Falta de Operador',
+  'Falta de Peça',
+  'Paralisado Pela Fiscalização'
+];
+
+// Mantém o motivo já gravado, mesmo fora da lista, para não perder a
+// justificativa dos dias antigos.
+function opcoesMotivoParado(atual) {
+  const v = String(atual || '').trim();
+  const lista = MOTIVOS_PARADO.slice();
+  if (v && !lista.some(m => m.toLowerCase() === v.toLowerCase())) lista.unshift(v);
+  return '<option value="">— Selecionar motivo —</option>'
+    + lista.map(m => `<option value="${escAttr(m)}"${m.toLowerCase() === v.toLowerCase() ? ' selected' : ''}>${escapeHtml(m)}</option>`).join('');
 }
 
 function atualizarQtyLocalAtiv(atId, tipo, valor) {
