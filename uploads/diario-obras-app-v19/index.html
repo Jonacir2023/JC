@@ -628,6 +628,38 @@
     margin-top: 2px;
   }
   
+  /* Status da atividade na aba Diário: dois botões, um par por atividade */
+  .ativ-status {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .ativ-status-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 7px 4px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: inherit;
+    border-radius: 6px;
+    border: 1.5px solid var(--line);
+    background: var(--bg-card);
+    color: var(--ink-faint);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ativ-status-btn.andamento.ativo {
+    background: var(--accent-soft);
+    border-color: var(--accent-soft);
+    color: #4a3410;
+  }
+  .ativ-status-btn.concluida.ativo {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+  .ativ-status-btn:active { transform: scale(0.97); }
+
   /* Item que saiu do cadastro mas continua no dia já lançado */
   .item-baixa {
     font-size: 11px;
@@ -4363,19 +4395,24 @@ function salvarPadAssinatura() {
 // Atividades do dia em texto corrido, incluindo as paralisadas. Usado tanto no
 // envio para a planilha quanto no contexto que vai junto da pergunta ao robô,
 // para que os dois enxerguem exatamente o mesmo conteúdo.
+// Cada atividade tem dois locais: o do cadastro (fixo, ex.: ETA) e o escolhido
+// na lista do dia (ex.: Filtro 9). Os dois aparecem juntos, sem repetir quando
+// são o mesmo lugar.
+function locaisDaAtividade(a, localDoDia) {
+  return [a && a.local, localDoDia]
+    .map(x => String(x || '').trim())
+    .filter((x, i, arr) => x && arr.indexOf(x) === i);
+}
+
 function textoAtividadesDia(day) {
-  // Cada atividade tem dois locais: o do cadastro (fixo, ex.: ETA) e o escolhido
-  // no dia (ex.: Filtro 9). Os dois vão para a planilha, junto de quantidade e
-  // unidade: "Descrição – ETA – Filtro 9 (72 Un)".
+  // Vai para a planilha como "Descrição – ETA – Filtro 9 (72 Un)".
   const doDia = (day.data && S.get(`ativDia_${day.data}`)) || {};
   return [
     ...state.atividades.filter(a => (day.atividadesMarcadas || {})[a.id]).map(a => {
       const qtd = (day.atividadesQtd && day.atividadesQtd[a.id])
                || (doDia[a.id] && doDia[a.id].qty) || '';
       const localDia = (doDia[a.id] && doDia[a.id].local) || '';
-      const locais = [a.local, localDia]
-        .map(x => String(x || '').trim())
-        .filter((x, i, arr) => x && arr.indexOf(x) === i);   // sem repetir local igual
+      const locais = locaisDaAtividade(a, localDia);
       const unidade = (a.unidade || '').trim();
       return a.desc
         + (locais.length ? ' – ' + locais.join(' – ') : '')
@@ -4668,11 +4705,24 @@ function renderAtividadesDia() {
     return;
   }
 
+  // A quantidade é digitada uma única vez, no Cadastro. Aqui ela só é lida,
+  // junto da descrição, dos dois locais e da unidade. O que se toca nesta aba
+  // é o status da atividade.
+  const doDia = S.get(`ativDia_${dataAtiva()}`) || {};
   selecionadas.forEach(a => {
     const ativData = currentDay.atividadesMarcadas[a.id];
-    const qtd = (currentDay.atividadesQtd && currentDay.atividadesQtd[a.id]) || (ativData && ativData.qty) || '';
-    const local = (ativData && ativData.local) || a.local || '';
-    const unid = a.unidade || '';
+    const qtd = (currentDay.atividadesQtd && currentDay.atividadesQtd[a.id])
+             || (ativData && ativData.qty) || (doDia[a.id] && doDia[a.id].qty) || '';
+    const localDia = (ativData && ativData.local) || (doDia[a.id] && doDia[a.id].local) || '';
+    const locais = locaisDaAtividade(a, localDia);
+    const unid = (a.unidade || '').trim();
+    const concluida = (currentDay.atividadesStatus && currentDay.atividadesStatus[a.id]) === 'concluida';
+
+    const detalhe = [
+      locais.join(' – '),
+      qtd ? `${qtd}${unid ? ' ' + unid : ''}` : ''
+    ].filter(Boolean).join(' · ');
+
     const row = document.createElement('div');
     row.className = 'item-row checked';
     row.style.alignItems = 'flex-start';
@@ -4680,22 +4730,12 @@ function renderAtividadesDia() {
       <div class="checkbox" style="margin-top:2px"></div>
       <div class="item-info">
         <div class="item-name">${escapeHtml(a.desc)}</div>
-        ${local ? `<div class="item-meta">${escapeHtml(local)}</div>` : ''}
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-          <div style="display:flex;align-items:center;gap:4px">
-            <input type="number" step="any" min="0" placeholder="Qtd" value="${qtd}"
-              style="width:70px;padding:5px 6px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)"
-              onclick="event.stopPropagation()"
-              oninput="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
-              onchange="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)"
-              onblur="event.stopPropagation();salvarQtdAtividade('${a.id}',this.value)">
-            ${unid ? `<span style="font-size:11px;color:var(--ink-faint);white-space:nowrap">${escapeHtml(unid)}</span>` : ''}
-          </div>
-          <select onclick="event.stopPropagation()" onchange="event.stopPropagation();salvarStatusAtividade('${a.id}', this.value)"
-            style="flex:1;min-width:0;padding:5px 4px;font-size:12px;border:1px solid var(--line);border-radius:5px;background:var(--bg-card);color:var(--ink)">
-            <option value="andamento" ${(currentDay.atividadesStatus && currentDay.atividadesStatus[a.id]) === 'concluida' ? '' : 'selected'}>Em andamento</option>
-            <option value="concluida" ${(currentDay.atividadesStatus && currentDay.atividadesStatus[a.id]) === 'concluida' ? 'selected' : ''}>Concluída</option>
-          </select>
+        ${detalhe ? `<div class="item-meta">${escapeHtml(detalhe)}</div>` : ''}
+        <div class="ativ-status">
+          <button type="button" class="ativ-status-btn andamento${concluida ? '' : ' ativo'}"
+            onclick="event.stopPropagation();salvarStatusAtividade('${a.id}', 'andamento')">Em Andamento</button>
+          <button type="button" class="ativ-status-btn concluida${concluida ? ' ativo' : ''}"
+            onclick="event.stopPropagation();salvarStatusAtividade('${a.id}', 'concluida')">Concluído</button>
         </div>
       </div>
     `;
@@ -4707,16 +4747,7 @@ function salvarStatusAtividade(atId, valor) {
   if (!currentDay.atividadesStatus) currentDay.atividadesStatus = {};
   currentDay.atividadesStatus[atId] = valor;
   salvarDiarioDia(false);
-}
-
-function salvarQtdAtividade(atId, valor) {
-  if (!currentDay.atividadesQtd) currentDay.atividadesQtd = {};
-  if (valor === '' || valor === null) delete currentDay.atividadesQtd[atId];
-  else currentDay.atividadesQtd[atId] = valor;
-  if (currentDay.atividadesMarcadas && currentDay.atividadesMarcadas[atId] && typeof currentDay.atividadesMarcadas[atId] === 'object') {
-    currentDay.atividadesMarcadas[atId].qty = (valor === null) ? '' : valor;
-  }
-  salvarDiarioDia(false);
+  renderAtividadesDia();
 }
 
 function removerAtivAvulsa(idx) {
