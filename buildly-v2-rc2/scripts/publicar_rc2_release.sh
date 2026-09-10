@@ -48,6 +48,7 @@ echo "✓ Publicando release no GitHub..."
 curl -X POST \
   -H "Authorization: token $GITHUB_TOKEN" \
   -H "Accept: application/vnd.github.v3+json" \
+  -H "Content-Type: application/json" \
   "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases" \
   -d "{
     \"tag_name\": \"$TAG\",
