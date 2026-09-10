@@ -169,16 +169,19 @@ window.BUILDLY_DATA = {
     {id:'RDO-003',number:3,date:'2026-09-05',weatherMorning:'Sol',weatherAfternoon:'Sol',condition:'praticavel',workforce:91,equipment:19,notes:'Avanço drenagem e estrutura.',progress:'Tubulação 86 m; 3 fundações',dss:'Organização da frente'}
   ],
   documents:[
-    {id:'DOC-001',code:'TESTE-CON-0001',title:'Contrato da Obra',revision:'00',discipline:'Contratual',status:'Aprovado',type:'Contrato',date:'2026-06-01'},
-    {id:'DOC-002',code:'TESTE-PLA-0001',title:'Cronograma Base',revision:'02',discipline:'Planejamento',status:'Aprovado',type:'Cronograma',date:'2026-08-15'},
-    {id:'DOC-003',code:'TESTE-ORC-0001',title:'Orçamento Base',revision:'01',discipline:'Custos',status:'Aprovado',type:'Orçamento',date:'2026-08-12'},
-    {id:'DOC-004',code:'TESTE-CIV-DRG-00125',title:'Drenagem geral',revision:'03',discipline:'Civil',status:'AFC',type:'Projeto',date:'2026-08-28'},
-    {id:'DOC-005',code:'TESTE-EST-00088',title:'Formas fundações bloco B',revision:'02',discipline:'Estrutural',status:'Aprovado com comentários',type:'Projeto',date:'2026-08-31'}
+    {id:'DOC-001',titulo:'Contrato da Obra',categoria:'Contratual',url:'https://docs.google.com/document/d/1TESTE001',arquivo_nome:'Contrato-TESTE-001.pdf',valor_orcamento:null,data_cronograma:null,id_legado:'DOC-001-V1',criado_em:'2026-06-01T08:00:00Z',atualizado_em:'2026-06-01T08:00:00Z',notes:[]},
+    {id:'DOC-002',titulo:'Cronograma Base',categoria:'Planejamento',url:'https://docs.google.com/spreadsheets/d/1TESTE002',arquivo_nome:'Cronograma-TESTE-002.xlsx',valor_orcamento:null,data_cronograma:'2026-11-30',id_legado:'DOC-002-V1',criado_em:'2026-08-15T10:00:00Z',atualizado_em:'2026-08-15T10:00:00Z',notes:[]},
+    {id:'DOC-003',titulo:'Orçamento Base',categoria:'Custos',url:'https://docs.google.com/spreadsheets/d/1TESTE003',arquivo_nome:'Orcamento-TESTE-003.xlsx',valor_orcamento:100000000,data_cronograma:'2026-06-01',id_legado:'DOC-003-V1',criado_em:'2026-08-12T09:00:00Z',atualizado_em:'2026-08-12T09:00:00Z',notes:[]},
+    {id:'DOC-004',titulo:'Drenagem geral',categoria:'Projeto',url:'https://drive.google.com/file/d/1TESTE004',arquivo_nome:'Drenagem-TESTE-DRG-00125.pdf',valor_orcamento:null,data_cronograma:'2026-09-30',id_legado:'DOC-004-V1',criado_em:'2026-08-28T11:00:00Z',atualizado_em:'2026-08-28T11:00:00Z',notes:[]},
+    {id:'DOC-005',titulo:'Formas fundações bloco B',categoria:'Projeto',url:'https://drive.google.com/file/d/1TESTE005',arquivo_nome:'Formas-Fundacoes-TESTE-EST-00088.pdf',valor_orcamento:null,data_cronograma:'2026-09-15',id_legado:'DOC-005-V1',criado_em:'2026-08-31T14:00:00Z',atualizado_em:'2026-08-31T14:00:00Z',notes:[]}
   ],
-  documentRevisions:[
-    {id:'REV-001',document:'DOC-004',revision:'01',status:'Submetido',date:'2026-08-05',note:'Emissão inicial'},
-    {id:'REV-002',document:'DOC-004',revision:'02',status:'Comentado',date:'2026-08-17',note:'Comentários incorporados'},
-    {id:'REV-003',document:'DOC-004',revision:'03',status:'AFC',date:'2026-08-28',note:'Liberado para construção'}
+  documentNotes:[
+    {id:'DN-001',document:'DOC-004',texto:'Detalhes técnicos da drenagem incluem sistema de caixas pluviais',autor:'Jonacir',criado_em:'2026-08-28T12:00:00Z'},
+    {id:'DN-002',document:'DOC-005',texto:'Aprovado pela engenharia estrutural com pequenos comentários',autor:'Engenharia',criado_em:'2026-08-31T15:00:00Z'}
+  ],
+  mural:[
+    {id:'MRL-001',texto:'Reunião de produção amanhã às 14h - trazer cronograma atualizado',autor:'Jonacir',criado_em:'2026-09-04T16:00:00Z'},
+    {id:'MRL-002',texto:'Frente de drenagem em atraso - priorizar tubulação setor leste',autor:'Planejamento',criado_em:'2026-09-04T17:00:00Z'}
   ],
   tasks:[
     {id:'T-001',subject:'Liberar interferência rede existente',description:'Coordenar com engenharia de projeto para resolver interferência de rede existente na área de drenagem.',creator:'Jonacir',owner:'Engenharia',sector:'Planejamento',launchDate:'2026-09-03',due:'2026-09-08',priority:'alta',status:'em_andamento',completedAt:null,origin:'restricao'},
@@ -195,11 +198,15 @@ window.BUILDLY_DATA = {
     {id:'O-001',date:'2026-09-04',type:'Operacional',severity:'media',description:'Interferência de rede existente identificada na drenagem.',action:'Replanejamento de frente e solicitação à engenharia.',owner:'Engenharia',contractId:'PES-001',daysAway:0,registeredBy:'Jonacir',createdAt:'2026-09-04T10:15:00Z',rdoId:'RDO-002'}
   ],
   meetings:[
-    {id:'M-001',date:'2026-09-05',title:'Reunião semanal de produção',participants:'12',status:'realizada',decisions:'Priorizar drenagem e pilares do eixo 4-8.',nextDate:'2026-09-12'}
+    {id:'M-001',number:1,date:'2026-09-05',hora_inicio:'09:00',hora_fim:'10:30',titulo:'Reunião semanal de produção',local:'Sala reunião obra',status:'realizada',id_legado:'M-001-V1',criado_em:'2026-09-05T08:30:00Z',atualizado_em:'2026-09-05T10:45:00Z',participants:[{id:'MP-001',reuniao_id:'M-001',contrato_id:'CT-001',nome:'COLABORADOR TESTE 01',cargo:'Engenheiro Civil',responsavel:true,criado_em:'2026-09-05T08:30:00Z'},{id:'MP-002',reuniao_id:'M-001',contrato_id:'CT-002',nome:'COLABORADOR TESTE 03',cargo:'Encarregado Civil',responsavel:false,criado_em:'2026-09-05T08:30:00Z'}],topics:[{id:'MT-001',reuniao_id:'M-001',ordem:1,titulo:'Drenagem',notas:'Status do trecho leste',decisao:'Priorizar trecho leste.',criado_em:'2026-09-05T09:00:00Z'},{id:'MT-002',reuniao_id:'M-001',ordem:2,titulo:'Estruturas',notas:'Armação de pilares',decisao:'Antecipar armação de pilares.',criado_em:'2026-09-05T09:15:00Z'}],tasks:[{tarefa_id:'T-002',ordem:1}]}
+  ],
+  meetingNotes:[
+    {id:'MN-001',reuniao_id:'M-001',texto:'Ponto crítico: interferência de rede ainda não resolvida. Engenharia para validar.',autor:'Jonacir',criado_em:'2026-09-05T10:30:00Z'},
+    {id:'MN-002',reuniao_id:'M-001',texto:'Próxima reunião confirmada para 12/09 às 09h.',autor:'Administração',criado_em:'2026-09-05T10:45:00Z'}
   ],
   meetingTopics:[
-    {id:'MT-001',meeting:'M-001',order:1,title:'Drenagem',decision:'Priorizar trecho leste.',owner:'Produção'},
-    {id:'MT-002',meeting:'M-001',order:2,title:'Estruturas',decision:'Antecipar armação de pilares.',owner:'Suprimentos'}
+    {id:'MT-001',reuniao_id:'M-001',ordem:1,titulo:'Drenagem',notas:'Status do trecho leste',decisao:'Priorizar trecho leste.',criado_em:'2026-09-05T09:00:00Z'},
+    {id:'MT-002',reuniao_id:'M-001',ordem:2,titulo:'Estruturas',notas:'Armação de pilares',decisao:'Antecipar armação de pilares.',criado_em:'2026-09-05T09:15:00Z'}
   ],
   equipment:[
     {id:'E-01',prefix:'TESTE-EXC-01',type:'Escavadeira',brand:'CAT',model:'320',plate:'',year:2022,category:'pesado',owner:'Locado',supplier:'FORNECEDOR TESTE 01',availability:91,utilization:78,status:'operando',active:true},
