@@ -202,9 +202,9 @@ window.BUILDLY_DATA = {
     {id:'MT-002',meeting:'M-001',order:2,title:'Estruturas',decision:'Antecipar armação de pilares.',owner:'Suprimentos'}
   ],
   equipment:[
-    {id:'E-01',prefix:'TESTE-EXC-01',type:'Escavadeira',owner:'Locada',supplier:'FORNECEDOR TESTE 01',availability:91,utilization:78,status:'operando'},
-    {id:'E-02',prefix:'TESTE-CAM-07',type:'Caminhão basculante',owner:'Locado',supplier:'FORNECEDOR TESTE 01',availability:88,utilization:82,status:'operando'},
-    {id:'E-03',prefix:'TESTE-GRU-01',type:'Guindaste 60 t',owner:'Locado',supplier:'FORNECEDOR TESTE 03',availability:96,utilization:55,status:'operando'}
+    {id:'E-01',prefix:'TESTE-EXC-01',type:'Escavadeira',brand:'CAT',model:'320',plate:'',year:2022,category:'pesado',owner:'Locado',supplier:'FORNECEDOR TESTE 01',availability:91,utilization:78,status:'operando',active:true},
+    {id:'E-02',prefix:'TESTE-CAM-07',type:'Caminhão basculante',brand:'SCANIA',model:'P440',plate:'TESTE-01',year:2020,category:'pesado',owner:'Locado',supplier:'FORNECEDOR TESTE 01',availability:88,utilization:82,status:'operando',active:true},
+    {id:'E-03',prefix:'TESTE-GRU-01',type:'Guindaste 60 t',brand:'LIEBHERR',model:'LTM 1600-7.1',plate:'',year:2019,category:'pesado',owner:'Locado',supplier:'FORNECEDOR TESTE 03',availability:96,utilization:55,status:'operando',active:true}
   ],
   maintenance:[
     {id:'MAN-001',equipment:'E-02',date:'2026-09-10',type:'Preventiva',description:'Revisão 500 h',status:'programada'}
