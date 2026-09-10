@@ -1,0 +1,132 @@
+{
+  "product": "BUILDLy Premium V2",
+  "version": "2.2.0-rc2",
+  "date": "2026-09-07",
+  "mode": "release-candidate-demo/backend-candidate-with-reconstructed-v1-baseline",
+  "production_database_modified": false,
+  "sql_migrations": 17,
+  "new_premium_tables": 30,
+  "premium_security_invoker_views": 7,
+  "tests": [
+    "tests/baseline_check.py",
+    "tests/static_check.py",
+    "tests/rc_check.py",
+    "tests/rdo_regression_check.py",
+    "tests/offline_check.py",
+    "tests/smoke.js",
+    "tests/pgtap/001_estrutura.test.sql",
+    "tests/business_logic.js",
+    "tests/pgtap/002_rls.test.sql",
+    "tests/pgtap/003_financeiro.test.sql",
+    "tests/pgtap/004_suprimentos.test.sql",
+    "tests/VALIDACAO_POS_HOMOLOGACAO.sql"
+  ],
+  "financial_baseline": {
+    "budget_original": 100000000,
+    "budget_current": 105000000,
+    "commitments": 72000000,
+    "measured": 38000000,
+    "direct_costs": 4000000,
+    "assigned": 76000000,
+    "available": 29000000,
+    "paid": 31400000,
+    "forecast": 102800000
+  },
+  "files": 74,
+  "v1_reconstructed_baseline": {
+    "snapshot_date": "2026-09-06",
+    "tables": 34,
+    "views": 12,
+    "functions": 11,
+    "triggers": 9,
+    "contains_business_data": false,
+    "original_37_migration_sql_recovered": false
+  },
+  "homologation_kit": {
+    "prepared": true,
+    "executed_against_real_local_postgres_in_this_session": false,
+    "reason_not_executed_here": "ambiente desta sessão sem Supabase CLI/Docker/PostgreSQL",
+    "seed_uses_only_TESTE": true,
+    "pgtap_suites": 4,
+    "one_click_macos_launcher": true,
+    "launcher": "HOMOLOGAR_BUILDLY.command",
+    "report_directory": "relatorios-homologacao/",
+    "production_commands_absent": true
+  },
+  "known_fixes_after_rc2_packaging": [
+    "removido trigger que tentava escrever em contrato_itens.valor_total, coluna GENERATED ALWAYS",
+    "removida referência residual à função de recálculo manual na Migration 12",
+    "corrigida lista de 27 tabelas Premium no pre-flight para corresponder exatamente às migrations",
+    "DEMO sanitizado para usar somente TESTE/FORNECEDOR TESTE em dados e exemplos visuais",
+    "standalone padrão tornado 100% offline: sem Service Worker, sw.js, rede ou recursos externos; teste offline_check adicionado",
+    "Suprimentos integrado como último módulo funcional antes do congelamento Feature Complete"
+  ],
+  "last_local_validation": "2026-09-07",
+  "status": "RC2: declaração FEATURE COMPLETE revogada; RDO V1 recuperado e testado no navegador; auditoria de profundidade dos demais módulos V1 aberta; homologação PostgreSQL e produção NÃO executadas",
+  "production_preparation": {
+    "prepared": true,
+    "executed": false,
+    "preflight_readonly": "production/PREFLIGHT_PRODUCAO_READONLY.sql",
+    "postdeploy_smoke_readonly": "production/SMOKE_POS_DEPLOY_READONLY.sql",
+    "plan": "production/PLANO_IMPLANTACAO_PRODUCAO_RC2.md",
+    "go_no_go": "production/GO_NO_GO_PRODUCAO.md",
+    "owner_bootstrap": "operations/BOOTSTRAP_PROPRIETARIO_GLOBAL.sql",
+    "production_baseline_00_must_not_run": true,
+    "production_database_modified": false,
+    "snapshot": {
+      "public_tables": 34,
+      "public_views": 12,
+      "migration_history": 37,
+      "active_works": 2,
+      "active_profiles": 1,
+      "premium_table_collisions": 0
+    },
+    "compatibility_audit": "production/AUDITORIA_COMPATIBILIDADE_MIGRATIONS_RC2.md",
+    "preflight_table_list_verified_against_migrations": true,
+    "demo_sanitized": true,
+    "audit_tag": "v2.1.0-rc2-preflight-auditado"
+  },
+  "standalone_offline": {
+    "integrated": true,
+    "default_standalone_is_offline": true,
+    "file": "BUILDLy_Premium_V2_STANDALONE.html",
+    "explicit_copy": "BUILDLy_Premium_V2_STANDALONE_OFFLINE.html",
+    "mac_launcher": "ABRIR_BUILDLY_OFFLINE.command",
+    "network_blocked_by_csp": true,
+    "service_worker_disabled": true,
+    "test": "tests/offline_check.py",
+    "validation_passed_2026_09_07": true
+  },
+  "feature_complete": {
+    "status": false,
+    "previous_milestone": "FC1 (histórico)",
+    "revoked_as_current_state": true,
+    "reason": "regressão de profundidade funcional em relação ao V1 detectada pelo usuário",
+    "rdo_baseline_recovered": true,
+    "next_gate": "auditoria e recuperação V1→V2 dos demais módulos antes de nova declaração de completude"
+  },
+  "final_tag": "v2.2.0-rc2-rdo-recuperado",
+  "first_test_batch": {
+    "date": "2026-09-07",
+    "result": "PASS_AFTER_FIXES",
+    "browser_modules_navigated": 21,
+    "browser_console_errors": 0,
+    "fixed": [
+      "nf_conferida_nao_paga",
+      "recebimento_parcial_pc",
+      "transferencia_orcamentaria_balanceada",
+      "criacao_direta_aprovada_restrita",
+      "integridade_item_quantidade_medicao",
+      "contrato_aprovado_nao_pula_para_ativo"
+    ],
+    "postgres_pgtap_real_executed": false
+  },
+  "rdo_recovery": {
+    "reference": "docs/reference/RDO_V1_INSTITUIDO.html",
+    "matrix": "docs/MATRIZ_RDO_RECUPERADO.md",
+    "migration": "sql/15_rdo_premium.sql",
+    "regression_test": "tests/rdo_regression_check.py",
+    "browser_interaction_test_passed_2026_09_07": true,
+    "browser_console_errors": 0
+  }
+}

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#102b47">
+  <title>BUILDLy Premium V2.2 RC2 — Recuperação de Profundidade</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-mark">B</div><div><strong>BUILDLy Premium</strong><small>Project Controls & Gestão Integrada</small></div></div>
+    <div class="selector-block">
+      <label>OBRA</label>
+      <select id="obraSelect"></select>
+    </div>
+    <div class="selector-block demo-role">
+      <label>PERFIL (DEMO)</label>
+      <select id="roleSelect"></select>
+    </div>
+    <div class="tree-search"><input id="treeSearch" placeholder="Buscar na árvore..."></div>
+    <nav id="tree" class="tree"></nav>
+    <div class="side-footer"><span id="modeBadge">RC2 · RDO RECUPERADO</span><span>V2.2</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="top-left"><button class="icon-btn mobile-menu" id="mobileMenu">☰</button><div class="breadcrumb" id="breadcrumb"></div></div>
+      <div class="top-actions"><button class="icon-btn" id="globalSearchBtn" title="Busca global">⌕</button><button class="icon-btn" id="exportDemoBtn" title="Exportar dados locais">⇩</button><button class="icon-btn" id="importDemoBtn" title="Importar dados locais">⇧</button><input id="importFile" class="hidden" type="file" accept="application/json"><button class="icon-btn" id="resetDemoBtn" title="Restaurar base de demonstração">↺</button><button class="icon-btn" id="notifBtn" title="Alertas">!</button><div class="profile-chip" id="profileChip"></div></div>
+    </header>
+    <section id="content" class="content"></section>
+  </main>
+</div>
+
+<div id="modal" class="modal hidden" aria-hidden="true"><div class="modal-card"><div class="modal-head"><h3 id="modalTitle"></h3><button class="icon-btn" id="modalClose">×</button></div><div id="modalBody" class="modal-body"></div></div></div>
+<div id="toast" class="toast hidden"></div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

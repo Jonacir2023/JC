@@ -1,0 +1,9 @@
+{
+  "name":"BUILDLy Premium V2",
+  "short_name":"BUILDLy V2",
+  "start_url":"./index.html",
+  "display":"standalone",
+  "background_color":"#f4f7fa",
+  "theme_color":"#102b47",
+  "icons":[]
+}
