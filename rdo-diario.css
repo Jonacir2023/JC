@@ -1,0 +1,298 @@
+/* RDO — Visual Diário de Obras */
+:root {
+  --bg: #e8e4df;
+  --bg-card: #f0ece7;
+  --bg-dark: #2c2c2c;
+  --bg-mid: #3d3935;
+  --ink: #1c1a18;
+  --ink-soft: #4a4540;
+  --ink-faint: #8a8178;
+  --accent: #d4541a;
+  --accent-soft: #e8a030;
+  --accent-dim: rgba(212, 84, 26, 0.12);
+  --line: #ccc5bc;
+  --line-soft: #dbd4cb;
+  --green: #3a6b45;
+  --red: #b83228;
+  --serif: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --sans: 'Barlow', -apple-system, sans-serif;
+}
+
+.rdo-container {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+}
+
+.rdo-header {
+  background: var(--bg-dark);
+  background-image: linear-gradient(180deg, #363230 0%, #2c2c2c 100%);
+  color: #f0ece7;
+  padding: 12px 14px;
+  box-shadow: 0 3px 16px rgba(0, 0, 0, 0.35);
+  border-bottom: 3px solid var(--accent);
+  margin-bottom: 12px;
+}
+
+.rdo-header h2 {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #f0ece7;
+  margin: 0 0 4px 0;
+}
+
+.rdo-header .rdo-meta {
+  font-size: 10px;
+  color: var(--accent-soft);
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-family: var(--serif);
+  margin: 0;
+}
+
+.rdo-section {
+  background: var(--bg-card);
+  border-radius: 6px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--line);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.rdo-section-title {
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rdo-field {
+  margin-bottom: 12px;
+}
+
+.rdo-field label {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--ink-soft);
+  margin-bottom: 5px;
+  font-family: var(--serif);
+}
+
+.rdo-field input,
+.rdo-field textarea,
+.rdo-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  font-size: 15px;
+  font-family: var(--sans);
+  color: var(--ink);
+  transition: all 0.15s;
+  box-sizing: border-box;
+}
+
+.rdo-field input:focus,
+.rdo-field textarea:focus,
+.rdo-field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 3px rgba(212, 84, 26, 0.12);
+}
+
+.rdo-clima-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.rdo-chip {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--serif);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+
+.rdo-chip.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  border-bottom-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(212, 84, 26, 0.3);
+}
+
+.rdo-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rdo-stat {
+  background: var(--bg-mid);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  padding: 10px 8px;
+  text-align: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.rdo-stat-num {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--accent-soft);
+  font-family: var(--serif);
+  line-height: 1;
+}
+
+.rdo-stat-label {
+  font-size: 9px;
+  color: rgba(240, 236, 231, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 3px;
+  font-family: var(--serif);
+  font-weight: 700;
+}
+
+.rdo-item {
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.rdo-item-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.rdo-item-meta {
+  font-size: 12px;
+  color: var(--ink-faint);
+  margin-top: 4px;
+}
+
+.rdo-empty {
+  text-align: center;
+  padding: 24px 14px;
+  color: var(--ink-faint);
+  font-style: italic;
+  font-size: 13px;
+}
+
+.rdo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.rdo-btn-primary {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 2px 6px rgba(212, 84, 26, 0.25);
+  width: 100%;
+}
+
+.rdo-btn-primary:active {
+  transform: translateY(1px);
+}
+
+.rdo-icon-add {
+  color: #f5b334;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  border: 1.5px solid #f5b334;
+  border-radius: 6px;
+  background: rgba(245, 179, 52, 0.12);
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.rdo-icon-add:active {
+  background: rgba(245, 179, 52, 0.32);
+}
+
+.rdo-parados-section {
+  background: rgba(184, 50, 40, 0.08);
+  border: 1px solid rgba(184, 50, 40, 0.2);
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.rdo-parados-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: start;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.rdo-parados-item:last-child {
+  margin-bottom: 0;
+}
+
+.rdo-parados-item select {
+  font-size: 12px;
+  padding: 8px 10px;
+  flex-shrink: 0;
+}
