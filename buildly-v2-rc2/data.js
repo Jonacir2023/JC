@@ -181,10 +181,10 @@ window.BUILDLY_DATA = {
     {id:'REV-003',document:'DOC-004',revision:'03',status:'AFC',date:'2026-08-28',note:'Liberado para construção'}
   ],
   tasks:[
-    {id:'T-001',subject:'Liberar interferência rede existente',owner:'Engenharia',due:'2026-09-08',priority:'alta',status:'em_andamento',origin:'restricao'},
-    {id:'T-002',subject:'Confirmar entrega armação pilares',owner:'Suprimentos',due:'2026-09-07',priority:'alta',status:'aberta',origin:'reuniao'},
-    {id:'T-003',subject:'Emitir programação semanal',owner:'Planejamento',due:'2026-09-07',priority:'media',status:'aberta',origin:'planejamento'},
-    {id:'T-004',subject:'Atualizar cadastro de equipamentos',owner:'Administrativo',due:'2026-09-12',priority:'baixa',status:'concluida',origin:'cadastro'}
+    {id:'T-001',subject:'Liberar interferência rede existente',description:'Coordenar com engenharia de projeto para resolver interferência de rede existente na área de drenagem.',creator:'Jonacir',owner:'Engenharia',sector:'Planejamento',launchDate:'2026-09-03',due:'2026-09-08',priority:'alta',status:'em_andamento',completedAt:null,origin:'restricao'},
+    {id:'T-002',subject:'Confirmar entrega armação pilares',description:'Verificar recebimento e qualidade da armação de aço para pilares do eixo 4-8.',creator:'Jonacir',owner:'Suprimentos',sector:'Suprimentos',launchDate:'2026-09-04',due:'2026-09-07',priority:'alta',status:'aberta',completedAt:null,origin:'reuniao'},
+    {id:'T-003',subject:'Emitir programação semanal',description:'Consolidar programação de atividades para a semana de 10-14/09/2026.',creator:'Jonacir',owner:'Planejamento',sector:'Planejamento',launchDate:'2026-09-04',due:'2026-09-07',priority:'media',status:'aberta',completedAt:null,origin:'planejamento'},
+    {id:'T-004',subject:'Atualizar cadastro de equipamentos',description:'Verificar disponibilidade e utilização de equipamentos em campo.',creator:'Jonacir',owner:'Administrativo',sector:'Administração',launchDate:'2026-09-01',due:'2026-09-12',priority:'baixa',status:'concluida',completedAt:'2026-09-09T16:30:00Z',origin:'cadastro'}
   ],
   alerts:[
     {id:'A-01',severity:'critica',title:'Atividade crítica abaixo do planejado',detail:'Infra elétrica: 25% realizado x 33% planejado.',read:false},
@@ -192,7 +192,7 @@ window.BUILDLY_DATA = {
     {id:'A-03',severity:'atencao',title:'3 restrições abertas',detail:'Uma restrição vence em 07/09/2026.',read:true}
   ],
   occurrences:[
-    {id:'O-001',date:'2026-09-04',type:'Operacional',severity:'media',description:'Interferência de rede existente identificada na drenagem.',action:'Replanejamento de frente e solicitação à engenharia.',owner:'Engenharia'}
+    {id:'O-001',date:'2026-09-04',type:'Operacional',severity:'media',description:'Interferência de rede existente identificada na drenagem.',action:'Replanejamento de frente e solicitação à engenharia.',owner:'Engenharia',contractId:'PES-001',daysAway:0,registeredBy:'Jonacir',createdAt:'2026-09-04T10:15:00Z',rdoId:'RDO-002'}
   ],
   meetings:[
     {id:'M-001',date:'2026-09-05',title:'Reunião semanal de produção',participants:'12',status:'realizada',decisions:'Priorizar drenagem e pilares do eixo 4-8.',nextDate:'2026-09-12'}
