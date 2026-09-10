@@ -1,6 +1,10 @@
 window.BUILDLY_DATA = {
   meta:{version:'2.2.0-rc1',mode:'demo-local',updated:'2026-09-07'},
-  works:[{id:'teste',code:'TESTE',name:'TESTE',city:'Cidade Teste',uf:'SC',active:true}],
+  works:[
+    {id:'obra-01',code:'TESTE-01',name:'TESTE — Obra 01',city:'Brusque',uf:'SC',active:true},
+    {id:'obra-02',code:'TESTE-02',name:'TESTE — Obra 02',city:'Guabiruba',uf:'SC',active:false},
+    {id:'obra-03',code:'TESTE-03',name:'TESTE — Obra 03',city:'Botuverá',uf:'SC',active:false}
+  ],
   profiles:[
     {id:'owner',label:'Jonacir · Gestor Global',role:'gestor',global:true,specialties:[]},
     {id:'gestor',label:'Gestor da Obra',role:'gestor',global:false,specialties:[]},
@@ -212,6 +216,11 @@ window.BUILDLY_DATA = {
     {id:'E-01',prefix:'TESTE-EXC-01',type:'Escavadeira',brand:'CAT',model:'320',plate:'',year:2022,category:'pesado',owner:'Locado',supplier:'FORNECEDOR TESTE 01',availability:91,utilization:78,status:'operando',active:true},
     {id:'E-02',prefix:'TESTE-CAM-07',type:'Caminhão basculante',brand:'SCANIA',model:'P440',plate:'TESTE-01',year:2020,category:'pesado',owner:'Locado',supplier:'FORNECEDOR TESTE 01',availability:88,utilization:82,status:'operando',active:true},
     {id:'E-03',prefix:'TESTE-GRU-01',type:'Guindaste 60 t',brand:'LIEBHERR',model:'LTM 1600-7.1',plate:'',year:2019,category:'pesado',owner:'Locado',supplier:'FORNECEDOR TESTE 03',availability:96,utilization:55,status:'operando',active:true}
+  ],
+  lightVehicles:[
+    {id:'VL-01',prefix:'TESTE-DOBLÒ-01',type:'Furgão',brand:'Fiat',model:'Doblò',plate:'TESTE-01',year:2020,category:'leve',owner:'Próprio',status:'operando',active:true},
+    {id:'VL-02',prefix:'TESTE-HLX-02',type:'Hilux',brand:'Toyota',model:'SW4',plate:'TESTE-02',year:2021,category:'leve',owner:'Próprio',status:'operando',active:true},
+    {id:'VL-03',prefix:'TESTE-KOMBI-01',type:'Kombi',brand:'Volkswagen',model:'Kombi',plate:'TESTE-03',year:2019,category:'leve',owner:'Locado',status:'operando',active:true}
   ],
   maintenance:[
     {id:'MAN-001',equipment:'E-02',date:'2026-09-10',type:'Preventiva',description:'Revisão 500 h',status:'programada'}
