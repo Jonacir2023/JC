@@ -83,14 +83,14 @@ window.BUILDLY_DATA = {
     {id:'AD-002',contract:'CT-003',number:1,type:'acrescimo',description:'Reforço de fundações',amount:2000000,status:'em_aprovacao',date:'2026-09-05'}
   ],
   measurements:[
-    {id:'BM-01-01',number:1,contract:'CT-001',date:'2026-07-31',period:'2026-07',amount:4500000,status:'aprovada'},
-    {id:'BM-01-02',number:2,contract:'CT-001',date:'2026-08-31',period:'2026-08',amount:6700000,status:'aprovada'},
-    {id:'BM-02-01',number:1,contract:'CT-002',date:'2026-07-31',period:'2026-07',amount:3200000,status:'aprovada'},
-    {id:'BM-02-02',number:2,contract:'CT-002',date:'2026-08-31',period:'2026-08',amount:5700000,status:'aprovada'},
-    {id:'BM-03-01',number:1,contract:'CT-003',date:'2026-08-31',period:'2026-08',amount:7500000,status:'aprovada'},
-    {id:'BM-04-01',number:1,contract:'CT-004',date:'2026-08-31',period:'2026-08',amount:2000000,status:'aprovada'},
-    {id:'BM-05-01',number:1,contract:'CT-005',date:'2026-07-31',period:'2026-07',amount:3800000,status:'aprovada'},
-    {id:'BM-05-02',number:2,contract:'CT-005',date:'2026-08-31',period:'2026-08',amount:4600000,status:'aprovada'}
+    {id:'BM-01-01',number:1,contract:'CT-001',mes_referencia:'2026-07',data_inicio:'2026-07-01',data_fim:'2026-07-31',amount:4500000,status:'aprovada',fechada:true,id_legado:'BM-01-01-V1',criado_em:'2026-08-01T08:00:00Z',items:[{id:'BMI-01-01-01',measurement:'BM-01-01',contractItem:'ct1i1',quantidade:1,preco_unitario:4500000}]},
+    {id:'BM-01-02',number:2,contract:'CT-001',mes_referencia:'2026-08',data_inicio:'2026-08-01',data_fim:'2026-08-31',amount:6700000,status:'aprovada',fechada:true,id_legado:'BM-01-02-V1',criado_em:'2026-09-02T08:00:00Z',items:[{id:'BMI-01-02-01',measurement:'BM-01-02',contractItem:'ct1i1',quantidade:1,preco_unitario:6700000}]},
+    {id:'BM-02-01',number:1,contract:'CT-002',mes_referencia:'2026-07',data_inicio:'2026-07-01',data_fim:'2026-07-31',amount:3200000,status:'aprovada',fechada:true,id_legado:'BM-02-01-V1',criado_em:'2026-08-01T10:00:00Z',items:[{id:'BMI-02-01-01',measurement:'BM-02-01',contractItem:'ct2i1',quantidade:1,preco_unitario:3200000}]},
+    {id:'BM-02-02',number:2,contract:'CT-002',mes_referencia:'2026-08',data_inicio:'2026-08-01',data_fim:'2026-08-31',amount:5700000,status:'aprovada',fechada:true,id_legado:'BM-02-02-V1',criado_em:'2026-09-02T10:00:00Z',items:[{id:'BMI-02-02-01',measurement:'BM-02-02',contractItem:'ct2i1',quantidade:1,preco_unitario:5700000}]},
+    {id:'BM-03-01',number:1,contract:'CT-003',mes_referencia:'2026-08',data_inicio:'2026-08-01',data_fim:'2026-08-31',amount:7500000,status:'aprovada',fechada:true,id_legado:'BM-03-01-V1',criado_em:'2026-09-03T10:00:00Z',items:[{id:'BMI-03-01-01',measurement:'BM-03-01',contractItem:'ct3i1',quantidade:1,preco_unitario:7500000}]},
+    {id:'BM-04-01',number:1,contract:'CT-004',mes_referencia:'2026-08',data_inicio:'2026-08-01',data_fim:'2026-08-31',amount:2000000,status:'aprovada',fechada:true,id_legado:'BM-04-01-V1',criado_em:'2026-09-03T12:00:00Z',items:[{id:'BMI-04-01-01',measurement:'BM-04-01',contractItem:'ct4i1',quantidade:1,preco_unitario:2000000}]},
+    {id:'BM-05-01',number:1,contract:'CT-005',mes_referencia:'2026-07',data_inicio:'2026-07-01',data_fim:'2026-07-31',amount:3800000,status:'aprovada',fechada:true,id_legado:'BM-05-01-V1',criado_em:'2026-08-01T14:00:00Z',items:[{id:'BMI-05-01-01',measurement:'BM-05-01',contractItem:'ct5i1',quantidade:1,preco_unitario:3800000}]},
+    {id:'BM-05-02',number:2,contract:'CT-005',mes_referencia:'2026-08',data_inicio:'2026-08-01',data_fim:'2026-08-31',amount:4600000,status:'aprovada',fechada:true,id_legado:'BM-05-02-V1',criado_em:'2026-09-02T14:00:00Z',items:[{id:'BMI-05-02-01',measurement:'BM-05-02',contractItem:'ct5i1',quantidade:1,preco_unitario:4600000}]}
   ],
   directCosts:[
     {id:'DC-001',date:'2026-08-05',wbs:'06',cbs:'COMB',category:'Combustível',description:'Diesel frota e equipamentos',amount:1200000,status:'aprovado'},
@@ -99,14 +99,14 @@ window.BUILDLY_DATA = {
     {id:'DC-004',date:'2026-08-25',wbs:'06',cbs:'UTIL',category:'Utilidades',description:'Água, energia e condomínio',amount:1100000,status:'aprovado'}
   ],
   invoices:[
-    {id:'NF-001',number:'1844',supplier:'FORNECEDOR TESTE 01',date:'2026-08-05',amount:4500000,status:'paga',source:'BM-01-01'},
-    {id:'NF-002',number:'3398',supplier:'FORNECEDOR TESTE 02',date:'2026-08-07',amount:3200000,status:'paga',source:'BM-02-01'},
-    {id:'NF-003',number:'721',supplier:'FORNECEDOR TESTE 03',date:'2026-09-02',amount:7500000,status:'paga',source:'BM-03-01'},
-    {id:'NF-004',number:'488',supplier:'FORNECEDOR TESTE 05',date:'2026-08-08',amount:3800000,status:'paga',source:'BM-05-01'},
-    {id:'NF-005',number:'1882',supplier:'FORNECEDOR TESTE 01',date:'2026-09-03',amount:6700000,status:'paga',source:'BM-01-02'},
-    {id:'NF-006',number:'3431',supplier:'FORNECEDOR TESTE 02',date:'2026-09-04',amount:5700000,status:'paga',source:'BM-02-02'},
-    {id:'NF-007',number:'505',supplier:'FORNECEDOR TESTE 04',date:'2026-09-04',amount:2000000,status:'aprovada',source:'BM-04-01'},
-    {id:'NF-008',number:'502',supplier:'FORNECEDOR TESTE 05',date:'2026-09-05',amount:4600000,status:'conferida',source:'BM-05-02'}
+    {id:'NF-001',number:'1844',serie:'001',supplier:'FORNECEDOR TESTE 01',cnpj_fornecedor:'00.000.000/0001-01',categoria:'Terraplenagem',responsavel:'Jonacir',observacoes:'Fatura da medição de julho',amount:4500000,status:'paga',source:'BM-01-01',id_legado:'NF-001-V1',criado_em:'2026-08-05T09:00:00Z',items:[{id:'NFI-001-01',invoice:'NF-001',descricao:'Execução terraplenagem - julho',unidade:'vb',quantidade:1,preco_unitario:4500000}]},
+    {id:'NF-002',number:'3398',serie:'001',supplier:'FORNECEDOR TESTE 02',cnpj_fornecedor:'00.000.000/0001-02',categoria:'Drenagem',responsavel:'Jonacir',observacoes:'Fatura da medição de julho',amount:3200000,status:'paga',source:'BM-02-01',id_legado:'NF-002-V1',criado_em:'2026-08-07T10:00:00Z',items:[{id:'NFI-002-01',invoice:'NF-002',descricao:'Sistema de drenagem - julho',unidade:'vb',quantidade:1,preco_unitario:3200000}]},
+    {id:'NF-003',number:'721',serie:'001',supplier:'FORNECEDOR TESTE 03',cnpj_fornecedor:'00.000.000/0001-03',categoria:'Estruturas',responsavel:'Jonacir',observacoes:'Fatura da medição de agosto',amount:7500000,status:'paga',source:'BM-03-01',id_legado:'NF-003-V1',criado_em:'2026-09-02T11:00:00Z',items:[{id:'NFI-003-01',invoice:'NF-003',descricao:'Estruturas civis - agosto',unidade:'vb',quantidade:1,preco_unitario:7500000}]},
+    {id:'NF-004',number:'488',serie:'001',supplier:'FORNECEDOR TESTE 05',cnpj_fornecedor:'00.000.000/0001-05',categoria:'Logística',responsavel:'Jonacir',observacoes:'Fatura de serviços de logística',amount:3800000,status:'paga',source:'BM-05-01',id_legado:'NF-004-V1',criado_em:'2026-08-08T13:00:00Z',items:[{id:'NFI-004-01',invoice:'NF-004',descricao:'Transporte e apoio - julho',unidade:'vb',quantidade:1,preco_unitario:3800000}]},
+    {id:'NF-005',number:'1882',serie:'001',supplier:'FORNECEDOR TESTE 01',cnpj_fornecedor:'00.000.000/0001-01',categoria:'Terraplenagem',responsavel:'Jonacir',observacoes:'Fatura da medição de agosto',amount:6700000,status:'paga',source:'BM-01-02',id_legado:'NF-005-V1',criado_em:'2026-09-03T09:00:00Z',items:[{id:'NFI-005-01',invoice:'NF-005',descricao:'Execução terraplenagem - agosto',unidade:'vb',quantidade:1,preco_unitario:6700000}]},
+    {id:'NF-006',number:'3431',serie:'001',supplier:'FORNECEDOR TESTE 02',cnpj_fornecedor:'00.000.000/0001-02',categoria:'Drenagem',responsavel:'Jonacir',observacoes:'Fatura da medição de agosto',amount:5700000,status:'paga',source:'BM-02-02',id_legado:'NF-006-V1',criado_em:'2026-09-04T10:00:00Z',items:[{id:'NFI-006-01',invoice:'NF-006',descricao:'Sistema de drenagem - agosto',unidade:'vb',quantidade:1,preco_unitario:5700000}]},
+    {id:'NF-007',number:'505',serie:'001',supplier:'FORNECEDOR TESTE 04',cnpj_fornecedor:'00.000.000/0001-04',categoria:'Instalações',responsavel:'Jonacir',observacoes:'Fatura de instalações prediais',amount:2000000,status:'aprovada',source:'BM-04-01',id_legado:'NF-007-V1',criado_em:'2026-09-04T14:00:00Z',items:[{id:'NFI-007-01',invoice:'NF-007',descricao:'Instalações prediais - agosto',unidade:'vb',quantidade:1,preco_unitario:2000000}]},
+    {id:'NF-008',number:'502',serie:'001',supplier:'FORNECEDOR TESTE 05',cnpj_fornecedor:'00.000.000/0001-05',categoria:'Logística',responsavel:'Jonacir',observacoes:'Fatura de transporte e logística',amount:4600000,status:'conferida',source:'BM-05-02',id_legado:'NF-008-V1',criado_em:'2026-09-05T15:00:00Z',items:[{id:'NFI-008-01',invoice:'NF-008',descricao:'Transporte e apoio - agosto',unidade:'vb',quantidade:1,preco_unitario:4600000}]}
   ],
   payments:[
     {id:'PG-001',invoice:'NF-001',date:'2026-08-20',amount:4500000,status:'pago'},
