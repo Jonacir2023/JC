@@ -29,7 +29,7 @@
   <main class="main">
     <header class="topbar">
       <div class="top-left"><button class="icon-btn mobile-menu" id="mobileMenu">☰</button><div class="breadcrumb" id="breadcrumb"></div></div>
-      <div class="top-actions"><button class="icon-btn" id="globalSearchBtn" title="Busca global">⌕</button><button class="icon-btn" id="exportDemoBtn" title="Exportar dados locais">⇩</button><button class="icon-btn" id="importDemoBtn" title="Importar dados locais">⇧</button><input id="importFile" class="hidden" type="file" accept="application/json"><button class="icon-btn" id="resetDemoBtn" title="Restaurar base de demonstração">↺</button><button class="icon-btn" id="notifBtn" title="Alertas">!</button><div class="profile-chip" id="profileChip"></div></div>
+      <div class="top-actions"><button class="icon-btn" id="globalSearchBtn" title="Busca global">⌕</button><button class="icon-btn" id="exportDemoBtn" title="Exportar dados locais">⇩</button><button class="icon-btn" id="importDemoBtn" title="Importar dados locais">⇧</button><input id="importFile" class="hidden" type="file" accept="application/json"><button class="icon-btn" id="resetDemoBtn" title="Restaurar base de demonstração">↺</button><button class="icon-btn" id="darkModeBtn" title="Alternar modo escuro" onclick="toggleDarkMode()">◐</button><button class="icon-btn" id="notifBtn" title="Alertas">!</button><div class="profile-chip" id="profileChip"></div></div>
     </header>
     <section id="content" class="content"></section>
   </main>
@@ -40,5 +40,34 @@
 <script src="rdo-bridge.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
+<script>
+// Dark mode toggle
+(function() {
+  const DARK_MODE_KEY = 'buildly-dark-mode';
+  const root = document.documentElement;
+
+  function toggleDarkMode() {
+    const isDark = localStorage.getItem(DARK_MODE_KEY) === 'true';
+    localStorage.setItem(DARK_MODE_KEY, !isDark);
+    applyDarkMode(!isDark);
+  }
+
+  function applyDarkMode(isDark) {
+    if (isDark) {
+      root.style.filter = 'invert(1) hue-rotate(180deg)';
+      root.style.transition = 'filter 0.3s ease';
+    } else {
+      root.style.filter = 'none';
+    }
+  }
+
+  // Load saved preference
+  if (localStorage.getItem(DARK_MODE_KEY) === 'true') {
+    applyDarkMode(true);
+  }
+
+  window.toggleDarkMode = toggleDarkMode;
+})();
+</script>
 </body>
 </html>
