@@ -22,8 +22,6 @@ const pct=v=>num(v).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
 function todayISO(){const p=new Intl.DateTimeFormat('en-US',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const m=Object.fromEntries(p.map(x=>[x.type,x.value]));return `${m.year}-${m.month}-${m.day}`}
 function uid(prefix){return `${prefix}-${Date.now().toString(36).toUpperCase()}`}
 function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({version:'2.2',savedAt:new Date().toISOString(),data:D}))}catch(e){}}
-function syncRdoToBridge(){try{const rdoData={rdos:D.rdos,people:D.people,equipment:D.equipment,lightVehicles:D.lightVehicles||[],activitiesCatalog:D.activitiesCatalog,work:state.work,profile:state.profile};localStorage.setItem('buildly-rdo-bridge',JSON.stringify(rdoData))}catch(e){}}
-function loadRdoFromBridge(){try{const bridge=JSON.parse(localStorage.getItem('buildly-rdo-bridge')||'null');return bridge}catch(e){return null}}
 function resetDemo(){try{localStorage.removeItem(STORAGE_KEY)}catch(e){} location.reload()}
 function exportDemo(){downloadBlob('buildly-premium-v2-rc1.json',JSON.stringify({version:'2.2',exportedAt:new Date().toISOString(),data:D},null,2),'application/json')}
 function importDemo(file){const r=new FileReader();r.onload=()=>{try{const p=JSON.parse(r.result);if(!p?.data||!p.data.works||!p.data.profiles)throw new Error('Estrutura inválida');Object.keys(D).forEach(k=>delete D[k]);Object.assign(D,clone(p.data));persist();state.work=D.works[0];state.profile=D.profiles[0];state.page='dashboard';state.context=null;toast('Dados importados.');renderAll()}catch(e){toast('Arquivo inválido para o BUILDLy.')}};r.readAsText(file)}
