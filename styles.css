@@ -752,7 +752,16 @@ th {
   color: var(--muted);
 }
 
-/* ========== Search Results ========== */
+/* ========== Global Search ========== */
+#searchInput {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
 .search-results {
   display: grid;
   gap: 7px;

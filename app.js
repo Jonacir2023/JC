@@ -522,7 +522,44 @@ function handleAction(action){const parts=action.split(':'),kind=parts[0],id=par
   if(kind==='receive-po'){const po=D.purchaseOrders.find(x=>x.id===id);if(po&&requirePerm('suprimentos','edit'))modalReceipt(po)}
 }
 
-function globalSearch(){const q=prompt('Buscar EAP, contrato, documento, tarefa, RDO, pessoa ou equipamento:');if(!q)return;const s=q.toLowerCase();const hits=[];D.wbs.filter(x=>(x.code+' '+x.name).toLowerCase().includes(s)).forEach(x=>hits.push({label:`EAP: ${x.code} ${x.name}`,page:'wbs',ctx:x.id}));D.contracts.filter(x=>(x.number+' '+x.name+' '+x.supplier).toLowerCase().includes(s)).forEach(x=>hits.push({label:`Contrato: ${x.number} ${x.name}`,page:'contratos',ctx:x.id}));D.documents.filter(x=>(x.code+' '+x.title).toLowerCase().includes(s)).forEach(x=>hits.push({label:`Documento: ${x.code} ${x.title}`,page:'documentos',ctx:x.id}));D.tasks.filter(x=>x.subject.toLowerCase().includes(s)).forEach(x=>hits.push({label:`Tarefa: ${x.subject}`,page:'tarefas'}));D.rdos.filter(x=>(x.progress+' '+x.notes).toLowerCase().includes(s)).forEach(x=>hits.push({label:`RDO ${x.number}: ${x.progress}`,page:'rdo',ctx:x.id}));D.people.filter(x=>(x.name+' '+x.company+' '+x.function).toLowerCase().includes(s)).forEach(x=>hits.push({label:`Pessoa: ${x.name}`,page:'efetivo'}));D.equipment.filter(x=>(x.prefix+' '+x.type).toLowerCase().includes(s)).forEach(x=>hits.push({label:`Equipamento: ${x.prefix} ${x.type}`,page:'equipamentos'}));D.purchaseRequests.filter(x=>(x.number+' '+x.description).toLowerCase().includes(s)).forEach(x=>hits.push({label:`Suprimentos: ${x.number} ${x.description}`,page:'suprimentos'}));openModal('Busca global',hits.length?`<div class="search-results">${hits.map((x,i)=>`<button class="search-hit" data-search-index="${i}">${h(x.label)}</button>`).join('')}</div>`:empty('Nenhum resultado no escopo atual.'));$$('[data-search-index]').forEach(b=>b.onclick=()=>{const x=hits[num(b.dataset.searchIndex)];closeModal();navigate(x.page,x.ctx||null)})}
+function searchIndex(q){
+  const s=q.toLowerCase();const hits=[];
+  const add=(cond,cat,label,sub,page,ctx)=>{if(cond)hits.push({cat,label,sub:sub||'',page,ctx:ctx??null})};
+  D.wbs.forEach(x=>add((x.code+' '+x.name).toLowerCase().includes(s),'EAP',`${x.code} ${x.name}`,'','wbs',x.id));
+  D.contracts.forEach(x=>add((x.number+' '+x.name+' '+x.supplier).toLowerCase().includes(s),'Contrato',`${x.number} · ${x.name}`,x.supplier,'contratos',x.id));
+  D.contractAmendments.forEach(x=>add((x.number+' '+x.description).toLowerCase().includes(s),'Aditivo',`Aditivo ${x.number}`,x.description,'contratos',x.contract));
+  D.measurements.forEach(x=>add((x.id+' '+x.mes_referencia).toLowerCase().includes(s),'Medição',`Medição ${x.id}`,x.mes_referencia,'medicoes',x.contract));
+  D.invoices.forEach(x=>add((x.number+' '+x.supplier+' '+x.categoria).toLowerCase().includes(s),'NF',`NF ${x.number} · ${x.supplier}`,x.categoria,'nfs',x.id));
+  D.documents.forEach(x=>add((x.titulo+' '+x.categoria).toLowerCase().includes(s),'Documento',x.titulo,x.categoria,'documentos',x.id));
+  D.tasks.forEach(x=>add((x.subject+' '+x.description).toLowerCase().includes(s),'Tarefa',x.subject,x.description,'tarefas',null));
+  D.rdos.forEach(x=>add((x.number+' '+x.progress+' '+x.notes+' '+x.date).toLowerCase().includes(s),'RDO',`RDO ${x.number} · ${x.date}`,x.progress,'rdo',x.id));
+  D.people.forEach(x=>add((x.name+' '+x.company+' '+x.function).toLowerCase().includes(s),'Pessoa',x.name,`${x.function} · ${x.company}`,'efetivo',null));
+  D.equipment.forEach(x=>add((x.prefix+' '+x.type).toLowerCase().includes(s),'Equipamento',`${x.prefix} ${x.type}`,'','equipamentos',null));
+  D.purchaseRequests.forEach(x=>add((x.number+' '+x.description).toLowerCase().includes(s),'Requisição',x.number,x.description,'suprimentos',null));
+  D.purchaseOrders.forEach(x=>add((x.number+' '+x.description).toLowerCase().includes(s),'Pedido de compra',x.number,x.description,'suprimentos',null));
+  D.occurrences.forEach(x=>add((x.description+' '+x.type).toLowerCase().includes(s),'Ocorrência',x.type,x.description,'ocorrencias',x.id));
+  D.alerts.forEach(x=>add((x.title+' '+x.detail).toLowerCase().includes(s),'Alerta',x.title,x.detail,'alertas',null));
+  D.meetings.forEach(x=>add((x.titulo+' '+x.local).toLowerCase().includes(s),'Reunião',x.titulo,x.local,'reunioes',x.id));
+  D.mural.forEach(x=>add((x.texto+' '+x.autor).toLowerCase().includes(s),'Mural',x.texto,x.autor,'mural',null));
+  D.cbs.forEach(x=>add((x.code+' '+x.name).toLowerCase().includes(s),'CBS',`${x.code} ${x.name}`,'','cadastro',null));
+  D.activitiesCatalog.filter(x=>x.active).forEach(x=>add(x.description.toLowerCase().includes(s),'Atividade',x.description,'','cadastro',null));
+  return hits.slice(0,30);
+}
+function renderSearchResults(q){
+  const box=$('#searchResults');if(!box)return;
+  if(q.length<2){box.innerHTML=empty('Digite ao menos 2 caracteres para buscar.');return}
+  const hits=searchIndex(q);
+  box.innerHTML=hits.length?hits.map((x,i)=>`<button class="search-hit" data-search-index="${i}"><b>${h(x.cat)}: ${h(x.label)}</b>${x.sub?`<div class="muted small">${h(x.sub)}</div>`:''}</button>`).join(''):empty('Nenhum resultado encontrado.');
+  $$('#searchResults [data-search-index]').forEach(b=>b.onclick=()=>{const x=hits[num(b.dataset.searchIndex)];closeModal();navigate(x.page,x.ctx)});
+}
+function openGlobalSearch(){
+  openModal('Busca global','<input id="searchInput" placeholder="Buscar EAP, contrato, documento, tarefa, RDO, pessoa, equipamento..." autocomplete="off"><div id="searchResults" class="search-results"></div>');
+  const inp=$('#searchInput');
+  inp.oninput=()=>renderSearchResults(inp.value.trim());
+  inp.onkeydown=e=>{if(e.key==='Escape')closeModal();else if(e.key==='Enter'){const first=$('#searchResults .search-hit');if(first)first.click()}};
+  renderSearchResults('');
+  inp.focus();
+}
 
 function init(){
   renderSelectors();renderAll();
@@ -531,7 +568,8 @@ function init(){
   $('#treeSearch').oninput=e=>{state.query=e.target.value;renderTree()};
   $('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('show');
   $('#modalClose').onclick=closeModal;$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
-  $('#globalSearchBtn').onclick=globalSearch;$('#notifBtn').onclick=()=>navigate('alertas');
+  $('#globalSearchBtn').onclick=openGlobalSearch;$('#notifBtn').onclick=()=>navigate('alertas');
+  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openGlobalSearch()}});
   $('#exportDemoBtn').onclick=exportDemo;$('#importDemoBtn').onclick=()=>$('#importFile').click();$('#importFile').onchange=e=>{if(e.target.files?.[0])importDemo(e.target.files[0]);e.target.value=''};
   $('#resetDemoBtn').onclick=()=>{if(confirm('Restaurar os dados originais da demonstração?'))resetDemo()};
   if(location.protocol!=='file:'&&'serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
