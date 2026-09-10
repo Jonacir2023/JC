@@ -36,8 +36,8 @@
 
 .rdo-header h2 {
   font-family: var(--serif);
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 16px;
+  font-weight: 400;
   letter-spacing: 0.4px;
   text-transform: uppercase;
   color: #f0ece7;
@@ -47,7 +47,7 @@
 .rdo-header .rdo-meta {
   font-size: 10px;
   color: var(--accent-soft);
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: 0.8px;
   text-transform: uppercase;
   font-family: var(--serif);
@@ -66,8 +66,8 @@
 
 .rdo-section-title {
   font-family: var(--serif);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--accent);
@@ -85,8 +85,8 @@
 
 .rdo-field label {
   display: block;
-  font-size: 10px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--ink-soft);
@@ -103,7 +103,8 @@
   border-bottom: 2px solid var(--line);
   background: rgba(255, 255, 255, 0.7);
   border-radius: 4px;
-  font-size: 15px;
+  font-size: 13px;
+  font-weight: 400;
   font-family: var(--sans);
   color: var(--ink);
   transition: all 0.15s;
@@ -134,7 +135,7 @@
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.5);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 400;
   font-family: var(--serif);
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -171,21 +172,21 @@
 }
 
 .rdo-stat-num {
-  font-size: 24px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 400;
   color: var(--accent-soft);
   font-family: var(--serif);
   line-height: 1;
 }
 
 .rdo-stat-label {
-  font-size: 9px;
+  font-size: 10px;
   color: rgba(240, 236, 231, 0.5);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-top: 3px;
   font-family: var(--serif);
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .rdo-item {
@@ -201,8 +202,8 @@
 }
 
 .rdo-item-name {
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 400;
+  font-size: 13px;
   color: var(--ink);
 }
 
@@ -229,8 +230,8 @@
   border: none;
   border-radius: 6px;
   font-family: var(--sans);
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 400;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.15s;
   text-decoration: none;
@@ -249,8 +250,8 @@
 
 .rdo-icon-add {
   color: #f5b334;
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 400;
   line-height: 1;
   border: 1.5px solid #f5b334;
   border-radius: 6px;

@@ -945,7 +945,7 @@ th {
   background: #f7fafc;
   color: #46606f;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 400;
   margin-bottom: 12px;
 }
 
@@ -984,6 +984,7 @@ th {
 .rdo-period h4 {
   margin: 0 0 8px;
   font-size: 13px;
+  font-weight: 400;
 }
 
 .rdo-inline-3,
@@ -1006,7 +1007,7 @@ th {
   flex-direction: column;
   gap: 4px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 400;
   color: #586774;
 }
 
@@ -1101,7 +1102,8 @@ th {
 }
 
 .rdo-report-head h1 {
-  font-size: 22px;
+  font-size: 20px;
+  font-weight: 400;
   margin: 0 0 5px;
 }
 
@@ -1112,11 +1114,13 @@ th {
 }
 
 .rdo-number b {
-  font-size: 30px;
+  font-size: 20px;
+  font-weight: 400;
 }
 
 .rdo-report h2 {
   font-size: 14px;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   border-bottom: 1px solid #d8dee6;
@@ -1134,6 +1138,7 @@ th {
   border: 1px solid #d8dee6;
   padding: 6px 7px;
   font-size: 11px;
+  font-weight: 400;
 }
 
 .rdo-report-photos {
@@ -1195,6 +1200,8 @@ th {
 
 .rdo-cal-head h2 {
   text-transform: capitalize;
+  font-size: 14px;
+  font-weight: 400;
   margin: 0;
 }
 
@@ -1242,6 +1249,23 @@ th {
 
 .rdo-summary-controls {
   margin-bottom: 10px;
+}
+
+/* Tipografia padronizada do RDO: sem negrito em nenhum elemento,
+   inclusive tags semânticas (b/strong/h1-h4/th) e componentes globais
+   (.btn/.pill, que são bold em 700-800 no resto da plataforma) —
+   escopado a .rdo-page para não afetar o resto do V2.2. */
+.rdo-page,
+.rdo-page b,
+.rdo-page strong,
+.rdo-page h1,
+.rdo-page h2,
+.rdo-page h3,
+.rdo-page h4,
+.rdo-page th,
+.rdo-page .btn,
+.rdo-page .pill {
+  font-weight: 400;
 }
 
 /* ========== Responsive: Tablets & Large Phones ========== */
