@@ -1,0 +1,8 @@
+config.js
+.DS_Store
+*.log
+
+# Gerado pelo kit de homologação local a partir de sql/ e tests/
+supabase/
+
+relatorios-homologacao/

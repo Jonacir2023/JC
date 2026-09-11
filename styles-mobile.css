@@ -1,0 +1,203 @@
+/* BUILDLy V2.2 — Mobile Responsivo */
+
+@media (max-width: 768px) {
+  body { font-size: 14px; }
+
+  .app-shell {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 999;
+    transition: left 0.3s ease;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  .main {
+    width: 100%;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .mobile-menu {
+    display: block !important;
+    padding: 8px 12px;
+  }
+
+  .top-actions {
+    gap: 4px;
+  }
+
+  .top-actions .icon-btn {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  table th, table td {
+    padding: 6px 4px;
+    white-space: nowrap;
+  }
+
+  .card {
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  .modal {
+    padding: 12px;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-width: 95vw;
+    max-height: 90vh;
+  }
+
+  .kanban {
+    flex-direction: column;
+  }
+
+  .kanban-col {
+    width: 100%;
+    min-height: auto;
+  }
+
+  input, select, textarea {
+    font-size: 16px; /* Previne zoom em iOS */
+    padding: 10px;
+  }
+
+  .btn {
+    padding: 10px 12px;
+    font-size: 13px;
+    width: auto;
+  }
+
+  .btn.primary {
+    width: 100%;
+  }
+
+  .tree-row {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .profile-chip {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 260px;
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .top-actions {
+    gap: 2px;
+  }
+
+  .top-actions .icon-btn {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .breadcrumb {
+    font-size: 12px;
+  }
+
+  .card {
+    padding: 10px;
+  }
+
+  h2 {
+    font-size: 16px;
+  }
+
+  h3 {
+    font-size: 14px;
+  }
+
+  table {
+    font-size: 11px;
+  }
+
+  .modal-card {
+    border-radius: 12px;
+  }
+
+  .modal-head h3 {
+    font-size: 14px;
+  }
+
+  .mini-btn {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  .gap-top {
+    margin-top: 8px;
+  }
+
+  .side-footer {
+    font-size: 10px;
+  }
+}
+
+/* Touch optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .icon-btn,
+  .btn,
+  .tree-row {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px;
+  }
+
+  input, select, textarea, button {
+    min-height: 44px;
+  }
+
+  a {
+    padding: 8px 4px;
+  }
+}
