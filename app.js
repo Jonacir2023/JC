@@ -29,7 +29,7 @@ function downloadBlob(name,text,type='text/plain'){const blob=new Blob([text],{t
 function csvEscape(v){const s=String(v??'');return /[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s}
 function downloadCsv(name,rows){downloadBlob(name,rows.map(r=>r.map(csvEscape).join(';')).join('\n'),'text/csv;charset=utf-8')}
 
-const state={work:D.works[0],profile:D.profiles[0],page:'dashboard',context:null,openGroups:new Set(['planejamento','eap','financeiro']),query:'',planningTab:'cronograma',cadastroTab:'atividades',wbsTab:'visao',procurementTab:'requisicoes',rdoTab:'diario',rdoSummaryMode:'mes',rdoCalendarAnchor:todayISO().slice(0,7),editingMeasurement:null,editingInvoice:null,editingMeeting:null,editingDocument:null,rdoSelectedPeople:new Set(),rdoSelectedEquipment:new Set(),rdoSelectedVehicles:new Set(),rdoSelectedActivities:new Set()};
+const state={work:D.works[0],profile:D.profiles[0],page:'dashboard',context:null,openGroups:new Set(),query:'',planningTab:'cronograma',cadastroTab:'atividades',wbsTab:'visao',procurementTab:'requisicoes',rdoTab:'diario',rdoSummaryMode:'mes',rdoCalendarAnchor:todayISO().slice(0,7),editingMeasurement:null,editingInvoice:null,editingMeeting:null,editingDocument:null,rdoSelectedPeople:new Set(),rdoSelectedEquipment:new Set(),rdoSelectedVehicles:new Set(),rdoSelectedActivities:new Set()};
 function audit(module,action,reference,detail=''){D.auditTrail=D.auditTrail||[];D.auditTrail.unshift({id:uid('AUD'),date:new Date().toISOString(),module,action,reference,user:state.profile.label,detail});}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hidden'),2400)}
 function actionsFor(module){
